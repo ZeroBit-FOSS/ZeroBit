@@ -19,6 +19,8 @@ local.properties
 *.aab
 debug-apk-files.txt
 debug-apk-sha256.txt
+debug-apk-badging.txt
+debug-signing-certs.txt
 captures/
 logs/
 *.log

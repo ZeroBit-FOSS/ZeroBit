@@ -88,6 +88,27 @@ jobs:
           printf '%s\n' "${apks[@]}" > debug-apk-files.txt
           sha256sum "${apks[@]}" > debug-apk-sha256.txt
 
+      - name: Verify package and signing certificate
+        shell: bash
+        run: |
+          aapt2="$(find "$ANDROID_HOME/build-tools" -type f -name aapt2 | sort -V | tail -n 1)"
+          apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+
+          if [[ -z "$aapt2" || -z "$apksigner" ]]; then
+            echo "::error::Android SDK verification tools were not found."
+            exit 1
+          fi
+
+          while IFS= read -r apk; do
+            "$aapt2" dump badging "$apk" | tee -a debug-apk-badging.txt
+            "$apksigner" verify --verbose --print-certs "$apk" | tee -a debug-signing-certs.txt
+          done < debug-apk-files.txt
+
+          if ! grep -q "name='com.vibhor1102.zerobit.debug'" debug-apk-badging.txt; then
+            echo "::error::Debug APK has an unexpected application ID."
+            exit 1
+          fi
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v7
         with:
@@ -96,6 +117,7 @@ jobs:
             **/build/outputs/apk/debug/*.apk
             debug-apk-files.txt
             debug-apk-sha256.txt
+            debug-apk-badging.txt
+            debug-signing-certs.txt
           if-no-files-found: error
           retention-days: 14
-
