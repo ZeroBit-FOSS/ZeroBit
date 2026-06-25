@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openmacro.dev/schema/v0.1/openmacro.schema.json",
+  "title": "OpenMacro v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "metadata",
+    "triggers",
+    "actions"
+  ],
+  "properties": {
+    "format": {
+      "const": "openmacro/v0.1"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    },
+    "triggers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/block"
+      }
+    },
+    "conditions": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/block"
+      }
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/block"
+      }
+    }
+  },
+  "$defs": {
+    "stableId": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "block": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*(?:\\.[a-z][a-z0-9-]*)+$"
+        },
+        "config": {
+          "type": "object",
+          "default": {}
+        }
+      }
+    }
+  }
+}
