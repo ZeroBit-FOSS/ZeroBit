@@ -3,6 +3,9 @@
 ZeroBit is a long-term FOSS Android automation project: transparent automation
 for Android, built for humans and AI.
 
+The project is licensed under `GPL-3.0-or-later`. New project-owned source
+files should use the SPDX identifier `GPL-3.0-or-later` where practical.
+
 ## Product Direction
 
 - ZeroBit is an Android app/runtime; OpenMacro is the planned open automation
