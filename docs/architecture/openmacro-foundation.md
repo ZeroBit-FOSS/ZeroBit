@@ -132,3 +132,27 @@ The next slice should add durable workspace and approval storage around this
 pipeline. It must keep source files, approved snapshots, encrypted secrets,
 runtime state, and diagnostic logs separate as required by the repository
 architecture.
+
+## Local storage boundary
+
+The first storage implementation keeps two independent roots:
+
+- OpenMacro Workspace stores user-owned files at
+  `macros/<macro-id>.openmacro.yaml`. These files are suitable for Git and may
+  change externally.
+- App-private approval storage keeps immutable source snapshots and an atomic
+  pointer to the currently approved revision. The runtime must use this
+  approved snapshot, never whichever workspace contents happen to be newest.
+
+Each approval or rollback creates a new revision linked to the previous
+revision. Snapshot fingerprints are verified again when loaded. A malformed,
+unsupported, missing, or modified approved snapshot is refused rather than
+returned as runnable.
+
+Secrets, runtime enabled state, and diagnostic logs have no directory or record
+in either of these stores. They remain separate future components.
+
+The next slice should define runtime ownership and lifecycle around approved
+plans: enabling, disabling, event subscription, cancellation, and bounded
+diagnostics. It should use event-driven Android signals and begin with the power
+trigger proof capability.
