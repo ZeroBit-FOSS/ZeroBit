@@ -1,0 +1,101 @@
+name: Debug APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: debug-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build stable-signed debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Require Android project
+        shell: bash
+        run: |
+          if [[ ! -f gradlew || ! -f gradle/wrapper/gradle-wrapper.jar ]]; then
+            echo "::error::The Android project and Gradle wrapper have not been scaffolded yet."
+            exit 1
+          fi
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Restore stable debug keystore
+        id: signing
+        shell: bash
+        env:
+          DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+          DEBUG_KEYSTORE_PASSWORD: ${{ secrets.DEBUG_KEYSTORE_PASSWORD }}
+          DEBUG_KEY_ALIAS: ${{ secrets.DEBUG_KEY_ALIAS }}
+          DEBUG_KEY_PASSWORD: ${{ secrets.DEBUG_KEY_PASSWORD }}
+        run: |
+          for name in DEBUG_KEYSTORE_BASE64 DEBUG_KEYSTORE_PASSWORD DEBUG_KEY_ALIAS DEBUG_KEY_PASSWORD; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Required GitHub Actions secret $name is missing."
+              exit 1
+            fi
+          done
+
+          keystore="$RUNNER_TEMP/zerobit-debug.jks"
+          printf '%s' "$DEBUG_KEYSTORE_BASE64" | base64 --decode > "$keystore"
+          keytool -list \
+            -keystore "$keystore" \
+            -storepass "$DEBUG_KEYSTORE_PASSWORD" \
+            -alias "$DEBUG_KEY_ALIAS" >/dev/null
+          echo "keystore=$keystore" >> "$GITHUB_OUTPUT"
+
+      - name: Build debug APK
+        shell: bash
+        env:
+          DEBUG_KEYSTORE_PASSWORD: ${{ secrets.DEBUG_KEYSTORE_PASSWORD }}
+          DEBUG_KEY_ALIAS: ${{ secrets.DEBUG_KEY_ALIAS }}
+          DEBUG_KEY_PASSWORD: ${{ secrets.DEBUG_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug \
+            --no-daemon \
+            --stacktrace \
+            -Pandroid.injected.signing.store.file="${{ steps.signing.outputs.keystore }}" \
+            -Pandroid.injected.signing.store.password="$DEBUG_KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$DEBUG_KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$DEBUG_KEY_PASSWORD"
+
+      - name: Record APK checksums
+        shell: bash
+        run: |
+          mapfile -t apks < <(find . -type f -path '*/build/outputs/apk/debug/*.apk' -print | sort)
+          if (( ${#apks[@]} == 0 )); then
+            echo "::error::Gradle completed without producing a debug APK."
+            exit 1
+          fi
+          printf '%s\n' "${apks[@]}" > debug-apk-files.txt
+          sha256sum "${apks[@]}" > debug-apk-sha256.txt
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: zerobit-debug-${{ github.run_number }}
+          path: |
+            **/build/outputs/apk/debug/*.apk
+            debug-apk-files.txt
+            debug-apk-sha256.txt
+          if-no-files-found: error
+          retention-days: 14
+

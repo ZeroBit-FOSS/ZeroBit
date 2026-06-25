@@ -1,0 +1,62 @@
+name: Verify Build
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  project-state:
+    name: Check project state
+    runs-on: ubuntu-latest
+    outputs:
+      android-project-ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Detect Gradle wrapper
+        id: check
+        shell: bash
+        run: |
+          if [[ -f gradlew && -f gradle/wrapper/gradle-wrapper.jar ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Android project has not been scaffolded yet; hosted verification is ready but skipped."
+          fi
+
+  verify:
+    name: Compile and test
+    needs: project-state
+    if: needs.project-state.outputs.android-project-ready == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Compile and run checks
+        run: ./gradlew check assembleDebug --no-daemon --stacktrace
+
