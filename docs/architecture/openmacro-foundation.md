@@ -93,6 +93,20 @@ file.
 
 The runtime never interprets YAML directly and never asks AI what a block means.
 
+The proposal pipeline is the shared trust boundary for source and visual edits.
+It returns one of three outcomes:
+
+- source rejected, with YAML locations where available;
+- validation rejected, while retaining the proposed source for correction; or
+- approval-ready, with plain-English block explanations, permission impact,
+  behavior changes, and an immutable runtime plan.
+
+Approval is tied to runnable behavior rather than file churn. Comments,
+formatting, macro display names, and descriptions may change without behavioral
+re-approval when the compiled plan is unchanged. Trigger, condition, action,
+ordering, configuration, macro identity, or permission changes require
+approval.
+
 ## First implementation boundary
 
 The initial implementation contains:
@@ -104,7 +118,9 @@ The initial implementation contains:
 - capability validation, explanations, and permission discovery; and
 - compilation into immutable runtime instructions;
 - strict YAML 1.2 reading with source locations and bounded input; and
-- stable canonical writing without silently reformatting source on read.
+- stable canonical writing without silently reformatting source on read; and
+- a proposal pipeline joining parsing, validation, explanation, permission
+  impact, behavioral comparison, and runtime-plan compilation.
 
 This proves that one capability definition can drive the code shape, future
 form, validation, explanation, permissions, and runtime plan without premature
@@ -112,7 +128,7 @@ plugin machinery. The source adapter rejects aliases, anchors, merge keys,
 custom tags, directives, duplicate keys, multiple documents, ambiguous YAML
 1.1 booleans, excessive nesting, and oversized files.
 
-The next slice should connect source parsing, capability validation,
-explanation, and runtime compilation into one proposal pipeline. That pipeline
-will become the shared boundary used by both editors before approval storage or
-runtime services are introduced.
+The next slice should add durable workspace and approval storage around this
+pipeline. It must keep source files, approved snapshots, encrypted secrets,
+runtime state, and diagnostic logs separate as required by the repository
+architecture.
