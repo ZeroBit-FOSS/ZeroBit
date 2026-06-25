@@ -15,10 +15,26 @@ import java.math.BigDecimal
 data class OpenMacroDocument(
     val format: String,
     val metadata: MacroMetadata,
+    val variables: List<MacroVariable> = emptyList(),
     val triggers: List<MacroBlock>,
     val conditions: List<MacroBlock>,
     val actions: List<MacroBlock>,
 )
+
+data class MacroVariable(
+    val name: String,
+    val type: MacroVariableType,
+    val initialValue: MacroValue? = null,
+    val secretKey: String? = null,
+)
+
+enum class MacroVariableType {
+    TEXT,
+    NUMBER,
+    BOOLEAN,
+    SECRET,
+}
+
 
 data class MacroMetadata(
     val id: String,

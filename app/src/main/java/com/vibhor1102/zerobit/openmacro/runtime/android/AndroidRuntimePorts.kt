@@ -23,6 +23,7 @@ import com.vibhor1102.zerobit.openmacro.runtime.ConditionResult
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeActionExecutor
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeCancellation
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeConditionEvaluator
+import com.vibhor1102.zerobit.openmacro.runtime.RuntimeContext
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimePermissionChecker
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeStep
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeTaskDispatcher
@@ -89,7 +90,7 @@ class AndroidConditionEvaluator(
     private val keyguardManager =
         context.getSystemService(KeyguardManager::class.java)
 
-    override fun evaluate(condition: RuntimeStep): ConditionResult = when (condition) {
+    override fun evaluate(condition: RuntimeStep, context: RuntimeContext): ConditionResult = when (condition) {
         is RuntimeStep.CheckDeviceUnlocked -> {
             if (keyguardManager == null) {
                 ConditionResult.Failed("Android keyguard service is unavailable.")
@@ -113,7 +114,7 @@ class AndroidNotificationActionExecutor(
         appContext.getSystemService(NotificationManager::class.java)
     private val nextNotificationId = AtomicInteger(1)
 
-    override fun execute(action: RuntimeStep): ActionResult = when (action) {
+    override fun execute(action: RuntimeStep, context: RuntimeContext): ActionResult = when (action) {
         is RuntimeStep.ShowNotification -> show(action)
         else -> ActionResult.Failed(
             "Unsupported Android action ${action::class.simpleName}.",

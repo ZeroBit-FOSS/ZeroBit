@@ -66,9 +66,7 @@ files should use the SPDX identifier `GPL-3.0-or-later` where practical.
 
 ## Branches and Git Hygiene
 
-- `main` is the stable integration branch and should remain buildable.
-- Develop on `feature/*`, `fix/*`, `wip/*`, or another purpose-named branch,
-  then merge through a focused pull request.
+- `main` is the stable integration branch. Working and committing directly on `main` is allowed and expected.
 - Keep commits narrow and understandable. Do not mix formatting, refactors, and
   behavior changes unless they are inseparable.
 - Do not commit APKs, keystores, signing secrets, local SDK paths, generated
@@ -127,3 +125,17 @@ files should use the SPDX identifier `GPL-3.0-or-later` where practical.
 - Keep requested manual testing narrow and proportional to the risky behavior.
 - Do not collect broad or continuous device logs when a package/tag/process
   filter can answer the question.
+
+## Future Agent Backlog & Architecture Targets
+
+To reach MacroDroid-level power while keeping a user-transparent design, future agents should build new architecture and capabilities iteratively.
+- **Constraints**: No local compilation/app builds or live on-device testing. Only write code and tests. Run continuously without pausing unless blocked.
+- **Backlog Management**: Update this backlog as items are resolved or discovered.
+
+### Active Targets
+
+- **Target 1: Local Variables & Secrets Store**: Design a secure runtime/storage interface for macro variables (e.g. string/boolean/number) and secret placeholders so macros don't store secrets in plain-text YAML.
+- **Target 2: Expand Trigger & Condition Context**: Implement data passing from triggers (e.g., incoming notification contents, battery percentage) to conditions and actions.
+- **Target 3: Advanced Condition Trees**: Implement boolean logical groups (AND/OR/NOT blocks) within macro conditions instead of simple list conjunctions.
+- **Target 4: Standard Capability Expansion**: Add capabilities (Triggers: Screen On/Off, Battery Level; Conditions: Wi-Fi Connected; Actions: Write Log, Send SMS).
+

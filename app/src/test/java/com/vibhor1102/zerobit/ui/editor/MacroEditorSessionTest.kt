@@ -109,4 +109,29 @@ class MacroEditorSessionTest {
         assertEquals(initial.sourceText, visual.sourceText)
         assertEquals(initial.result, visual.result)
     }
+
+    @Test
+    fun approvingCurrentProposalClearsBehaviorChangesAndApprovalRequired() {
+        val (session, initial) = MacroEditorSession.withInitialSourceApproved(
+            pipeline,
+            SampleMacro.source,
+        )
+
+        val edited = session.updateSource(
+            initial,
+            initial.sourceText.replace(
+                "message: The charger is connected.",
+                "message: Time to charge.",
+            ),
+        )
+
+        require(edited.result is ProposalResult.Ready)
+        assertTrue(edited.result.proposal.comparison.approvalRequired)
+
+        val approved = session.approveCurrent(edited)
+
+        require(approved.result is ProposalResult.Ready)
+        assertFalse(approved.result.proposal.comparison.approvalRequired)
+        assertFalse(approved.result.proposal.comparison.behaviorChanged)
+    }
 }

@@ -7,6 +7,15 @@ package com.vibhor1102.zerobit.openmacro.runtime
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 import com.vibhor1102.zerobit.openmacro.storage.ApprovalStoreResult
 import com.vibhor1102.zerobit.openmacro.storage.ApprovedRevision
+import com.vibhor1102.zerobit.openmacro.storage.SecretStore
+import com.vibhor1102.zerobit.openmacro.storage.VariableStore
+
+data class RuntimeContext(
+    val macroId: String,
+    val runId: Long,
+    val variables: VariableStore,
+    val secrets: SecretStore,
+)
 
 fun interface RuntimeTaskDispatcher {
     fun dispatch(task: () -> Unit)
@@ -35,7 +44,7 @@ sealed interface TriggerSubscriptionResult {
 }
 
 fun interface RuntimeConditionEvaluator {
-    fun evaluate(condition: RuntimeStep): ConditionResult
+    fun evaluate(condition: RuntimeStep, context: RuntimeContext): ConditionResult
 }
 
 sealed interface ConditionResult {
@@ -47,7 +56,7 @@ sealed interface ConditionResult {
 }
 
 fun interface RuntimeActionExecutor {
-    fun execute(action: RuntimeStep): ActionResult
+    fun execute(action: RuntimeStep, context: RuntimeContext): ActionResult
 }
 
 sealed interface ActionResult {
@@ -55,6 +64,7 @@ sealed interface ActionResult {
 
     data class Failed(val message: String) : ActionResult
 }
+
 
 fun interface RuntimePermissionChecker {
     fun missingPermissions(required: Set<AndroidPermission>): Set<AndroidPermission>

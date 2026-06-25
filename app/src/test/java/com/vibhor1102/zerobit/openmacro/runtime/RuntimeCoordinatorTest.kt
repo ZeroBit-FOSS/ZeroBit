@@ -236,6 +236,37 @@ class RuntimeCoordinatorTest {
         assertEquals(listOf("charger-connected"), fixture.registrar.cancelledBlockIds)
     }
 
+    @Test
+    fun initializesVariablesOnEnableAndProvidesThemToExecutor() {
+        val varDeclaration = com.vibhor1102.zerobit.openmacro.model.MacroVariable(
+            name = "my_var",
+            type = com.vibhor1102.zerobit.openmacro.model.MacroVariableType.TEXT,
+            initialValue = com.vibhor1102.zerobit.openmacro.model.MacroValue.Text("init_val")
+        )
+        val plan = validPlan().copy(variables = listOf(varDeclaration))
+        val fixture = Fixture(plan = plan)
+
+        var contextCaptured: RuntimeContext? = null
+        fixture.actions.onExecuteWithContext = { action, context ->
+            contextCaptured = context
+        }
+
+        fixture.coordinator.enable("charger-greeting")
+        assertEquals(
+            com.vibhor1102.zerobit.openmacro.model.MacroValue.Text("init_val"),
+            fixture.variables.getValue("charger-greeting", "my_var")
+        )
+
+        fixture.registrar.fire("charger-connected")
+
+        val captured = checkNotNull(contextCaptured)
+        assertEquals("charger-greeting", captured.macroId)
+        assertEquals(
+            com.vibhor1102.zerobit.openmacro.model.MacroValue.Text("init_val"),
+            captured.variables.getValue("charger-greeting", "my_var")
+        )
+    }
+
     private class Fixture(
         plan: RuntimePlan = validPlan(),
         planResult: ApprovedPlanResult = ApprovedPlanResult.Success("revision-1", plan),
@@ -245,6 +276,8 @@ class RuntimeCoordinatorTest {
         val registrar = FakeTriggerRegistrar()
         val conditions = FakeConditionEvaluator()
         val actions = FakeActionExecutor()
+        val variables = com.vibhor1102.zerobit.openmacro.storage.InMemoryVariableStore()
+        val secrets = com.vibhor1102.zerobit.openmacro.storage.FakeSecretStore()
         val diagnostics = BoundedRuntimeDiagnostics(clock = RuntimeClock { 1_000L })
         val coordinator = RuntimeCoordinator(
             approvedPlans = ApprovedPlanProvider { planResult },
@@ -253,6 +286,8 @@ class RuntimeCoordinatorTest {
             actionExecutor = actions,
             permissionChecker = RuntimePermissionChecker { missingPermissions },
             dispatcher = dispatcher,
+            variables = variables,
+            secrets = secrets,
             diagnostics = diagnostics,
         )
     }
@@ -289,7 +324,7 @@ class RuntimeCoordinatorTest {
         val evaluatedBlockIds = mutableListOf<String>()
         var result: ConditionResult = ConditionResult.Passed
 
-        override fun evaluate(condition: RuntimeStep): ConditionResult {
+        override fun evaluate(condition: RuntimeStep, context: RuntimeContext): ConditionResult {
             evaluatedBlockIds += condition.blockId
             return result
         }
@@ -299,13 +334,16 @@ class RuntimeCoordinatorTest {
         val executedBlockIds = mutableListOf<String>()
         val results = mutableMapOf<String, ActionResult>()
         var onExecute: ((RuntimeStep) -> Unit)? = null
+        var onExecuteWithContext: ((RuntimeStep, RuntimeContext) -> Unit)? = null
 
-        override fun execute(action: RuntimeStep): ActionResult {
+        override fun execute(action: RuntimeStep, context: RuntimeContext): ActionResult {
             executedBlockIds += action.blockId
             onExecute?.invoke(action)
+            onExecuteWithContext?.invoke(action, context)
             return results[action.blockId] ?: ActionResult.Succeeded
         }
     }
+
 
     private class ManualDispatcher : RuntimeTaskDispatcher {
         private val tasks = ArrayDeque<() -> Unit>()

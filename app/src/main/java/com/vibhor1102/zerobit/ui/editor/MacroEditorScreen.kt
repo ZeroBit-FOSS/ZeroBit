@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -42,6 +43,7 @@ fun MacroEditorScreen(
     state: MacroEditorState,
     onModeSelected: (EditorMode) -> Unit,
     onSourceChanged: (String) -> Unit,
+    onApprove: () -> Unit,
 ) {
     Scaffold(
         bottomBar = {
@@ -54,6 +56,7 @@ fun MacroEditorScreen(
         when (state.mode) {
             EditorMode.VISUAL -> VisualEditor(
                 state = state,
+                onApprove = onApprove,
                 modifier = Modifier.padding(contentPadding),
             )
             EditorMode.CODE -> CodeEditor(
@@ -68,6 +71,7 @@ fun MacroEditorScreen(
 @Composable
 private fun VisualEditor(
     state: MacroEditorState,
+    onApprove: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -84,6 +88,9 @@ private fun VisualEditor(
         if (proposal == null) {
             EmptyVisualState()
         } else {
+            if (proposal.comparison.approvalRequired) {
+                BehaviorChangesCard(proposal = proposal, onApprove = onApprove)
+            }
             LaneCard(
                 title = "Triggers",
                 subtitle = "Any trigger can start this macro",
@@ -392,6 +399,7 @@ private fun MacroEditorScreenPreview() {
             state = editor.second,
             onModeSelected = {},
             onSourceChanged = {},
+            onApprove = {},
         )
     }
 }
@@ -404,3 +412,119 @@ private fun rememberPreviewEditor(): Pair<MacroEditorSession, MacroEditorState> 
         )
         MacroEditorSession.withInitialSourceApproved(pipeline, SampleMacro.source)
     }
+
+@Composable
+private fun BehaviorChangesCard(
+    proposal: OpenMacroProposal,
+    onApprove: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val comparison = proposal.comparison
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ),
+        shape = RoundedCornerShape(24.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Text(
+                text = "Behavioral Changes",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+
+            comparison.changes.forEach { change ->
+                val changeText = when (change.kind) {
+                    com.vibhor1102.zerobit.openmacro.proposal.BehaviorChangeKind.NEW_MACRO ->
+                        "New Macro: ${change.after}"
+                    com.vibhor1102.zerobit.openmacro.proposal.BehaviorChangeKind.MACRO_ID_CHANGED ->
+                        "Macro ID changed: ${change.before} -> ${change.after}"
+                    com.vibhor1102.zerobit.openmacro.proposal.BehaviorChangeKind.BLOCK_ADDED ->
+                        "Added block in ${change.lane.toString().lowercase()}: ${change.after}"
+                    com.vibhor1102.zerobit.openmacro.proposal.BehaviorChangeKind.BLOCK_REMOVED ->
+                        "Removed block from ${change.lane.toString().lowercase()}: ${change.before}"
+                    com.vibhor1102.zerobit.openmacro.proposal.BehaviorChangeKind.BLOCK_CHANGED ->
+                        "Modified block config: ${change.before} -> ${change.after}"
+                    com.vibhor1102.zerobit.openmacro.proposal.BehaviorChangeKind.BLOCK_REORDERED ->
+                        "Reordered block: ${change.before} -> ${change.after}"
+                }
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = changeText,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            if (comparison.permissionsAdded.isNotEmpty()) {
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = "Required permissions added:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        comparison.permissionsAdded.forEach { permission ->
+                            Text(
+                                text = "• ${permission.manifestName}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (comparison.permissionsRemoved.isNotEmpty()) {
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = "Permissions removed:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        comparison.permissionsRemoved.forEach { permission ->
+                            Text(
+                                text = "• ${permission.manifestName}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            Button(
+                onClick = onApprove,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Text(
+                    text = "Approve behavior",
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+    }
+}

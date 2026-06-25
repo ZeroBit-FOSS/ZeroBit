@@ -7,6 +7,8 @@ package com.vibhor1102.zerobit.openmacro.source
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
 import com.vibhor1102.zerobit.openmacro.model.MacroMetadata
 import com.vibhor1102.zerobit.openmacro.model.MacroValue
+import com.vibhor1102.zerobit.openmacro.model.MacroVariable
+import com.vibhor1102.zerobit.openmacro.model.MacroVariableType
 import com.vibhor1102.zerobit.openmacro.model.OpenMacroDocument
 import java.math.BigDecimal
 import java.security.MessageDigest
@@ -181,13 +183,16 @@ object OpenMacroYamlReader {
     private fun decodeDocument(root: Node): OpenMacroDocument {
         val map = root.mapping("$")
         map.requireOnlyKeys(
-            allowed = setOf("format", "metadata", "triggers", "conditions", "actions"),
+            allowed = setOf("format", "metadata", "variables", "triggers", "conditions", "actions"),
             path = "$",
         )
 
         return OpenMacroDocument(
             format = map.required("format", "$").text("$.format"),
             metadata = decodeMetadata(map.required("metadata", "$")),
+            variables = map.optional("variables")?.let {
+                decodeVariables(it, "$.variables")
+            }.orEmpty(),
             triggers = decodeBlocks(map.required("triggers", "$"), "$.triggers"),
             conditions = map.optional("conditions")?.let {
                 decodeBlocks(it, "$.conditions")
@@ -195,6 +200,74 @@ object OpenMacroYamlReader {
             actions = decodeBlocks(map.required("actions", "$"), "$.actions"),
         )
     }
+
+    private fun decodeVariables(node: Node, path: String): List<MacroVariable> =
+        node.sequence(path).mapIndexed { index, varNode ->
+            val varPath = "$path[$index]"
+            val map = varNode.mapping(varPath)
+            map.requireOnlyKeys(setOf("name", "type", "initial", "secret_key"), varPath)
+            val name = map.required("name", varPath).text("$varPath.name")
+            val typeStr = map.required("type", varPath).text("$varPath.type").uppercase()
+            val type = try {
+                MacroVariableType.valueOf(typeStr)
+            } catch (e: IllegalArgumentException) {
+                map.required("type", varPath).problem(
+                    "$varPath.type",
+                    "invalid_variable_type",
+                    "Unsupported variable type '$typeStr'. Allowed: text, number, boolean, secret."
+                )
+            }
+            val initialNode = map.optional("initial")
+            val initial = initialNode?.let { decodeMacroValue(it, "$varPath.initial") }
+            val secretKey = map.optional("secret_key")?.text("$varPath.secret_key")
+
+            if (type == MacroVariableType.SECRET) {
+                if (secretKey == null) {
+                    map.node.problem(
+                        varPath,
+                        "missing_secret_key",
+                        "Secret variables must declare 'secret_key'."
+                    )
+                }
+                if (initial != null) {
+                    map.node.problem(
+                        varPath,
+                        "invalid_secret_initial",
+                        "Secret variables cannot have an 'initial' value."
+                    )
+                }
+            } else {
+                if (secretKey != null) {
+                    map.node.problem(
+                        varPath,
+                        "invalid_variable_secret_key",
+                        "Only secret variables can declare 'secret_key'."
+                    )
+                }
+                if (initial != null) {
+                    when (type) {
+                        MacroVariableType.TEXT -> if (initial !is MacroValue.Text) {
+                            initialNode.problem("$varPath.initial", "type_mismatch", "Expected a text value for type text.")
+                        }
+                        MacroVariableType.NUMBER -> if (initial !is MacroValue.Number) {
+                            initialNode.problem("$varPath.initial", "type_mismatch", "Expected a number value for type number.")
+                        }
+                        MacroVariableType.BOOLEAN -> if (initial !is MacroValue.Boolean) {
+                            initialNode.problem("$varPath.initial", "type_mismatch", "Expected a boolean value for type boolean.")
+                        }
+                        else -> {}
+                    }
+                }
+            }
+
+            MacroVariable(
+                name = name,
+                type = type,
+                initialValue = initial,
+                secretKey = secretKey,
+            )
+        }
+
 
     private fun decodeMetadata(node: Node): MacroMetadata {
         val path = "$.metadata"

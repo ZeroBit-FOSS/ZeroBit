@@ -6,6 +6,8 @@ package com.vibhor1102.zerobit.openmacro.source
 
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
 import com.vibhor1102.zerobit.openmacro.model.MacroValue
+import com.vibhor1102.zerobit.openmacro.model.MacroVariable
+import com.vibhor1102.zerobit.openmacro.model.MacroVariableType
 import com.vibhor1102.zerobit.openmacro.model.OpenMacroDocument
 
 /**
@@ -25,6 +27,29 @@ object OpenMacroYamlWriter {
             appendQuoted(it)
         }
         append("\n\n")
+        if (document.variables.isNotEmpty()) {
+            append("variables:\n")
+            document.variables.forEach { variable ->
+                append("  - name: ")
+                appendQuoted(variable.name)
+                append("\n    type: ")
+                appendQuoted(variable.type.name.lowercase())
+                variable.initialValue?.let {
+                    append("\n    initial:")
+                    appendValue(it, indent = 6)
+                }
+                variable.secretKey?.let {
+                    append("\n    secret_key: ")
+                    appendQuoted(it)
+                    append("\n")
+                }
+                if (variable.initialValue == null && variable.secretKey == null) {
+                    append("\n")
+                }
+            }
+            append("\n")
+        }
+
         appendBlocks("triggers", document.triggers)
         append("\n")
         appendBlocks("conditions", document.conditions)

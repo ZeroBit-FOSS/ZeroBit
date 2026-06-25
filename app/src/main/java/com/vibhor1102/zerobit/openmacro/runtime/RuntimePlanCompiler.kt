@@ -33,6 +33,7 @@ class RuntimePlanCompiler(
             RuntimePlan(
                 macroId = document.metadata.id,
                 sourceFingerprint = sourceFingerprint,
+                variables = document.variables,
                 triggers = triggers,
                 conditions = conditions,
                 actions = actions,

@@ -5,6 +5,8 @@
 package com.vibhor1102.zerobit.openmacro.runtime
 
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
+import com.vibhor1102.zerobit.openmacro.storage.SecretStore
+import com.vibhor1102.zerobit.openmacro.storage.VariableStore
 
 /**
  * Owns enabled macro subscriptions and deterministic executions.
@@ -19,6 +21,8 @@ class RuntimeCoordinator(
     private val actionExecutor: RuntimeActionExecutor,
     private val permissionChecker: RuntimePermissionChecker,
     private val dispatcher: RuntimeTaskDispatcher,
+    private val variables: VariableStore,
+    private val secrets: SecretStore,
     private val diagnostics: BoundedRuntimeDiagnostics,
 ) {
     private val lock = Any()
@@ -48,6 +52,14 @@ class RuntimeCoordinator(
                 "Missing permissions: ${missingPermissions.sortedBy { it.name }.joinToString { it.manifestName }}",
                 missingPermissions,
             )
+        }
+
+        // Initialize variables with their initial values
+        variables.clear(macroId)
+        approved.plan.variables.forEach { variable ->
+            variable.initialValue?.let { initial ->
+                variables.setValue(macroId, variable.name, initial)
+            }
         }
 
         val generation = synchronized(lock) { nextGeneration++ }
@@ -188,10 +200,18 @@ class RuntimeCoordinator(
             return
         }
 
+        val runId = start.runId
+        val context = RuntimeContext(
+            macroId = macroId,
+            runId = runId,
+            variables = variables,
+            secrets = secrets,
+        )
+
         diagnostics.record(
             macroId = macroId,
             kind = RuntimeDiagnosticKind.TRIGGER_RECEIVED,
-            runId = start.runId,
+            runId = runId,
             blockId = triggerBlockId,
             message = "Trigger started evaluation.",
         )
@@ -200,8 +220,9 @@ class RuntimeCoordinator(
                 !conditionsPass(
                     macroId,
                     generation,
-                    start.runId,
+                    runId,
                     start.plan.conditions,
+                    context,
                 )
             ) {
                 return
@@ -210,20 +231,21 @@ class RuntimeCoordinator(
                 !actionsSucceed(
                     macroId,
                     generation,
-                    start.runId,
+                    runId,
                     start.plan.actions,
+                    context,
                 )
             ) {
                 return
             }
             if (!isSessionActive(macroId, generation)) {
-                recordCancellation(macroId, start.runId)
+                recordCancellation(macroId, runId)
                 return
             }
             diagnostics.record(
                 macroId = macroId,
                 kind = RuntimeDiagnosticKind.RUN_SUCCEEDED,
-                runId = start.runId,
+                runId = runId,
                 message = "All actions completed.",
             )
         } finally {
@@ -240,6 +262,7 @@ class RuntimeCoordinator(
         generation: Long,
         runId: Long,
         conditions: List<RuntimeStep>,
+        context: RuntimeContext,
     ): Boolean {
         conditions.forEach { condition ->
             if (!isSessionActive(macroId, generation)) {
@@ -247,7 +270,7 @@ class RuntimeCoordinator(
                 return false
             }
             val result = try {
-                conditionEvaluator.evaluate(condition)
+                conditionEvaluator.evaluate(condition, context)
             } catch (problem: RuntimeException) {
                 ConditionResult.Failed(problem.message ?: "Condition evaluation failed.")
             }
@@ -289,6 +312,7 @@ class RuntimeCoordinator(
         generation: Long,
         runId: Long,
         actions: List<RuntimeStep>,
+        context: RuntimeContext,
     ): Boolean {
         actions.forEach { action ->
             if (!isSessionActive(macroId, generation)) {
@@ -296,7 +320,7 @@ class RuntimeCoordinator(
                 return false
             }
             val result = try {
-                actionExecutor.execute(action)
+                actionExecutor.execute(action, context)
             } catch (problem: RuntimeException) {
                 ActionResult.Failed(problem.message ?: "Action execution failed.")
             }

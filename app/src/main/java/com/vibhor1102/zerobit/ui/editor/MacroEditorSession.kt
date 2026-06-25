@@ -11,8 +11,10 @@ import com.vibhor1102.zerobit.openmacro.proposal.ProposalResult
 
 class MacroEditorSession(
     private val pipeline: OpenMacroProposalPipeline,
-    private val approved: ApprovedMacroSnapshot?,
+    initialApproved: ApprovedMacroSnapshot?,
 ) {
+    private var approved: ApprovedMacroSnapshot? = initialApproved
+
     fun create(initialSource: String): MacroEditorState {
         val result = pipeline.propose(initialSource, approved)
         return MacroEditorState(
@@ -37,6 +39,19 @@ class MacroEditorSession(
         )
     }
 
+    fun approveCurrent(current: MacroEditorState): MacroEditorState {
+        val ready = current.result as? ProposalResult.Ready ?: return current
+        val snap = ApprovedMacroSnapshot.from(ready.proposal)
+        this.approved = snap
+        val result = pipeline.propose(current.sourceText, snap)
+        val readyProposal = (result as? ProposalResult.Ready)?.proposal
+        return current.copy(
+            result = result,
+            visibleProposal = readyProposal ?: current.visibleProposal,
+            visualIsStale = readyProposal == null && current.visibleProposal != null,
+        )
+    }
+
     fun selectMode(
         current: MacroEditorState,
         mode: EditorMode,
@@ -53,7 +68,7 @@ class MacroEditorSession(
             }
             val session = MacroEditorSession(
                 pipeline = pipeline,
-                approved = ApprovedMacroSnapshot.from(initial.proposal),
+                initialApproved = ApprovedMacroSnapshot.from(initial.proposal),
             )
             return session to session.create(initialSource)
         }

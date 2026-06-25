@@ -51,6 +51,7 @@ class MainActivity : ComponentActivity() {
                     state = state,
                     onModeSelected = { state = session.selectMode(state, it) },
                     onSourceChanged = { state = state.copy(sourceText = it) },
+                    onApprove = { state = session.approveCurrent(state) },
                 )
             }
         }

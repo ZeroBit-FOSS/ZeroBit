@@ -5,6 +5,7 @@
 package com.vibhor1102.zerobit.openmacro.runtime
 
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
+import com.vibhor1102.zerobit.openmacro.model.MacroVariable
 
 /**
  * Immutable, already-approved instructions consumed by the future runtime.
@@ -13,6 +14,7 @@ import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 data class RuntimePlan(
     val macroId: String,
     val sourceFingerprint: String,
+    val variables: List<MacroVariable> = emptyList(),
     val triggers: List<RuntimeStep>,
     val conditions: List<RuntimeStep>,
     val actions: List<RuntimeStep>,
