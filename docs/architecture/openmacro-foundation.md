@@ -74,10 +74,12 @@ cannot visually edit. The app must preserve their source, label them as
 unsupported, and refuse to enable the macro. It must never silently delete,
 approximate, or execute an unknown block.
 
-To preserve user-owned comments and formatting, the future YAML adapter should
-retain a syntax tree and source ranges. Visual changes should patch the
-affected field where possible. A canonical formatter is the explicit fallback,
-not an automatic side effect of merely opening a file.
+The YAML adapter retains the exact original source alongside the decoded model,
+so merely reading a file never changes user-owned comments or formatting.
+Visual changes should eventually patch the affected source range where
+possible. The canonical writer is the explicit fallback for new files or a
+user-requested format operation, not an automatic side effect of opening a
+file.
 
 ## Safe edit flow
 
@@ -100,10 +102,17 @@ The initial implementation contains:
 - three small built-in capabilities covering a trigger, condition, and action;
 - field descriptions that a visual form can render;
 - capability validation, explanations, and permission discovery; and
-- compilation into immutable runtime instructions.
+- compilation into immutable runtime instructions;
+- strict YAML 1.2 reading with source locations and bounded input; and
+- stable canonical writing without silently reformatting source on read.
 
 This proves that one capability definition can drive the code shape, future
 form, validation, explanation, permissions, and runtime plan without premature
-plugin machinery. The next slice should add YAML parsing and canonical writing,
-including duplicate-key rejection and source-preservation tests, before either
-editor becomes responsible for real user files.
+plugin machinery. The source adapter rejects aliases, anchors, merge keys,
+custom tags, directives, duplicate keys, multiple documents, ambiguous YAML
+1.1 booleans, excessive nesting, and oversized files.
+
+The next slice should connect source parsing, capability validation,
+explanation, and runtime compilation into one proposal pipeline. That pipeline
+will become the shared boundary used by both editors before approval storage or
+runtime services are introduced.
