@@ -156,3 +156,30 @@ The next slice should define runtime ownership and lifecycle around approved
 plans: enabling, disabling, event subscription, cancellation, and bounded
 diagnostics. It should use event-driven Android signals and begin with the power
 trigger proof capability.
+
+## Runtime lifecycle
+
+The first runtime coordinator accepts plans only through the approved-plan
+provider. Enabling checks permissions before subscribing. Each enabled macro
+owns its trigger subscriptions, and disabling or closing the runtime owner
+cancels them.
+
+Trigger callbacks enqueue work with a generation token. Work queued by an older
+enable session becomes harmless after disable or re-enable. One macro executes
+at most one run at a time: overlapping trigger events are recorded and ignored.
+Conditions run in order and fail closed; actions run in order and stop on the
+first failure.
+
+Runtime diagnostics use a bounded in-memory ring. Events carry a macro id,
+optional run id and block id, timestamp, outcome, and a capped message. This
+answers why a macro ran or did not run without creating an unbounded history.
+
+The Android proof adapters use the `ACTION_POWER_CONNECTED` broadcast,
+`KeyguardManager` lock state, and local `NotificationManager`. The power
+trigger is callback-driven and exists only while a macro owns the subscription;
+there is no polling loop or permanent background service.
+
+The next slice should provide the first app UI around these foundations:
+the three-lane macro overview, source view, proposal review, and permission
+discovery. Runtime enable state should then gain a separate durable store and
+Android process-restoration owner.
