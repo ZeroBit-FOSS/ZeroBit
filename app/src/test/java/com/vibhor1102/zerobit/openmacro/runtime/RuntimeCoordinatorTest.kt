@@ -267,6 +267,37 @@ class RuntimeCoordinatorTest {
         )
     }
 
+    @Test
+    fun executesTarget4CapabilitiesInPlan() {
+        val plan = RuntimePlan(
+            macroId = "charger-greeting",
+            sourceFingerprint = "sha256:test",
+            triggers = listOf(
+                RuntimeStep.ObserveScreenOn("screen-on-trigger"),
+                RuntimeStep.ObserveScreenOff("screen-off-trigger"),
+                RuntimeStep.ObserveBatteryLevel("battery-level-trigger", 15, BatteryDirection.GOES_BELOW),
+            ),
+            conditions = listOf(
+                RuntimeStep.CheckWifiConnected("wifi-condition", "MyWifi"),
+            ),
+            actions = listOf(
+                RuntimeStep.WriteLog("write-log-action", "Log message"),
+                RuntimeStep.SendSms("send-sms-action", "+12345", "Sms body"),
+            ),
+            requiredPermissions = setOf(AndroidPermission.SEND_SMS, AndroidPermission.ACCESS_NETWORK_STATE),
+        )
+
+        val fixture = Fixture(plan = plan, missingPermissions = emptySet())
+        fixture.coordinator.enable("charger-greeting")
+
+        // Fire screen on
+        fixture.registrar.fire("screen-on-trigger")
+
+        // Assert condition and actions were run
+        assertEquals(listOf("wifi-condition"), fixture.conditions.evaluatedBlockIds)
+        assertEquals(listOf("write-log-action", "send-sms-action"), fixture.actions.executedBlockIds)
+    }
+
     private class Fixture(
         plan: RuntimePlan = validPlan(),
         planResult: ApprovedPlanResult = ApprovedPlanResult.Success("revision-1", plan),

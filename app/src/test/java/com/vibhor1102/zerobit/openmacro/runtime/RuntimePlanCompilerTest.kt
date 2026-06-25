@@ -82,6 +82,144 @@ class RuntimePlanCompilerTest {
         )
     }
 
+    @Test
+    fun compilesTarget4CapabilitiesAndDiscoversPermissions() {
+        val document = OpenMacroDocument(
+            format = OpenMacroValidator.SUPPORTED_FORMAT,
+            metadata = MacroMetadata(
+                id = "macro-target-4",
+                name = "Test Target 4 Capabilities",
+            ),
+            triggers = listOf(
+                MacroBlock(
+                    id = "screen-on",
+                    type = "android.screen.on",
+                ),
+                MacroBlock(
+                    id = "screen-off",
+                    type = "android.screen.off",
+                ),
+                MacroBlock(
+                    id = "battery-level",
+                    type = "android.battery.level",
+                    config = mapOf(
+                        "level" to MacroValue.Number(java.math.BigDecimal(20)),
+                        "direction" to MacroValue.Text("goes_below"),
+                    ),
+                ),
+            ),
+            conditions = listOf(
+                MacroBlock(
+                    id = "wifi-connected",
+                    type = "android.wifi.connected",
+                    config = mapOf(
+                        "ssid" to MacroValue.Text("MyHomeWifi"),
+                    ),
+                ),
+            ),
+            actions = listOf(
+                MacroBlock(
+                    id = "write-log",
+                    type = "android.log.write",
+                    config = mapOf(
+                        "message" to MacroValue.Text("Running target 4 macro"),
+                    ),
+                ),
+                MacroBlock(
+                    id = "send-sms",
+                    type = "android.sms.send",
+                    config = mapOf(
+                        "phoneNumber" to MacroValue.Text("+1234567890"),
+                        "message" to MacroValue.Text("Hello from ZeroBit!"),
+                    ),
+                ),
+            ),
+        )
+
+        val result = compiler.compile(document, sourceFingerprint = "sha256:target4")
+
+        require(result is PlanCompilationResult.Success)
+        assertEquals("macro-target-4", result.plan.macroId)
+        assertEquals("sha256:target4", result.plan.sourceFingerprint)
+        assertEquals(
+            setOf(
+                AndroidPermission.SEND_SMS,
+                AndroidPermission.ACCESS_NETWORK_STATE
+            ),
+            result.plan.requiredPermissions,
+        )
+
+        // Triggers
+        assertEquals(3, result.plan.triggers.size)
+        assertTrue(result.plan.triggers[0] is RuntimeStep.ObserveScreenOn)
+        assertTrue(result.plan.triggers[1] is RuntimeStep.ObserveScreenOff)
+        val batteryTrigger = result.plan.triggers[2] as RuntimeStep.ObserveBatteryLevel
+        assertEquals(20, batteryTrigger.level)
+        assertEquals(BatteryDirection.GOES_BELOW, batteryTrigger.direction)
+
+        // Conditions
+        val wifiCondition = result.plan.conditions.single() as RuntimeStep.CheckWifiConnected
+        assertEquals("MyHomeWifi", wifiCondition.ssid)
+
+        // Actions
+        assertEquals(2, result.plan.actions.size)
+        val logAction = result.plan.actions[0] as RuntimeStep.WriteLog
+        assertEquals("Running target 4 macro", logAction.message)
+        val smsAction = result.plan.actions[1] as RuntimeStep.SendSms
+        assertEquals("+1234567890", smsAction.phoneNumber)
+        assertEquals("Hello from ZeroBit!", smsAction.message)
+    }
+
+    @Test
+    fun validatesTarget4ConfigurationErrors() {
+        val document = OpenMacroDocument(
+            format = OpenMacroValidator.SUPPORTED_FORMAT,
+            metadata = MacroMetadata(
+                id = "macro-target-4-invalid",
+                name = "Invalid Target 4 Capabilities",
+            ),
+            triggers = listOf(
+                MacroBlock(
+                    id = "battery-level",
+                    type = "android.battery.level",
+                    config = mapOf(
+                        "level" to MacroValue.Text("twenty"), // wrong type
+                        "direction" to MacroValue.Text("somewhere"), // invalid value
+                    ),
+                ),
+            ),
+            conditions = listOf(
+                MacroBlock(
+                    id = "wifi-connected",
+                    type = "android.wifi.connected",
+                    config = mapOf(
+                        "ssid" to MacroValue.Boolean(true), // wrong type
+                    ),
+                ),
+            ),
+            actions = listOf(
+                MacroBlock(
+                    id = "send-sms",
+                    type = "android.sms.send",
+                    config = mapOf(
+                        "phoneNumber" to MacroValue.Number(java.math.BigDecimal(12345)), // wrong type
+                        // missing message
+                    ),
+                ),
+            ),
+        )
+
+        val result = compiler.compile(document, sourceFingerprint = "sha256:target4-invalid")
+
+        require(result is PlanCompilationResult.Invalid)
+        val codes = result.issues.map { it.code }
+        
+        // Assert that the compiler caught the validation errors
+        assertTrue(codes.contains("wrong_config_type"))
+        assertTrue(codes.contains("invalid_battery_direction"))
+        assertTrue(codes.contains("missing_config"))
+    }
+
     private fun validDocument() = OpenMacroDocument(
         format = OpenMacroValidator.SUPPORTED_FORMAT,
         metadata = MacroMetadata(
@@ -112,3 +250,4 @@ class RuntimePlanCompilerTest {
         ),
     )
 }
+

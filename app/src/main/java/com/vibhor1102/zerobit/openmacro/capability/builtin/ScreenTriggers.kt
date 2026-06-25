@@ -1,0 +1,52 @@
+/*
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+package com.vibhor1102.zerobit.openmacro.capability.builtin
+
+import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
+import com.vibhor1102.zerobit.openmacro.capability.rejectUnknownConfig
+import com.vibhor1102.zerobit.openmacro.model.MacroBlock
+import com.vibhor1102.zerobit.openmacro.runtime.RuntimeStep
+import com.vibhor1102.zerobit.openmacro.validation.ValidationIssue
+
+object ScreenOnTrigger : CapabilityDefinition {
+    override val type = "android.screen.on"
+    override val lane = CapabilityLane.TRIGGER
+    override val displayName = "Screen turned on"
+    override val description = "Starts when Android reports that the screen was turned on."
+    override val fields: List<CapabilityField> = emptyList()
+
+    override fun validate(block: MacroBlock, path: String): List<ValidationIssue> =
+        block.rejectUnknownConfig(emptySet(), path)
+
+    override fun explain(block: MacroBlock): String =
+        "Start when the screen is turned on."
+
+    override fun requiredPermissions(block: MacroBlock): Set<AndroidPermission> = emptySet()
+
+    override fun compile(block: MacroBlock): RuntimeStep =
+        RuntimeStep.ObserveScreenOn(blockId = block.id)
+}
+
+object ScreenOffTrigger : CapabilityDefinition {
+    override val type = "android.screen.off"
+    override val lane = CapabilityLane.TRIGGER
+    override val displayName = "Screen turned off"
+    override val description = "Starts when Android reports that the screen was turned off."
+    override val fields: List<CapabilityField> = emptyList()
+
+    override fun validate(block: MacroBlock, path: String): List<ValidationIssue> =
+        block.rejectUnknownConfig(emptySet(), path)
+
+    override fun explain(block: MacroBlock): String =
+        "Start when the screen is turned off."
+
+    override fun requiredPermissions(block: MacroBlock): Set<AndroidPermission> = emptySet()
+
+    override fun compile(block: MacroBlock): RuntimeStep =
+        RuntimeStep.ObserveScreenOff(blockId = block.id)
+}

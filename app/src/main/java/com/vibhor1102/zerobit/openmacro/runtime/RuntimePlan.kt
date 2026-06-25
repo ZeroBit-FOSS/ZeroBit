@@ -28,8 +28,27 @@ sealed interface RuntimeStep {
         override val blockId: String,
     ) : RuntimeStep
 
+    data class ObserveScreenOn(
+        override val blockId: String,
+    ) : RuntimeStep
+
+    data class ObserveScreenOff(
+        override val blockId: String,
+    ) : RuntimeStep
+
+    data class ObserveBatteryLevel(
+        override val blockId: String,
+        val level: Int,
+        val direction: BatteryDirection,
+    ) : RuntimeStep
+
     data class CheckDeviceUnlocked(
         override val blockId: String,
+    ) : RuntimeStep
+
+    data class CheckWifiConnected(
+        override val blockId: String,
+        val ssid: String?,
     ) : RuntimeStep
 
     data class ShowNotification(
@@ -37,4 +56,22 @@ sealed interface RuntimeStep {
         val title: String,
         val message: String,
     ) : RuntimeStep
+
+    data class WriteLog(
+        override val blockId: String,
+        val message: String,
+    ) : RuntimeStep
+
+    data class SendSms(
+        override val blockId: String,
+        val phoneNumber: String,
+        val message: String,
+    ) : RuntimeStep
 }
+
+enum class BatteryDirection {
+    GOES_BELOW,
+    GOES_ABOVE,
+    EQUALS
+}
+

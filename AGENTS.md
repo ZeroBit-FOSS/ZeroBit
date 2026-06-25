@@ -139,3 +139,8 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Target 3: Advanced Condition Trees**: Implement boolean logical groups (AND/OR/NOT blocks) within macro conditions instead of simple list conjunctions.
 - **Target 4: Standard Capability Expansion**: Add capabilities (Triggers: Screen On/Off, Battery Level; Conditions: Wi-Fi Connected; Actions: Write Log, Send SMS).
 
+## Agent Handover & Long-Term Vision
+
+- Future agents must continue working on the active targets without pausing unless encountering a critical blockage.
+- Treat this backlog as a running communication channel with future self. Update targets as they are achieved or refined.
+- Iterate steadily towards MacroDroid-level power, while strictly preserving the offline, local-first, schema-validated, and user-transparent design.

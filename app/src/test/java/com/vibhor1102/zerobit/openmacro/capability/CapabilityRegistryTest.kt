@@ -15,7 +15,7 @@ class CapabilityRegistryTest {
         val registry = CapabilityRegistry.builtIn()
 
         assertEquals(
-            listOf("Power connected"),
+            listOf("Battery level", "Power connected", "Screen turned off", "Screen turned on"),
             registry.list(CapabilityLane.TRIGGER).map { it.displayName },
         )
         assertSame(

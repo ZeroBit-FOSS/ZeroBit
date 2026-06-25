@@ -7,6 +7,12 @@ package com.vibhor1102.zerobit.openmacro.capability
 import com.vibhor1102.zerobit.openmacro.capability.builtin.DeviceUnlockedCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.NotificationShowAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.PowerConnectedTrigger
+import com.vibhor1102.zerobit.openmacro.capability.builtin.ScreenOnTrigger
+import com.vibhor1102.zerobit.openmacro.capability.builtin.ScreenOffTrigger
+import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryLevelTrigger
+import com.vibhor1102.zerobit.openmacro.capability.builtin.WifiConnectedCondition
+import com.vibhor1102.zerobit.openmacro.capability.builtin.WriteLogAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.SendSmsAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -30,8 +36,14 @@ class CapabilityRegistry private constructor(
         fun builtIn(): CapabilityRegistry = CapabilityRegistry(
             definitions = listOf(
                 PowerConnectedTrigger,
+                ScreenOnTrigger,
+                ScreenOffTrigger,
+                BatteryLevelTrigger,
                 DeviceUnlockedCondition,
+                WifiConnectedCondition,
                 NotificationShowAction,
+                WriteLogAction,
+                SendSmsAction,
             ),
         )
 
