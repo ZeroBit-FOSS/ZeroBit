@@ -183,3 +183,23 @@ The next slice should provide the first app UI around these foundations:
 the three-lane macro overview, source view, proposal review, and permission
 discovery. Runtime enable state should then gain a separate durable store and
 Android process-restoration owner.
+
+## First editor surface
+
+The app now opens into one editor session with two always-available views:
+
+- Visual keeps the macro overview limited to Triggers, Conditions, and Actions,
+  showing each block's plain-English explanation and permission needs.
+- Code edits the exact OpenMacro YAML source. Parsing and validation run locally
+  after a short cancellable background debounce, rather than blocking typing.
+
+Both views share the proposal pipeline and one source string. Invalid source
+does not erase the last valid visual explanation; the visual view is marked
+stale until code becomes valid again. Behavior-changing edits show that review
+is required, while comments, formatting, names, and descriptions remain
+non-behavioral.
+
+This is the editor architecture proof, not yet the complete MacroDroid-level
+form builder. The next UI slices should generate focused block configuration
+forms from capability fields, patch source without discarding comments, and
+connect approval and enable actions to the app-private stores and runtime.

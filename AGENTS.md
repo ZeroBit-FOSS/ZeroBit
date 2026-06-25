@@ -12,6 +12,8 @@ files should use the SPDX identifier `GPL-3.0-or-later` where practical.
   file format and OpenMacro Workspace is the user's versioned workspace.
 - Macros must be human-readable, AI-editable, versionable, portable,
   explainable, and locally executable.
+- Keep the primary editor MacroDroid-simple: Triggers, Conditions, and Actions,
+  with an always-available code view backed by the same validated model.
 - The trust model is: **AI proposes. Schema validates. App explains. User
   approves. Engine runs. Logs prove.**
 - Runtime behavior must remain deterministic. Do not place an AI black box in
