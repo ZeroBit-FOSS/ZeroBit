@@ -16,6 +16,46 @@ class RuntimeOwner(
     private var closed = false
 
     @Synchronized
+    fun restoreEnabledMacros(): RuntimeRestoreSummary {
+        check(!closed) { "Runtime owner is closed." }
+        return coordinator.restoreEnabledMacros()
+    }
+
+    @Synchronized
+    fun deliverScheduleAlarm(
+        macroId: String,
+        blockId: String,
+        occurrence: java.time.Instant,
+    ): Boolean {
+        check(!closed) { "Runtime owner is closed." }
+        return coordinator.deliverScheduleAlarm(macroId, blockId, occurrence)
+    }
+
+    @Synchronized
+    fun enable(macroId: String): RuntimeLifecycleResult {
+        check(!closed) { "Runtime owner is closed." }
+        return coordinator.enable(macroId)
+    }
+
+    @Synchronized
+    fun disable(macroId: String): RuntimeLifecycleResult {
+        check(!closed) { "Runtime owner is closed." }
+        return coordinator.disable(macroId)
+    }
+
+    @Synchronized
+    fun isEnabled(macroId: String): Boolean {
+        check(!closed) { "Runtime owner is closed." }
+        return coordinator.isEnabled(macroId)
+    }
+
+    @Synchronized
+    fun status(macroId: String): RuntimeMacroStatus? {
+        check(!closed) { "Runtime owner is closed." }
+        return coordinator.status(macroId)
+    }
+
+    @Synchronized
     override fun close() {
         if (closed) return
         closed = true

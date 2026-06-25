@@ -17,12 +17,19 @@ import java.nio.file.Path
  * User-owned, versionable source files. This store contains no approval state,
  * secrets, runtime state, or logs.
  */
+interface MacroWorkspaceStore {
+    fun write(source: OpenMacroSource): WorkspaceWriteResult
+    fun read(macroId: String): WorkspaceMacroResult
+    fun listMacroIds(): WorkspaceMacroListResult
+    fun delete(macroId: String): WorkspaceDeleteResult
+}
+
 class WorkspaceMacroStore(
     workspaceRoot: Path,
-) {
+) : MacroWorkspaceStore {
     private val macrosDirectory = workspaceRoot.toAbsolutePath().normalize().resolve("macros")
 
-    fun write(source: OpenMacroSource): WorkspaceWriteResult {
+    override fun write(source: OpenMacroSource): WorkspaceWriteResult {
         val macroId = try {
             MacroStorageNames.requireMacroId(source.document.metadata.id)
         } catch (problem: IllegalArgumentException) {
@@ -49,7 +56,7 @@ class WorkspaceMacroStore(
         }
     }
 
-    fun read(macroId: String): WorkspaceMacroResult {
+    override fun read(macroId: String): WorkspaceMacroResult {
         val safeId = try {
             MacroStorageNames.requireMacroId(macroId)
         } catch (problem: IllegalArgumentException) {
@@ -96,7 +103,7 @@ class WorkspaceMacroStore(
         }
     }
 
-    fun listMacroIds(): WorkspaceMacroListResult {
+    override fun listMacroIds(): WorkspaceMacroListResult {
         if (!Files.isDirectory(macrosDirectory)) {
             return WorkspaceMacroListResult.Success(emptyList())
         }
@@ -111,6 +118,36 @@ class WorkspaceMacroStore(
         } catch (problem: IOException) {
             WorkspaceMacroListResult.Failure(
                 problem.message ?: "Could not list workspace macros.",
+            )
+        }
+    }
+
+    override fun delete(macroId: String): WorkspaceDeleteResult {
+        val safeId = try {
+            MacroStorageNames.requireMacroId(macroId)
+        } catch (problem: IllegalArgumentException) {
+            return WorkspaceDeleteResult.Failure(
+                "invalid_macro_id",
+                problem.message.orEmpty(),
+            )
+        }
+        val path = pathFor(safeId)
+        if (Files.isSymbolicLink(macrosDirectory) || Files.isSymbolicLink(path)) {
+            return WorkspaceDeleteResult.Failure(
+                "workspace_symlink_not_allowed",
+                "OpenMacro workspace paths may not be symbolic links.",
+            )
+        }
+        return try {
+            if (Files.deleteIfExists(path)) {
+                WorkspaceDeleteResult.Deleted
+            } else {
+                WorkspaceDeleteResult.Missing
+            }
+        } catch (problem: IOException) {
+            WorkspaceDeleteResult.Failure(
+                "workspace_delete_failed",
+                problem.message ?: "Could not delete the macro file.",
             )
         }
     }
@@ -144,6 +181,17 @@ sealed interface WorkspaceMacroListResult {
     data class Success(val macroIds: List<String>) : WorkspaceMacroListResult
 
     data class Failure(val message: String) : WorkspaceMacroListResult
+}
+
+sealed interface WorkspaceDeleteResult {
+    data object Deleted : WorkspaceDeleteResult
+
+    data object Missing : WorkspaceDeleteResult
+
+    data class Failure(
+        val code: String,
+        val message: String,
+    ) : WorkspaceDeleteResult
 }
 
 internal object MacroStorageNames {

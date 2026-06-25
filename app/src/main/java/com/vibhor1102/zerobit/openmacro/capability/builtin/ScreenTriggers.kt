@@ -8,8 +8,10 @@ import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
+import com.vibhor1102.zerobit.openmacro.capability.TriggerOutput
 import com.vibhor1102.zerobit.openmacro.capability.rejectUnknownConfig
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
+import com.vibhor1102.zerobit.openmacro.model.MacroVariableType
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeStep
 import com.vibhor1102.zerobit.openmacro.validation.ValidationIssue
 
@@ -18,6 +20,7 @@ object ScreenOnTrigger : CapabilityDefinition {
     override val lane = CapabilityLane.TRIGGER
     override val displayName = "Screen turned on"
     override val description = "Starts when Android reports that the screen was turned on."
+    override val triggerOutputs = listOf(screenStateOutput())
     override val fields: List<CapabilityField> = emptyList()
 
     override fun validate(block: MacroBlock, path: String): List<ValidationIssue> =
@@ -37,6 +40,7 @@ object ScreenOffTrigger : CapabilityDefinition {
     override val lane = CapabilityLane.TRIGGER
     override val displayName = "Screen turned off"
     override val description = "Starts when Android reports that the screen was turned off."
+    override val triggerOutputs = listOf(screenStateOutput())
     override val fields: List<CapabilityField> = emptyList()
 
     override fun validate(block: MacroBlock, path: String): List<ValidationIssue> =
@@ -50,3 +54,9 @@ object ScreenOffTrigger : CapabilityDefinition {
     override fun compile(block: MacroBlock): RuntimeStep =
         RuntimeStep.ObserveScreenOff(blockId = block.id)
 }
+
+private fun screenStateOutput() = TriggerOutput(
+    key = "screen.state",
+    type = MacroVariableType.TEXT,
+    description = "The screen state that caused this run: on or off.",
+)

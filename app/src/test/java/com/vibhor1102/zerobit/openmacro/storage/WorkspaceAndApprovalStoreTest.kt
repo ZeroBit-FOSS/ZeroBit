@@ -20,6 +20,27 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 class WorkspaceAndApprovalStoreTest {
+    @Test
+    fun workspaceDeleteIsExplicitAndIdempotent() {
+        val root = temporaryFolder.newFolder("workspace-delete").toPath()
+        val workspace = WorkspaceMacroStore(root)
+        val source = parsed(validSource())
+        assertEquals(WorkspaceWriteResult.Success, workspace.write(source))
+
+        assertEquals(
+            WorkspaceDeleteResult.Deleted,
+            workspace.delete("charger-greeting"),
+        )
+        assertEquals(
+            WorkspaceDeleteResult.Missing,
+            workspace.delete("charger-greeting"),
+        )
+        assertEquals(
+            WorkspaceMacroResult.Missing,
+            workspace.read("charger-greeting"),
+        )
+    }
+
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 

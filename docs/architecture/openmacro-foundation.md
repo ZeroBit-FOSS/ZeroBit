@@ -203,3 +203,194 @@ This is the editor architecture proof, not yet the complete MacroDroid-level
 form builder. The next UI slices should generate focused block configuration
 forms from capability fields, patch source without discarding comments, and
 connect approval and enable actions to the app-private stores and runtime.
+
+## Local values and trigger context
+
+OpenMacro variables are declared in source, but their values remain app-private
+runtime state. Text, number, and boolean values use a typed durable store.
+Secret declarations contain only a local key identifier; secret values are
+encrypted with a non-exportable Android Keystore key before ciphertext is
+written to app preferences.
+
+Capabilities receive a macro-scoped value boundary rather than the underlying
+stores. They may resolve only names declared by the approved macro, cannot
+discover secret storage keys, cannot write secret values, and cannot write a
+value with the wrong declared type. Initial values fill missing variables but
+do not overwrite values when a macro is re-enabled or the process restarts.
+
+Trigger callbacks now carry a typed event map into the condition and action
+runtime context. Battery triggers provide `battery.percentage`, while screen
+triggers provide `screen.state`. This creates the deterministic data path needed
+for future notification fields and other trigger-specific context without
+coupling the runtime coordinator to Android payload classes.
+
+The next value-system slice should add explicit, validated references from
+capability configuration to declared variables and trigger fields.
+
+Focused `openmacro.variable.set`, `openmacro.variable.increment`, and
+`openmacro.variable.toggle` actions provide deterministic state changes without
+introducing a general expression language. Their capability definitions
+validate the referenced declaration and type against the whole document before
+the approved plan is compiled. Runtime writes still pass through the same
+macro-scoped type checks so malformed or stale plans fail closed.
+
+Capability values may now be literals or explicit one-key references such as
+`{variable: account_name}` and `{trigger: battery.percentage}`. Capability
+definitions publish their trigger output names and types, so references are
+checked against the macro's actual triggers before approval. Secrets resolve as
+text through their declared variable names; their local storage keys remain
+hidden from capabilities. Missing values or fields fail the action with a clear
+diagnostic rather than silently becoming empty text.
+
+## Advanced condition trees
+
+The original `conditions` list remains a simple implicit AND for compatibility.
+Macros that need richer logic may instead use `condition_tree` with nested
+`all`, `any`, `not`, and `condition` nodes. A file cannot use both forms.
+
+Tree depth, empty groups, nested block IDs, capability lanes, permissions, and
+capability configuration are validated before compilation. The runtime executes
+an immutable condition tree with short-circuit behavior: AND stops on the first
+non-passing child, OR stops on the first passing child, and NOT inverts a
+blocked or passing child while preserving failures. Approval comparison treats
+logical tree changes as behavior changes even when the leaf blocks are the
+same.
+
+## Notification context and runtime restoration
+
+The notification trigger uses Android's event-driven notification-listener
+service. Each macro declares an optional exact package filter and a bounded
+`capture` list containing only `package`, `title`, or `text`. The shared broker
+builds a separate event map for each subscription and includes only those
+requested fields. It does not poll, retain notification history, or write
+payloads to diagnostics.
+
+Desired enabled state is separate from active process subscriptions. A durable
+app-private store records macro IDs after successful enablement. Manual disable
+removes that intent, while runtime-owner shutdown only cancels active resources
+and preserves the desired state. Process restoration retries each stored macro
+through the normal approval and permission checks and reports failures without
+forgetting them, allowing recovery after approval or special access returns.
+
+## Typed value comparisons
+
+`openmacro.value.compare` provides a deliberately small condition vocabulary:
+typed equality, numeric ordering, text contains/starts-with/ends-with, and
+presence or missing checks. Both sides use the same explicit literal, variable,
+secret, or trigger-field sources as actions. Validation proves source
+availability and compatible types before compilation; runtime resolution still
+fails closed if approved assumptions no longer hold.
+
+Explicit condition trees also emit bounded group-level diagnostics. Leaf events
+retain their capability block IDs, while AND/OR/NOT outcomes identify the
+logical tree path that decided the run. This keeps short-circuit behavior
+explainable without logging sensitive compared values.
+
+## Generated capability forms
+
+Capability field metadata now produces editor-facing form models with labels,
+help, required and advanced state, current values, and valid reference choices.
+Text fields receive only text-compatible choices; dynamic notification outputs
+appear only when that macro requested them. Unsupported capability blocks remain
+preserved and return no editable form rather than being approximated.
+
+Model-level block edits can update or remove configuration values across normal
+lanes and nested condition trees. The remaining editor step is a targeted YAML
+source patcher so visual edits preserve comments and surrounding formatting
+instead of invoking the canonical formatter.
+
+The targeted patcher replaces existing values by their parsed source offsets,
+writes collection and reference values in compact flow-style YAML, inserts
+missing config objects or keys, and removes individual entries. It preserves
+file headers, unrelated comments, key order, and surrounding formatting, then
+routes the patched source through the normal proposal pipeline. Focused visual
+controls use this path so visual and code edits remain one source.
+
+Capabilities may also publish a bounded set of allowed values. The generated
+forms use these as direct single- or multi-choice controls while the validator
+remains authoritative. This avoids asking users to memorize tokens such as
+schedule weekdays, notification capture fields, or battery directions.
+
+## Flow control and schedules
+
+Action flow now includes bounded delay, stop, and conditional stop steps.
+Delays belong to the runtime coordinator, wait without polling, and wake
+immediately when a macro is disabled or replaced. Conditional stop reuses the
+typed comparison vocabulary, keeping branching understandable without adding
+an embedded scripting language.
+
+`android.time.schedule` describes a local wall-clock time, selected weekdays,
+an explicit IANA timezone, and either battery-friendly windowed delivery or
+exact delivery. The shared schedule model deterministically advances through
+DST gaps and chooses one occurrence during overlaps. Repeating behavior is
+implemented above a one-shot alarm port, so platform adapters cannot quietly
+invent different recurrence rules.
+
+Schedule events expose only the planned instant and planned zoned local time.
+Exact delivery declares Android's special exact-alarm access before enablement.
+The Android adapter uses occurrence-specific immutable `PendingIntent` identity
+and `AlarmManager` exact or windowed delivery. If the process is gone, the
+receiver starts the application runtime, restores approved desired macros, and
+routes the stored occurrence through the same coordinator path. Boot and
+package-replacement broadcasts recreate alarms Android has cleared.
+
+## Process ownership
+
+The runtime has one idempotent process controller. It restores durable desired
+enable state once, returns the same restoration summary to duplicate starters,
+and owns final cancellation through `RuntimeOwner`. Activities, receivers, and
+services should eventually request this application-owned controller rather
+than constructing independent coordinators.
+
+`ZeroBitApplication` now constructs that graph once with app-private approval
+history, durable variables, encrypted secrets, desired enable state, Android
+ports, bounded diagnostics, and one serial runtime dispatcher. Activities do
+not own or close the runtime. The next app-facing slice should expose recovery
+status and explicit special-access repair actions without leaking this graph
+into Compose screens.
+
+Restore results are now translated into plain-English running,
+approval-required, access-required, or failed states. The visual editor can
+retry desired macros after access is repaired and can enable or disable the
+persisted approved revision. Approval writes the immutable app-private revision
+before the editor treats it as approved. If an enabled macro cannot switch to a
+new revision, the previous active revision remains visible as active rather
+than being silently cancelled or misreported.
+
+Access-required states produce focused repair actions rather than one generic
+settings link. Normal Android permissions use the runtime permission contract;
+notification-listener and exact-alarm access open their dedicated Android
+screens. Returning to ZeroBit requires an explicit retry, so a settings visit
+never silently changes which macros are active.
+
+Runtime status exposes the active approval revision, source fingerprint,
+subscription count, executing state, and a bounded recent diagnostic view.
+These events explain lifecycle and block outcomes but do not include resolved
+secret values or captured notification payload text.
+
+The first app-control expansion is `android.app.launch`. It accepts one
+validated exact package name and asks Android only for that package's normal
+launcher activity. It does not accept components, raw intent flags, URIs, or
+shell commands, leaving those more powerful surfaces for separately reviewed
+capabilities with narrower schemas.
+
+`android.web.open` is intentionally separate from a future general intent
+action. It accepts only a literal HTTP or HTTPS URI with a host, rejects
+embedded credentials and non-web schemes, and launches it through a browsable
+Android intent. Dynamic URLs and arbitrary URI schemes remain unsupported until
+their data-flow and approval risks have dedicated schemas.
+
+Workspace operations now sit behind a `MacroWorkspaceStore` port so a future
+Storage Access Framework adapter can replace direct paths without changing
+review and approval logic. The port has explicit list, read, write, and delete
+outcomes. Rename is a higher-level mutation: it refuses overwrite, patches the
+declared macro ID without reformatting comments, writes the new file, then
+removes the old one with rollback if that final step fails. Approval history
+remains app-private throughout.
+
+Existing variable declarations now have focused visual controls for optional
+text, number, and boolean initial values and for secret-key identifiers. These
+controls patch only the declaration field in source and immediately run the
+shared proposal validator. They never display or edit the secret value. Adding,
+renaming, and deleting declarations remains separate work because those
+operations must update or reject references atomically.

@@ -5,6 +5,7 @@
 package com.vibhor1102.zerobit.openmacro.source
 
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
+import com.vibhor1102.zerobit.openmacro.model.MacroConditionNode
 import com.vibhor1102.zerobit.openmacro.model.MacroValue
 import com.vibhor1102.zerobit.openmacro.model.MacroVariable
 import com.vibhor1102.zerobit.openmacro.model.MacroVariableType
@@ -52,9 +53,68 @@ object OpenMacroYamlWriter {
 
         appendBlocks("triggers", document.triggers)
         append("\n")
-        appendBlocks("conditions", document.conditions)
+        if (document.conditionTree == null) {
+            appendBlocks("conditions", document.conditions)
+        } else {
+            append("condition_tree:\n")
+            appendConditionNode(document.conditionTree, indent = 2)
+        }
         append("\n")
         appendBlocks("actions", document.actions)
+    }
+
+    private fun StringBuilder.appendConditionNode(
+        node: MacroConditionNode,
+        indent: Int,
+    ) {
+        val spaces = " ".repeat(indent)
+        when (node) {
+            is MacroConditionNode.Condition -> {
+                append(spaces)
+                append("condition:\n")
+                appendBlock(node.block, indent + 2)
+            }
+            is MacroConditionNode.All -> appendConditionGroup("all", node.children, indent)
+            is MacroConditionNode.Any -> appendConditionGroup("any", node.children, indent)
+            is MacroConditionNode.Not -> {
+                append(spaces)
+                append("not:\n")
+                appendConditionNode(node.child, indent + 2)
+            }
+        }
+    }
+
+    private fun StringBuilder.appendConditionGroup(
+        name: String,
+        children: List<MacroConditionNode>,
+        indent: Int,
+    ) {
+        append(" ".repeat(indent))
+        append(name)
+        append(":\n")
+        children.forEach { child ->
+            append(" ".repeat(indent + 2))
+            append("-\n")
+            appendConditionNode(child, indent + 4)
+        }
+    }
+
+    private fun StringBuilder.appendBlock(block: MacroBlock, indent: Int) {
+        append(" ".repeat(indent))
+        append("id: ")
+        appendQuoted(block.id)
+        append("\n")
+        append(" ".repeat(indent))
+        append("type: ")
+        appendQuoted(block.type)
+        if (block.config.isNotEmpty()) {
+            append("\n")
+            append(" ".repeat(indent))
+            append("config:\n")
+            appendObject(block.config, indent + 2)
+        } else {
+            append("\n")
+        }
     }
 
     private fun StringBuilder.appendBlocks(

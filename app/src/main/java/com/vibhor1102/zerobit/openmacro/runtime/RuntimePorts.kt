@@ -5,16 +5,20 @@
 package com.vibhor1102.zerobit.openmacro.runtime
 
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
+import com.vibhor1102.zerobit.openmacro.model.MacroValue
 import com.vibhor1102.zerobit.openmacro.storage.ApprovalStoreResult
 import com.vibhor1102.zerobit.openmacro.storage.ApprovedRevision
-import com.vibhor1102.zerobit.openmacro.storage.SecretStore
-import com.vibhor1102.zerobit.openmacro.storage.VariableStore
+
+data class RuntimeTriggerEvent(
+    val values: Map<String, MacroValue> = emptyMap(),
+)
 
 data class RuntimeContext(
     val macroId: String,
     val runId: Long,
-    val variables: VariableStore,
-    val secrets: SecretStore,
+    val triggerBlockId: String,
+    val trigger: RuntimeTriggerEvent,
+    val values: RuntimeValues,
 )
 
 fun interface RuntimeTaskDispatcher {
@@ -25,11 +29,11 @@ fun interface RuntimeCancellation {
     fun cancel()
 }
 
-interface RuntimeTriggerRegistrar {
+fun interface RuntimeTriggerRegistrar {
     fun subscribe(
         macroId: String,
         trigger: RuntimeStep,
-        onTriggered: () -> Unit,
+        onTriggered: (RuntimeTriggerEvent) -> Unit,
     ): TriggerSubscriptionResult
 }
 

@@ -6,6 +6,9 @@ package com.vibhor1102.zerobit.openmacro.validation
 
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
 import com.vibhor1102.zerobit.openmacro.model.MacroMetadata
+import com.vibhor1102.zerobit.openmacro.model.MacroConditionNode
+import com.vibhor1102.zerobit.openmacro.model.MacroVariable
+import com.vibhor1102.zerobit.openmacro.model.MacroVariableType
 import com.vibhor1102.zerobit.openmacro.model.OpenMacroDocument
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -51,6 +54,54 @@ class OpenMacroValidatorTest {
             listOf("missing_trigger", "missing_action"),
             issues.map { it.code },
         )
+    }
+
+    @Test
+    fun rejectsAmbiguousOrDuplicateVariableDeclarations() {
+        val document = validDocument().copy(
+            variables = listOf(
+                MacroVariable(
+                    name = "Battery Level",
+                    type = MacroVariableType.NUMBER,
+                ),
+                MacroVariable(
+                    name = "token",
+                    type = MacroVariableType.SECRET,
+                    secretKey = "Accounts/Primary",
+                ),
+                MacroVariable(
+                    name = "token",
+                    type = MacroVariableType.TEXT,
+                ),
+            ),
+        )
+
+        val issues = OpenMacroValidator.validate(document)
+
+        assertEquals(
+            listOf(
+                "invalid_variable_name",
+                "invalid_secret_key",
+                "duplicate_variable_name",
+            ),
+            issues.map { it.code },
+        )
+    }
+
+    @Test
+    fun rejectsMixingFlatConditionsWithAConditionTree() {
+        val document = validDocument().copy(
+            conditions = listOf(
+                MacroBlock("flat-condition", "android.device.unlocked"),
+            ),
+            conditionTree = MacroConditionNode.Condition(
+                MacroBlock("tree-condition", "android.device.unlocked"),
+            ),
+        )
+
+        val issues = OpenMacroValidator.validate(document)
+
+        assertEquals(listOf("mixed_condition_forms"), issues.map { it.code })
     }
 
     private fun validDocument() = OpenMacroDocument(

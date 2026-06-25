@@ -8,6 +8,7 @@ import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityRegistry
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
 import com.vibhor1102.zerobit.openmacro.model.MacroMetadata
+import com.vibhor1102.zerobit.openmacro.model.MacroConditionNode
 import com.vibhor1102.zerobit.openmacro.model.MacroValue
 import com.vibhor1102.zerobit.openmacro.model.OpenMacroDocument
 import com.vibhor1102.zerobit.openmacro.validation.OpenMacroValidator
@@ -35,8 +36,12 @@ class RuntimePlanCompilerTest {
         assertEquals(
             RuntimeStep.ShowNotification(
                 blockId = "show-message",
-                title = "Charging started",
-                message = "The charger is connected.",
+                title = RuntimeValueSource.Literal(
+                    MacroValue.Text("Charging started"),
+                ),
+                message = RuntimeValueSource.Literal(
+                    MacroValue.Text("The charger is connected."),
+                ),
             ),
             result.plan.actions.single(),
         )
@@ -164,10 +169,19 @@ class RuntimePlanCompilerTest {
         // Actions
         assertEquals(2, result.plan.actions.size)
         val logAction = result.plan.actions[0] as RuntimeStep.WriteLog
-        assertEquals("Running target 4 macro", logAction.message)
+        assertEquals(
+            RuntimeValueSource.Literal(MacroValue.Text("Running target 4 macro")),
+            logAction.message,
+        )
         val smsAction = result.plan.actions[1] as RuntimeStep.SendSms
-        assertEquals("+1234567890", smsAction.phoneNumber)
-        assertEquals("Hello from ZeroBit!", smsAction.message)
+        assertEquals(
+            RuntimeValueSource.Literal(MacroValue.Text("+1234567890")),
+            smsAction.phoneNumber,
+        )
+        assertEquals(
+            RuntimeValueSource.Literal(MacroValue.Text("Hello from ZeroBit!")),
+            smsAction.message,
+        )
     }
 
     @Test
@@ -218,6 +232,60 @@ class RuntimePlanCompilerTest {
         assertTrue(codes.contains("wrong_config_type"))
         assertTrue(codes.contains("invalid_battery_direction"))
         assertTrue(codes.contains("missing_config"))
+    }
+
+    @Test
+    fun compilesNestedConditionTree() {
+        val document = validDocument().copy(
+            conditions = emptyList(),
+            conditionTree = MacroConditionNode.All(
+                listOf(
+                    MacroConditionNode.Condition(
+                        MacroBlock(
+                            id = "unlocked",
+                            type = "android.device.unlocked",
+                        ),
+                    ),
+                    MacroConditionNode.Any(
+                        listOf(
+                            MacroConditionNode.Condition(
+                                MacroBlock(
+                                    id = "home-wifi",
+                                    type = "android.wifi.connected",
+                                    config = mapOf(
+                                        "ssid" to MacroValue.Text("Home"),
+                                    ),
+                                ),
+                            ),
+                            MacroConditionNode.Not(
+                                MacroConditionNode.Condition(
+                                    MacroBlock(
+                                        id = "guest-wifi",
+                                        type = "android.wifi.connected",
+                                        config = mapOf(
+                                            "ssid" to MacroValue.Text("Guest"),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val result = compiler.compile(document, "sha256:tree")
+
+        require(result is PlanCompilationResult.Success)
+        val root = result.plan.conditionTree as RuntimeConditionNode.All
+        assertTrue(root.children[0] is RuntimeConditionNode.Condition)
+        val any = root.children[1] as RuntimeConditionNode.Any
+        assertTrue(any.children[0] is RuntimeConditionNode.Condition)
+        assertTrue(any.children[1] is RuntimeConditionNode.Not)
+        assertEquals(
+            setOf(AndroidPermission.POST_NOTIFICATIONS, AndroidPermission.ACCESS_NETWORK_STATE),
+            result.plan.requiredPermissions,
+        )
     }
 
     private fun validDocument() = OpenMacroDocument(

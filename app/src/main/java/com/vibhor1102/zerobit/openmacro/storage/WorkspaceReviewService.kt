@@ -15,7 +15,7 @@ import com.vibhor1102.zerobit.openmacro.validation.ValidationIssue
  * It never changes approval state merely because a workspace file changed.
  */
 class WorkspaceReviewService(
-    private val workspace: WorkspaceMacroStore,
+    private val workspace: MacroWorkspaceStore,
     private val approvals: ApprovalStore,
     private val pipeline: OpenMacroProposalPipeline,
 ) {

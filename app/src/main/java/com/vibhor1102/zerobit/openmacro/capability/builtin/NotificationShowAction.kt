@@ -9,10 +9,14 @@ import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityFieldKind
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityRegistry
+import com.vibhor1102.zerobit.openmacro.capability.describeValueSource
 import com.vibhor1102.zerobit.openmacro.capability.rejectUnknownConfig
-import com.vibhor1102.zerobit.openmacro.capability.requireText
-import com.vibhor1102.zerobit.openmacro.capability.text
+import com.vibhor1102.zerobit.openmacro.capability.requireTextSource
+import com.vibhor1102.zerobit.openmacro.capability.validateTextSource
+import com.vibhor1102.zerobit.openmacro.capability.valueSource
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
+import com.vibhor1102.zerobit.openmacro.model.OpenMacroDocument
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeStep
 import com.vibhor1102.zerobit.openmacro.validation.ValidationIssue
 
@@ -28,6 +32,7 @@ object NotificationShowAction : CapabilityDefinition {
             kind = CapabilityFieldKind.TEXT,
             required = true,
             help = "The short heading shown in the notification.",
+            acceptsValueSources = true,
         ),
         CapabilityField(
             key = "message",
@@ -35,18 +40,29 @@ object NotificationShowAction : CapabilityDefinition {
             kind = CapabilityFieldKind.MULTILINE_TEXT,
             required = true,
             help = "The notification text.",
+            acceptsValueSources = true,
         ),
     )
 
     override fun validate(block: MacroBlock, path: String): List<ValidationIssue> =
         buildList {
             addAll(block.rejectUnknownConfig(setOf("title", "message"), path))
-            addAll(block.requireText("title", path, maxLength = 120))
-            addAll(block.requireText("message", path, maxLength = 1_000))
+            addAll(block.requireTextSource("title", path, maxLiteralLength = 120))
+            addAll(block.requireTextSource("message", path, maxLiteralLength = 1_000))
         }
 
+    override fun validateDocument(
+        block: MacroBlock,
+        path: String,
+        document: OpenMacroDocument,
+        registry: CapabilityRegistry,
+    ): List<ValidationIssue> = buildList {
+        addAll(block.validateTextSource("title", path, document, registry))
+        addAll(block.validateTextSource("message", path, document, registry))
+    }
+
     override fun explain(block: MacroBlock): String =
-        "Show a notification titled “${block.text("title")}” with the message “${block.text("message")}”."
+        "Show a notification titled ${block.describeValueSource("title")} with message ${block.describeValueSource("message")}."
 
     override fun requiredPermissions(block: MacroBlock): Set<AndroidPermission> =
         setOf(AndroidPermission.POST_NOTIFICATIONS)
@@ -54,7 +70,7 @@ object NotificationShowAction : CapabilityDefinition {
     override fun compile(block: MacroBlock): RuntimeStep =
         RuntimeStep.ShowNotification(
             blockId = block.id,
-            title = block.text("title"),
-            message = block.text("message"),
+            title = block.valueSource("title"),
+            message = block.valueSource("message"),
         )
 }

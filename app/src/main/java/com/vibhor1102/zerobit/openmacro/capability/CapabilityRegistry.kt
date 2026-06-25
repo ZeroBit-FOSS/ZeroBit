@@ -13,6 +13,17 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryLevelTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.WifiConnectedCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.WriteLogAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.SendSmsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.SetVariableAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.IncrementVariableAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.ToggleVariableAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.NotificationReceivedTrigger
+import com.vibhor1102.zerobit.openmacro.capability.builtin.ValueCompareCondition
+import com.vibhor1102.zerobit.openmacro.capability.builtin.DelayAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.StopActionsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.StopIfAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.TimeScheduleTrigger
+import com.vibhor1102.zerobit.openmacro.capability.builtin.LaunchAppAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenWebUrlAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -39,11 +50,22 @@ class CapabilityRegistry private constructor(
                 ScreenOnTrigger,
                 ScreenOffTrigger,
                 BatteryLevelTrigger,
+                NotificationReceivedTrigger,
+                TimeScheduleTrigger,
                 DeviceUnlockedCondition,
                 WifiConnectedCondition,
+                ValueCompareCondition,
                 NotificationShowAction,
                 WriteLogAction,
                 SendSmsAction,
+                LaunchAppAction,
+                OpenWebUrlAction,
+                SetVariableAction,
+                IncrementVariableAction,
+                ToggleVariableAction,
+                DelayAction,
+                StopActionsAction,
+                StopIfAction,
             ),
         )
 

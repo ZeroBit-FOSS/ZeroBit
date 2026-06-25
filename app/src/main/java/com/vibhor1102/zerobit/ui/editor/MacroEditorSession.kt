@@ -4,10 +4,13 @@
 
 package com.vibhor1102.zerobit.ui.editor
 
+import com.vibhor1102.zerobit.openmacro.model.MacroValue
 import com.vibhor1102.zerobit.openmacro.proposal.ApprovedMacroSnapshot
 import com.vibhor1102.zerobit.openmacro.proposal.OpenMacroProposal
 import com.vibhor1102.zerobit.openmacro.proposal.OpenMacroProposalPipeline
 import com.vibhor1102.zerobit.openmacro.proposal.ProposalResult
+import com.vibhor1102.zerobit.openmacro.source.OpenMacroSourcePatcher
+import com.vibhor1102.zerobit.openmacro.source.SourcePatchResult
 
 class MacroEditorSession(
     private val pipeline: OpenMacroProposalPipeline,
@@ -22,6 +25,7 @@ class MacroEditorSession(
             result = result,
             visibleProposal = (result as? ProposalResult.Ready)?.proposal,
             visualIsStale = false,
+            formEditError = null,
         )
     }
 
@@ -36,6 +40,7 @@ class MacroEditorSession(
             result = result,
             visibleProposal = ready ?: current.visibleProposal,
             visualIsStale = ready == null && current.visibleProposal != null,
+            formEditError = null,
         )
     }
 
@@ -49,6 +54,7 @@ class MacroEditorSession(
             result = result,
             visibleProposal = readyProposal ?: current.visibleProposal,
             visualIsStale = readyProposal == null && current.visibleProposal != null,
+            formEditError = null,
         )
     }
 
@@ -56,6 +62,72 @@ class MacroEditorSession(
         current: MacroEditorState,
         mode: EditorMode,
     ): MacroEditorState = current.copy(mode = mode)
+
+    fun reportFormEditError(
+        current: MacroEditorState,
+        message: String,
+    ): MacroEditorState = current.copy(formEditError = message)
+
+    fun updateScalarConfig(
+        current: MacroEditorState,
+        blockId: String,
+        key: String,
+        value: MacroValue,
+    ): FormSourceEditResult = updateConfig(current, blockId, key, value)
+
+    fun updateConfig(
+        current: MacroEditorState,
+        blockId: String,
+        key: String,
+        value: MacroValue?,
+    ): FormSourceEditResult =
+        when (
+            val patch = OpenMacroSourcePatcher.setConfig(
+                sourceText = current.sourceText,
+                blockId = blockId,
+                key = key,
+                value = value,
+            )
+        ) {
+            is SourcePatchResult.Success ->
+                FormSourceEditResult.Updated(updateSource(current, patch.sourceText))
+            is SourcePatchResult.NotFound ->
+                FormSourceEditResult.Rejected("Block '${patch.blockId}' was not found.")
+            is SourcePatchResult.Unsupported ->
+                FormSourceEditResult.Rejected(patch.message)
+            is SourcePatchResult.InvalidSource ->
+                FormSourceEditResult.Rejected(
+                    patch.issues.firstOrNull()?.message ?: "The source is invalid.",
+                )
+        }
+
+    fun updateVariableField(
+        current: MacroEditorState,
+        variableName: String,
+        key: String,
+        value: MacroValue?,
+    ): FormSourceEditResult =
+        when (
+            val patch = OpenMacroSourcePatcher.setVariableField(
+                sourceText = current.sourceText,
+                variableName = variableName,
+                key = key,
+                value = value,
+            )
+        ) {
+            is SourcePatchResult.Success ->
+                FormSourceEditResult.Updated(updateSource(current, patch.sourceText))
+            is SourcePatchResult.NotFound ->
+                FormSourceEditResult.Rejected(
+                    "Variable '${patch.blockId}' was not found.",
+                )
+            is SourcePatchResult.Unsupported ->
+                FormSourceEditResult.Rejected(patch.message)
+            is SourcePatchResult.InvalidSource ->
+                FormSourceEditResult.Rejected(
+                    patch.issues.firstOrNull()?.message ?: "The source is invalid.",
+                )
+        }
 
     companion object {
         fun withInitialSourceApproved(
@@ -75,12 +147,19 @@ class MacroEditorSession(
     }
 }
 
+sealed interface FormSourceEditResult {
+    data class Updated(val state: MacroEditorState) : FormSourceEditResult
+
+    data class Rejected(val message: String) : FormSourceEditResult
+}
+
 data class MacroEditorState(
     val mode: EditorMode = EditorMode.VISUAL,
     val sourceText: String,
     val result: ProposalResult,
     val visibleProposal: OpenMacroProposal?,
     val visualIsStale: Boolean,
+    val formEditError: String? = null,
 ) {
     val problems: List<EditorProblem>
         get() = when (val current = result) {

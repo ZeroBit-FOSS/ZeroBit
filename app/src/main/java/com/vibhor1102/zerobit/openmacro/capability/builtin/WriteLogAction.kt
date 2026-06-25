@@ -9,10 +9,14 @@ import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityFieldKind
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityRegistry
+import com.vibhor1102.zerobit.openmacro.capability.describeValueSource
 import com.vibhor1102.zerobit.openmacro.capability.rejectUnknownConfig
-import com.vibhor1102.zerobit.openmacro.capability.requireText
-import com.vibhor1102.zerobit.openmacro.capability.text
+import com.vibhor1102.zerobit.openmacro.capability.requireTextSource
+import com.vibhor1102.zerobit.openmacro.capability.validateTextSource
+import com.vibhor1102.zerobit.openmacro.capability.valueSource
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
+import com.vibhor1102.zerobit.openmacro.model.OpenMacroDocument
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeStep
 import com.vibhor1102.zerobit.openmacro.validation.ValidationIssue
 
@@ -28,23 +32,32 @@ object WriteLogAction : CapabilityDefinition {
             kind = CapabilityFieldKind.MULTILINE_TEXT,
             required = true,
             help = "The text to output to logs.",
+            acceptsValueSources = true,
         ),
     )
 
     override fun validate(block: MacroBlock, path: String): List<ValidationIssue> =
         buildList {
             addAll(block.rejectUnknownConfig(setOf("message"), path))
-            addAll(block.requireText("message", path, maxLength = 1_000))
+            addAll(block.requireTextSource("message", path, maxLiteralLength = 1_000))
         }
 
+    override fun validateDocument(
+        block: MacroBlock,
+        path: String,
+        document: OpenMacroDocument,
+        registry: CapabilityRegistry,
+    ): List<ValidationIssue> =
+        block.validateTextSource("message", path, document, registry)
+
     override fun explain(block: MacroBlock): String =
-        "Log message: “${block.text("message")}”."
+        "Write ${block.describeValueSource("message")} to the runtime log."
 
     override fun requiredPermissions(block: MacroBlock): Set<AndroidPermission> = emptySet()
 
     override fun compile(block: MacroBlock): RuntimeStep =
         RuntimeStep.WriteLog(
             blockId = block.id,
-            message = block.text("message"),
+            message = block.valueSource("message"),
         )
 }

@@ -9,9 +9,11 @@ import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityFieldKind
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
+import com.vibhor1102.zerobit.openmacro.capability.TriggerOutput
 import com.vibhor1102.zerobit.openmacro.capability.rejectUnknownConfig
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
 import com.vibhor1102.zerobit.openmacro.model.MacroValue
+import com.vibhor1102.zerobit.openmacro.model.MacroVariableType
 import com.vibhor1102.zerobit.openmacro.runtime.BatteryDirection
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeStep
 import com.vibhor1102.zerobit.openmacro.validation.ValidationIssue
@@ -21,6 +23,13 @@ object BatteryLevelTrigger : CapabilityDefinition {
     override val lane = CapabilityLane.TRIGGER
     override val displayName = "Battery level"
     override val description = "Starts when the battery level reaches, drops below, or rises above a percentage."
+    override val triggerOutputs = listOf(
+        TriggerOutput(
+            key = "battery.percentage",
+            type = MacroVariableType.NUMBER,
+            description = "The battery percentage that caused this run.",
+        ),
+    )
     override val fields = listOf(
         CapabilityField(
             key = "level",
@@ -35,6 +44,7 @@ object BatteryLevelTrigger : CapabilityDefinition {
             kind = CapabilityFieldKind.TEXT,
             required = true,
             help = "Trigger condition: 'goes_below', 'goes_above', or 'equals'.",
+            allowedValues = listOf("goes_below", "goes_above", "equals"),
         ),
     )
 

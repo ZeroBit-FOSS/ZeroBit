@@ -5,6 +5,8 @@
 package com.vibhor1102.zerobit.openmacro.runtime
 
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
+import com.vibhor1102.zerobit.openmacro.model.MacroValue
+import com.vibhor1102.zerobit.openmacro.storage.InMemoryEnabledMacroStore
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -33,6 +35,16 @@ class RuntimeCoordinatorTest {
         )
         val runEvents = fixture.diagnostics.snapshot().filter { it.runId != null }
         assertEquals(1, runEvents.map { it.runId }.distinct().size)
+        assertEquals(
+            RuntimeMacroStatus(
+                macroId = "charger-greeting",
+                revisionId = "revision-1",
+                sourceFingerprint = "sha256:test",
+                triggerCount = 1,
+                executing = false,
+            ),
+            fixture.coordinator.status("charger-greeting"),
+        )
     }
 
     @Test
@@ -237,6 +249,64 @@ class RuntimeCoordinatorTest {
     }
 
     @Test
+    fun successfulEnableAndManualDisableUpdateDurableDesiredState() {
+        val fixture = Fixture()
+
+        fixture.coordinator.enable("charger-greeting")
+        assertEquals(setOf("charger-greeting"), fixture.enabledState.enabledMacroIds())
+
+        fixture.coordinator.disable("charger-greeting")
+        assertTrue(fixture.enabledState.enabledMacroIds().isEmpty())
+    }
+
+    @Test
+    fun restoresPersistedMacrosAndKeepsFailedRequestsForLaterRecovery() {
+        val restoredState = InMemoryEnabledMacroStore(setOf("charger-greeting"))
+        val restored = Fixture(enabledState = restoredState)
+
+        val success = restored.coordinator.restoreEnabledMacros()
+
+        assertEquals(setOf("charger-greeting"), success.restoredMacroIds)
+        assertTrue(success.failedMacroIds.isEmpty())
+
+        val failedState = InMemoryEnabledMacroStore(setOf("charger-greeting"))
+        val failed = Fixture(
+            planResult = ApprovedPlanResult.Missing,
+            enabledState = failedState,
+        )
+
+        val failure = failed.coordinator.restoreEnabledMacros()
+
+        assertEquals(setOf("charger-greeting"), failure.failedMacroIds)
+        assertEquals(setOf("charger-greeting"), failedState.enabledMacroIds())
+    }
+
+    @Test
+    fun runtimeOwnerShutdownDoesNotForgetDesiredEnabledState() {
+        val fixture = Fixture()
+        fixture.coordinator.enable("charger-greeting")
+        val owner = RuntimeOwner(fixture.coordinator)
+
+        owner.close()
+
+        assertEquals(setOf("charger-greeting"), fixture.enabledState.enabledMacroIds())
+        assertFalse(fixture.coordinator.isEnabled("charger-greeting"))
+    }
+
+    @Test
+    fun runtimeOwnerProvidesTheProcessRestorationEntryPoint() {
+        val fixture = Fixture(
+            enabledState = InMemoryEnabledMacroStore(setOf("charger-greeting")),
+        )
+        val owner = RuntimeOwner(fixture.coordinator)
+
+        val summary = owner.restoreEnabledMacros()
+
+        assertEquals(setOf("charger-greeting"), summary.restoredMacroIds)
+        owner.close()
+    }
+
+    @Test
     fun initializesVariablesOnEnableAndProvidesThemToExecutor() {
         val varDeclaration = com.vibhor1102.zerobit.openmacro.model.MacroVariable(
             name = "my_var",
@@ -263,8 +333,58 @@ class RuntimeCoordinatorTest {
         assertEquals("charger-greeting", captured.macroId)
         assertEquals(
             com.vibhor1102.zerobit.openmacro.model.MacroValue.Text("init_val"),
-            captured.variables.getValue("charger-greeting", "my_var")
+            (captured.values.read("my_var") as RuntimeValueResult.Available).value
         )
+    }
+
+    @Test
+    fun reenableDoesNotOverwriteAnExistingLocalVariable() {
+        val declaration = com.vibhor1102.zerobit.openmacro.model.MacroVariable(
+            name = "counter",
+            type = com.vibhor1102.zerobit.openmacro.model.MacroVariableType.NUMBER,
+            initialValue = MacroValue.Number(java.math.BigDecimal.ZERO),
+        )
+        val fixture = Fixture(plan = validPlan().copy(variables = listOf(declaration)))
+        fixture.coordinator.enable("charger-greeting")
+        fixture.variables.setValue(
+            "charger-greeting",
+            "counter",
+            MacroValue.Number(java.math.BigDecimal.TEN),
+        )
+
+        fixture.coordinator.enable("charger-greeting")
+
+        assertEquals(
+            MacroValue.Number(java.math.BigDecimal.TEN),
+            fixture.variables.getValue("charger-greeting", "counter"),
+        )
+    }
+
+    @Test
+    fun passesTriggerValuesToConditionsAndActions() {
+        val fixture = Fixture()
+        var conditionContext: RuntimeContext? = null
+        var actionContext: RuntimeContext? = null
+        fixture.conditions.onEvaluateWithContext = { _, context ->
+            conditionContext = context
+        }
+        fixture.actions.onExecuteWithContext = { _, context ->
+            actionContext = context
+        }
+        fixture.coordinator.enable("charger-greeting")
+
+        fixture.registrar.fire(
+            blockId = "charger-connected",
+            event = RuntimeTriggerEvent(
+                values = mapOf(
+                    "battery.percentage" to MacroValue.Number(java.math.BigDecimal("42")),
+                ),
+            ),
+        )
+
+        val expected = MacroValue.Number(java.math.BigDecimal("42"))
+        assertEquals(expected, conditionContext?.trigger?.values?.get("battery.percentage"))
+        assertEquals(expected, actionContext?.trigger?.values?.get("battery.percentage"))
     }
 
     @Test
@@ -281,8 +401,21 @@ class RuntimeCoordinatorTest {
                 RuntimeStep.CheckWifiConnected("wifi-condition", "MyWifi"),
             ),
             actions = listOf(
-                RuntimeStep.WriteLog("write-log-action", "Log message"),
-                RuntimeStep.SendSms("send-sms-action", "+12345", "Sms body"),
+                RuntimeStep.WriteLog(
+                    "write-log-action",
+                    RuntimeValueSource.Literal(
+                        com.vibhor1102.zerobit.openmacro.model.MacroValue.Text("Log message"),
+                    ),
+                ),
+                RuntimeStep.SendSms(
+                    "send-sms-action",
+                    RuntimeValueSource.Literal(
+                        com.vibhor1102.zerobit.openmacro.model.MacroValue.Text("+12345"),
+                    ),
+                    RuntimeValueSource.Literal(
+                        com.vibhor1102.zerobit.openmacro.model.MacroValue.Text("Sms body"),
+                    ),
+                ),
             ),
             requiredPermissions = setOf(AndroidPermission.SEND_SMS, AndroidPermission.ACCESS_NETWORK_STATE),
         )
@@ -303,6 +436,7 @@ class RuntimeCoordinatorTest {
         planResult: ApprovedPlanResult = ApprovedPlanResult.Success("revision-1", plan),
         missingPermissions: Set<AndroidPermission> = emptySet(),
         dispatcher: RuntimeTaskDispatcher = RuntimeTaskDispatcher { it() },
+        val enabledState: InMemoryEnabledMacroStore = InMemoryEnabledMacroStore(),
     ) {
         val registrar = FakeTriggerRegistrar()
         val conditions = FakeConditionEvaluator()
@@ -320,11 +454,12 @@ class RuntimeCoordinatorTest {
             variables = variables,
             secrets = secrets,
             diagnostics = diagnostics,
+            enabledState = enabledState,
         )
     }
 
     private class FakeTriggerRegistrar : RuntimeTriggerRegistrar {
-        val callbacks = linkedMapOf<String, () -> Unit>()
+        val callbacks = linkedMapOf<String, (RuntimeTriggerEvent) -> Unit>()
         val cancelledBlockIds = mutableListOf<String>()
         var failSubscriptions = false
         var failOnBlockId: String? = null
@@ -332,7 +467,7 @@ class RuntimeCoordinatorTest {
         override fun subscribe(
             macroId: String,
             trigger: RuntimeStep,
-            onTriggered: () -> Unit,
+            onTriggered: (RuntimeTriggerEvent) -> Unit,
         ): TriggerSubscriptionResult {
             if (failSubscriptions || failOnBlockId == trigger.blockId) {
                 return TriggerSubscriptionResult.Failure("Receiver registration failed.")
@@ -346,18 +481,222 @@ class RuntimeCoordinatorTest {
             )
         }
 
-        fun fire(blockId: String) {
-            callbacks.getValue(blockId).invoke()
+        fun fire(
+            blockId: String,
+            event: RuntimeTriggerEvent = RuntimeTriggerEvent(),
+        ) {
+            callbacks.getValue(blockId).invoke(event)
         }
+    }
+
+    @Test
+    fun anyConditionGroupPassesWhenALaterBranchPasses() {
+        val plan = validPlan().copy(
+            conditions = emptyList(),
+            conditionTree = RuntimeConditionNode.Any(
+                listOf(
+                    RuntimeConditionNode.Condition(
+                        RuntimeStep.CheckWifiConnected("first-condition", "Missing"),
+                    ),
+                    RuntimeConditionNode.Condition(
+                        RuntimeStep.CheckDeviceUnlocked("second-condition"),
+                    ),
+                ),
+            ),
+        )
+        val fixture = Fixture(plan = plan)
+        fixture.conditions.results["first-condition"] =
+            ConditionResult.Blocked("First branch did not match.")
+        fixture.conditions.results["second-condition"] = ConditionResult.Passed
+        fixture.coordinator.enable("charger-greeting")
+
+        fixture.registrar.fire("charger-connected")
+
+        assertEquals(
+            listOf("first-condition", "second-condition"),
+            fixture.conditions.evaluatedBlockIds,
+        )
+        assertEquals(listOf("show-message"), fixture.actions.executedBlockIds)
+        assertTrue(
+            fixture.diagnostics.snapshot().any {
+                it.kind == RuntimeDiagnosticKind.CONDITION_GROUP_PASSED &&
+                    it.message.contains("OR group")
+            },
+        )
+    }
+
+    @Test
+    fun notConditionInvertsABlockedLeaf() {
+        val plan = validPlan().copy(
+            conditions = emptyList(),
+            conditionTree = RuntimeConditionNode.Not(
+                RuntimeConditionNode.Condition(
+                    RuntimeStep.CheckWifiConnected("guest-wifi", "Guest"),
+                ),
+            ),
+        )
+        val fixture = Fixture(plan = plan)
+        fixture.conditions.results["guest-wifi"] =
+            ConditionResult.Blocked("Guest Wi-Fi is not connected.")
+        fixture.coordinator.enable("charger-greeting")
+
+        fixture.registrar.fire("charger-connected")
+
+        assertEquals(listOf("show-message"), fixture.actions.executedBlockIds)
+        assertTrue(
+            fixture.diagnostics.snapshot().any {
+                it.kind == RuntimeDiagnosticKind.CONDITION_GROUP_PASSED &&
+                    it.message.contains("NOT group")
+            },
+        )
+    }
+
+    @Test
+    fun stopActionSkipsLaterActionsAndCompletesSuccessfully() {
+        val plan = validPlan().copy(
+            actions = listOf(
+                RuntimeStep.WriteLog("first", "first"),
+                RuntimeStep.StopActions("stop"),
+                RuntimeStep.WriteLog("never", "never"),
+            ),
+        )
+        val fixture = Fixture(plan = plan)
+        fixture.coordinator.enable("charger-greeting")
+
+        fixture.registrar.fire("charger-connected")
+
+        assertEquals(listOf("first"), fixture.actions.executedBlockIds)
+        assertTrue(
+            fixture.diagnostics.snapshot().any {
+                it.blockId == "stop" &&
+                    it.kind == RuntimeDiagnosticKind.ACTION_SUCCEEDED
+            },
+        )
+        assertEquals(
+            RuntimeDiagnosticKind.RUN_SUCCEEDED,
+            fixture.diagnostics.snapshot().last().kind,
+        )
+    }
+
+    @Test
+    fun disablingMacroWakesAndCancelsLongDelay() {
+        val plan = validPlan().copy(
+            actions = listOf(
+                RuntimeStep.Delay("wait", 60_000),
+                RuntimeStep.WriteLog("never", "never"),
+            ),
+        )
+        val fixture = Fixture(plan = plan)
+        fixture.coordinator.enable("charger-greeting")
+
+        val run = Thread {
+            fixture.registrar.fire("charger-connected")
+        }
+        run.start()
+        while (
+            fixture.diagnostics.snapshot().none {
+                it.kind == RuntimeDiagnosticKind.TRIGGER_RECEIVED
+            }
+        ) {
+            Thread.yield()
+        }
+        fixture.coordinator.disable("charger-greeting")
+        run.join(2_000)
+
+        assertFalse(run.isAlive)
+        assertTrue(fixture.actions.executedBlockIds.isEmpty())
+        assertEquals(
+            RuntimeDiagnosticKind.RUN_CANCELLED,
+            fixture.diagnostics.snapshot().last().kind,
+        )
+    }
+
+    @Test
+    fun stopIfSkipsLaterActionsOnlyWhenComparisonPasses() {
+        val stopIf = RuntimeStep.StopIf(
+            blockId = "stop-if",
+            left = RuntimeValueSource.Trigger("screen.state"),
+            operator = ValueComparisonOperator.EQUALS,
+            right = RuntimeValueSource.Literal(MacroValue.Text("off")),
+        )
+        val plan = validPlan().copy(
+            actions = listOf(
+                stopIf,
+                RuntimeStep.WriteLog("later", "later"),
+            ),
+        )
+        val stopped = Fixture(plan = plan)
+        stopped.coordinator.enable("charger-greeting")
+        stopped.registrar.fire(
+            "charger-connected",
+            RuntimeTriggerEvent(
+                mapOf("screen.state" to MacroValue.Text("off")),
+            ),
+        )
+        assertTrue(stopped.actions.executedBlockIds.isEmpty())
+
+        val continued = Fixture(plan = plan)
+        continued.coordinator.enable("charger-greeting")
+        continued.registrar.fire(
+            "charger-connected",
+            RuntimeTriggerEvent(
+                mapOf("screen.state" to MacroValue.Text("on")),
+            ),
+        )
+        assertEquals(listOf("later"), continued.actions.executedBlockIds)
+    }
+
+    @Test
+    fun restoredScheduleAlarmEntersTheSameValidatedTriggerPath() {
+        val schedule = ScheduleSpec(
+            localTime = java.time.LocalTime.of(9, 0),
+            zoneId = java.time.ZoneId.of("Asia/Kolkata"),
+        )
+        val plan = validPlan().copy(
+            triggers = listOf(RuntimeStep.ObserveSchedule("morning", schedule)),
+            conditions = emptyList(),
+            actions = listOf(RuntimeStep.WriteLog("log", "scheduled")),
+        )
+        val fixture = Fixture(plan = plan)
+        var context: RuntimeContext? = null
+        fixture.actions.onExecuteWithContext = { _, seen -> context = seen }
+        fixture.coordinator.enable("charger-greeting")
+
+        val delivered = fixture.coordinator.deliverScheduleAlarm(
+            macroId = "charger-greeting",
+            blockId = "morning",
+            occurrence = java.time.Instant.parse("2026-06-22T03:30:00Z"),
+        )
+
+        assertTrue(delivered)
+        assertEquals("morning", context?.triggerBlockId)
+        assertEquals(
+            MacroValue.Text("2026-06-22T03:30:00Z"),
+            context?.trigger?.values?.get("schedule.instant"),
+        )
+        assertEquals(
+            MacroValue.Text("2026-06-22T09:00+05:30[Asia/Kolkata]"),
+            context?.trigger?.values?.get("schedule.local_time"),
+        )
+        assertFalse(
+            fixture.coordinator.deliverScheduleAlarm(
+                "charger-greeting",
+                "unknown",
+                java.time.Instant.EPOCH,
+            ),
+        )
     }
 
     private class FakeConditionEvaluator : RuntimeConditionEvaluator {
         val evaluatedBlockIds = mutableListOf<String>()
         var result: ConditionResult = ConditionResult.Passed
+        val results = mutableMapOf<String, ConditionResult>()
+        var onEvaluateWithContext: ((RuntimeStep, RuntimeContext) -> Unit)? = null
 
         override fun evaluate(condition: RuntimeStep, context: RuntimeContext): ConditionResult {
             evaluatedBlockIds += condition.blockId
-            return result
+            onEvaluateWithContext?.invoke(condition, context)
+            return results[condition.blockId] ?: result
         }
     }
 
@@ -403,8 +742,12 @@ class RuntimeCoordinatorTest {
             actions = listOf(
                 RuntimeStep.ShowNotification(
                     blockId = "show-message",
-                    title = "Charging",
-                    message = "Connected",
+                    title = RuntimeValueSource.Literal(
+                        com.vibhor1102.zerobit.openmacro.model.MacroValue.Text("Charging"),
+                    ),
+                    message = RuntimeValueSource.Literal(
+                        com.vibhor1102.zerobit.openmacro.model.MacroValue.Text("Connected"),
+                    ),
                 ),
             ),
             requiredPermissions = setOf(AndroidPermission.POST_NOTIFICATIONS),
@@ -414,13 +757,21 @@ class RuntimeCoordinatorTest {
             actions = listOf(
                 RuntimeStep.ShowNotification(
                     blockId = "first-action",
-                    title = "First",
-                    message = "First",
+                    title = RuntimeValueSource.Literal(
+                        com.vibhor1102.zerobit.openmacro.model.MacroValue.Text("First"),
+                    ),
+                    message = RuntimeValueSource.Literal(
+                        com.vibhor1102.zerobit.openmacro.model.MacroValue.Text("First"),
+                    ),
                 ),
                 RuntimeStep.ShowNotification(
                     blockId = "second-action",
-                    title = "Second",
-                    message = "Second",
+                    title = RuntimeValueSource.Literal(
+                        com.vibhor1102.zerobit.openmacro.model.MacroValue.Text("Second"),
+                    ),
+                    message = RuntimeValueSource.Literal(
+                        com.vibhor1102.zerobit.openmacro.model.MacroValue.Text("Second"),
+                    ),
                 ),
             ),
         )

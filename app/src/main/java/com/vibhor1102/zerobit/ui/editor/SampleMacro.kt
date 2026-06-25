@@ -5,6 +5,8 @@
 package com.vibhor1102.zerobit.ui.editor
 
 object SampleMacro {
+    const val MACRO_ID = "charger-greeting"
+
     val source = """
         format: openmacro/v0.1
 

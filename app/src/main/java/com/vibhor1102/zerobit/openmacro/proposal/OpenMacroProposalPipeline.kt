@@ -7,6 +7,7 @@ package com.vibhor1102.zerobit.openmacro.proposal
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityRegistry
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
+import com.vibhor1102.zerobit.openmacro.model.MacroConditionNode
 import com.vibhor1102.zerobit.openmacro.model.OpenMacroDocument
 import com.vibhor1102.zerobit.openmacro.runtime.PlanCompilationResult
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimePlan
@@ -64,7 +65,12 @@ class OpenMacroProposalPipeline(
     private fun explain(document: OpenMacroDocument): MacroExplanation {
         val blocks = buildList {
             addAll(explainBlocks(document.triggers, CapabilityLane.TRIGGER))
-            addAll(explainBlocks(document.conditions, CapabilityLane.CONDITION))
+            addAll(
+                explainBlocks(
+                    document.conditionTree?.conditionBlocks() ?: document.conditions,
+                    CapabilityLane.CONDITION,
+                ),
+            )
             addAll(explainBlocks(document.actions, CapabilityLane.ACTION))
         }
         return MacroExplanation(
@@ -134,6 +140,16 @@ class OpenMacroProposalPipeline(
                     afterExplanation = proposedExplanation,
                 ),
             )
+            if (approved.runtimePlan.conditionTree != proposedPlan.conditionTree) {
+                add(
+                    BehaviorChange(
+                        kind = BehaviorChangeKind.CONDITION_TREE_CHANGED,
+                        lane = CapabilityLane.CONDITION,
+                        before = "Previous condition logic",
+                        after = "Updated condition logic",
+                    ),
+                )
+            }
             addAll(
                 compareLane(
                     lane = CapabilityLane.CONDITION,
@@ -236,4 +252,11 @@ class OpenMacroProposalPipeline(
             }
         }
     }
+}
+
+private fun MacroConditionNode.conditionBlocks(): List<MacroBlock> = when (this) {
+    is MacroConditionNode.Condition -> listOf(block)
+    is MacroConditionNode.All -> children.flatMap { it.conditionBlocks() }
+    is MacroConditionNode.Any -> children.flatMap { it.conditionBlocks() }
+    is MacroConditionNode.Not -> child.conditionBlocks()
 }

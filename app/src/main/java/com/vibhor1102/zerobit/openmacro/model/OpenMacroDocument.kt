@@ -19,7 +19,26 @@ data class OpenMacroDocument(
     val triggers: List<MacroBlock>,
     val conditions: List<MacroBlock>,
     val actions: List<MacroBlock>,
+    val conditionTree: MacroConditionNode? = null,
 )
+
+sealed interface MacroConditionNode {
+    data class Condition(
+        val block: MacroBlock,
+    ) : MacroConditionNode
+
+    data class All(
+        val children: List<MacroConditionNode>,
+    ) : MacroConditionNode
+
+    data class Any(
+        val children: List<MacroConditionNode>,
+    ) : MacroConditionNode
+
+    data class Not(
+        val child: MacroConditionNode,
+    ) : MacroConditionNode
+}
 
 data class MacroVariable(
     val name: String,

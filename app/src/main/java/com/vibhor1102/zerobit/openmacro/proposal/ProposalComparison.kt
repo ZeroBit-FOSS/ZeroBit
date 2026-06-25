@@ -31,4 +31,5 @@ enum class BehaviorChangeKind {
     BLOCK_REMOVED,
     BLOCK_CHANGED,
     BLOCK_REORDERED,
+    CONDITION_TREE_CHANGED,
 }

@@ -5,6 +5,7 @@
 package com.vibhor1102.zerobit.openmacro.source
 
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
+import com.vibhor1102.zerobit.openmacro.model.MacroConditionNode
 import com.vibhor1102.zerobit.openmacro.model.MacroMetadata
 import com.vibhor1102.zerobit.openmacro.model.MacroValue
 import com.vibhor1102.zerobit.openmacro.model.MacroVariable
@@ -183,9 +184,24 @@ object OpenMacroYamlReader {
     private fun decodeDocument(root: Node): OpenMacroDocument {
         val map = root.mapping("$")
         map.requireOnlyKeys(
-            allowed = setOf("format", "metadata", "variables", "triggers", "conditions", "actions"),
+            allowed = setOf(
+                "format",
+                "metadata",
+                "variables",
+                "triggers",
+                "conditions",
+                "condition_tree",
+                "actions",
+            ),
             path = "$",
         )
+        if (map.optional("conditions") != null && map.optional("condition_tree") != null) {
+            map.node.problem(
+                "$.condition_tree",
+                "mixed_condition_forms",
+                "Use either 'conditions' or 'condition_tree', not both.",
+            )
+        }
 
         return OpenMacroDocument(
             format = map.required("format", "$").text("$.format"),
@@ -198,7 +214,58 @@ object OpenMacroYamlReader {
                 decodeBlocks(it, "$.conditions")
             }.orEmpty(),
             actions = decodeBlocks(map.required("actions", "$"), "$.actions"),
+            conditionTree = map.optional("condition_tree")?.let {
+                decodeConditionNode(it, "$.condition_tree")
+            },
         )
+    }
+
+    private fun decodeConditionNode(
+        node: Node,
+        path: String,
+    ): MacroConditionNode {
+        val map = node.mapping(path)
+        val keys = map.entries.keys
+        if (keys.size != 1) {
+            node.problem(
+                path,
+                "invalid_condition_node",
+                "A condition node must contain exactly one of 'condition', 'all', 'any', or 'not'.",
+            )
+        }
+        return when (val key = keys.single()) {
+            "condition" -> MacroConditionNode.Condition(
+                decodeBlock(map.entries.getValue(key), "$path.condition"),
+            )
+            "all" -> MacroConditionNode.All(
+                decodeConditionChildren(map.entries.getValue(key), "$path.all"),
+            )
+            "any" -> MacroConditionNode.Any(
+                decodeConditionChildren(map.entries.getValue(key), "$path.any"),
+            )
+            "not" -> MacroConditionNode.Not(
+                decodeConditionNode(map.entries.getValue(key), "$path.not"),
+            )
+            else -> node.problem(
+                path,
+                "invalid_condition_node",
+                "Unknown condition node '$key'. Expected 'condition', 'all', 'any', or 'not'.",
+            )
+        }
+    }
+
+    private fun decodeConditionChildren(node: Node, path: String): List<MacroConditionNode> {
+        val children = node.sequence(path).mapIndexed { index, child ->
+            decodeConditionNode(child, "$path[$index]")
+        }
+        if (children.isEmpty()) {
+            node.problem(
+                path,
+                "empty_condition_group",
+                "Condition groups must contain at least one child.",
+            )
+        }
+        return children
     }
 
     private fun decodeVariables(node: Node, path: String): List<MacroVariable> =
@@ -282,17 +349,20 @@ object OpenMacroYamlReader {
 
     private fun decodeBlocks(node: Node, path: String): List<MacroBlock> =
         node.sequence(path).mapIndexed { index, blockNode ->
-            val blockPath = "$path[$index]"
-            val map = blockNode.mapping(blockPath)
-            map.requireOnlyKeys(setOf("id", "type", "config"), blockPath)
-            MacroBlock(
-                id = map.required("id", blockPath).text("$blockPath.id"),
-                type = map.required("type", blockPath).text("$blockPath.type"),
-                config = map.optional("config")?.let {
-                    decodeConfigMap(it, "$blockPath.config")
-                }.orEmpty(),
-            )
+            decodeBlock(blockNode, "$path[$index]")
         }
+
+    private fun decodeBlock(node: Node, path: String): MacroBlock {
+        val map = node.mapping(path)
+        map.requireOnlyKeys(setOf("id", "type", "config"), path)
+        return MacroBlock(
+            id = map.required("id", path).text("$path.id"),
+            type = map.required("type", path).text("$path.type"),
+            config = map.optional("config")?.let {
+                decodeConfigMap(it, "$path.config")
+            }.orEmpty(),
+        )
+    }
 
     private fun decodeConfigMap(node: Node, path: String): Map<String, MacroValue> =
         node.mapping(path).entries.mapValues { (key, value) ->
