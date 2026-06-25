@@ -222,8 +222,8 @@ object OpenMacroYamlReader {
         }
 
     private fun decodeConfigMap(node: Node, path: String): Map<String, MacroValue> =
-        node.mapping(path).entries.associate { (key, value) ->
-            key to decodeMacroValue(value, "$path.$key")
+        node.mapping(path).entries.mapValues { (key, value) ->
+            decodeMacroValue(value, "$path.$key")
         }
 
     private fun decodeMacroValue(node: Node, path: String): MacroValue = when (node) {
