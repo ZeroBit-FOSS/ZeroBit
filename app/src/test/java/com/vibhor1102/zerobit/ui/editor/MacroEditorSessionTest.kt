@@ -14,6 +14,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.math.BigDecimal
 
 class MacroEditorSessionTest {
     @Test
@@ -790,6 +791,34 @@ class MacroEditorSessionTest {
         require(added is FormSourceEditResult.Updated)
         assertTrue(added.state.sourceText.contains("id: \"open-map-location\""))
         assertTrue(added.state.sourceText.contains("query: \"India Gate, New Delhi\""))
+        assertTrue(added.state.result is ProposalResult.Ready)
+    }
+
+    @Test
+    fun configuredAlarmSetupCanEnterSource() {
+        val session = MacroEditorSession(pipeline, initialApproved = null)
+        val initial = session.create(SampleMacro.source)
+        val configured = MacroBlockEditor.configureTemplate(
+            CapabilityRegistry.builtIn(),
+            requireNotNull(initial.visibleProposal).source.document,
+            topLevelTemplate("android.alarm.set"),
+            mapOf(
+                "hour" to MacroValue.Number(BigDecimal("7")),
+                "minute" to MacroValue.Number(BigDecimal("30")),
+                "label" to MacroValue.Text("Morning"),
+                "skipUi" to MacroValue.Boolean(false),
+            ),
+        )
+        require(configured is TemplateConfigurationResult.Configured)
+
+        val added = session.addTopLevelBlock(initial, configured.template)
+
+        require(added is FormSourceEditResult.Updated)
+        assertTrue(added.state.sourceText.contains("id: \"set-alarm\""))
+        assertTrue(added.state.sourceText.contains("hour: 7"))
+        assertTrue(added.state.sourceText.contains("minute: 30"))
+        assertTrue(added.state.sourceText.contains("label: \"Morning\""))
+        assertTrue(added.state.sourceText.contains("skipUi: false"))
         assertTrue(added.state.result is ProposalResult.Ready)
     }
 

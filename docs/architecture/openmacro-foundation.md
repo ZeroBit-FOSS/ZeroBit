@@ -658,6 +658,13 @@ percent-encodes the query into ZeroBit's fixed `geo:0,0?q=` shape and opens it
 with `ACTION_VIEW`. Macro source cannot supply an arbitrary URI, and the action
 does not read device location or request location permission.
 
+Set Alarm accepts whole-number hour and minute fields, an optional bounded
+label, and an explicit skip-UI boolean. The compiled runtime step maps only
+those values to Android's fixed `ACTION_SET_ALARM` extras. The app declares the
+normal `SET_ALARM` intent permission but receives no access to existing alarms
+or clock data, and macro source cannot add ringtone, repeat, package, or other
+intent fields.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

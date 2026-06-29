@@ -137,9 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Set Alarm Action**: Add validated hour, minute, optional label,
-  and skip-UI choice through Android's fixed alarm intent; never request clock
-  data access or expose arbitrary intent fields.
+- **Target 1: Set Timer Action**: Add bounded duration seconds, optional label,
+  and skip-UI choice through Android's fixed timer intent; reuse the normal
+  clock-app permission and expose no arbitrary intent fields.
 
 ### Completed Foundations
 
@@ -355,6 +355,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Open Map Location Action**: Setup accepts bounded literal or referenced
   search text, runtime revalidates and encodes it into a fixed `geo` query, and
   opens a map app without reading location or accepting arbitrary URIs.
+- **Set Alarm Action**: Whole-number time, optional bounded label, and skip-UI
+  choice compile to fixed `ACTION_SET_ALARM` extras; the normal intent permission
+  grants no access to existing alarms or clock data.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

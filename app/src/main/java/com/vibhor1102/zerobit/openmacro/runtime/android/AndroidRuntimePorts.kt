@@ -31,6 +31,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.provider.Settings
+import android.provider.AlarmClock
 import android.telephony.SmsManager
 import android.util.Log
 import com.vibhor1102.zerobit.R
@@ -699,6 +700,7 @@ class AndroidActionExecutor(
             is RuntimeStep.DialNumber -> dialNumber(action, context)
             is RuntimeStep.ComposeEmail -> composeEmail(action, context)
             is RuntimeStep.OpenMapLocation -> openMapLocation(action, context)
+            is RuntimeStep.SetAlarm -> setAlarm(action)
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -835,6 +837,23 @@ class AndroidActionExecutor(
             ActionResult.Failed("No map app is available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Android could not open the map location.")
+        }
+    }
+
+    private fun setAlarm(action: RuntimeStep.SetAlarm): ActionResult {
+        val intent = Intent(AlarmClock.ACTION_SET_ALARM)
+            .putExtra(AlarmClock.EXTRA_HOUR, action.hour)
+            .putExtra(AlarmClock.EXTRA_MINUTES, action.minute)
+            .putExtra(AlarmClock.EXTRA_SKIP_UI, action.skipUi)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        action.label?.let { intent.putExtra(AlarmClock.EXTRA_MESSAGE, it) }
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("No clock app can set an alarm.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Android could not set the alarm.")
         }
     }
 

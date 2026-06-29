@@ -232,6 +232,14 @@ sealed interface RuntimeStep {
         val query: RuntimeValueSource,
     ) : RuntimeStep
 
+    data class SetAlarm(
+        override val blockId: String,
+        val hour: Int,
+        val minute: Int,
+        val label: String?,
+        val skipUi: Boolean,
+    ) : RuntimeStep
+
     data class SetVariable(
         override val blockId: String,
         val name: String,

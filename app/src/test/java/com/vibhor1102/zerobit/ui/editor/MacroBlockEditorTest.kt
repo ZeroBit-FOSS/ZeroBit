@@ -19,6 +19,7 @@ import com.vibhor1102.zerobit.openmacro.validation.ValidationIssue
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.math.BigDecimal
 
 class MacroBlockEditorTest {
     @Test
@@ -873,6 +874,7 @@ class MacroBlockEditorTest {
                 "android.app.launch",
                 "android.app.details",
                 "android.app.notification-settings",
+                "android.alarm.set",
                 "android.email.compose",
                 "android.intent.share-text",
                 "android.map.open",
@@ -1023,6 +1025,33 @@ class MacroBlockEditorTest {
                 mapOf("capture" to MacroValue.ListValue(emptyList())),
             ) is TemplateConfigurationResult.Rejected,
         )
+    }
+
+    @Test
+    fun alarmSetupPublishesBoundedDefaultsAndOptionalLabel() {
+        val registry = CapabilityRegistry.builtIn()
+        val document = document().copy(conditionTree = null)
+        val option = MacroBlockEditor.topLevelTemplates(
+            registry,
+            CapabilityLane.ACTION,
+            document,
+        ).single { it.type == "android.alarm.set" }
+
+        assertTrue(option.setupRequired)
+        assertEquals(MacroValue.Number(BigDecimal("7")), option.defaultConfig["hour"])
+        assertEquals(MacroValue.Number(BigDecimal.ZERO), option.defaultConfig["minute"])
+        assertEquals(MacroValue.Boolean(false), option.defaultConfig["skipUi"])
+        assertEquals(null, option.defaultConfig["label"])
+        val configured = MacroBlockEditor.configureTemplate(
+            registry,
+            document,
+            option,
+            option.defaultConfig + ("label" to MacroValue.Text("Morning")),
+        )
+        require(configured is TemplateConfigurationResult.Configured)
+        val added = MacroBlockEditor.addTopLevelBlock(document, configured.template)
+        require(added is BlockEditResult.Updated)
+        assertEquals(emptyList<ValidationIssue>(), OpenMacroValidator.validate(added.document, registry))
     }
 
     @Test
