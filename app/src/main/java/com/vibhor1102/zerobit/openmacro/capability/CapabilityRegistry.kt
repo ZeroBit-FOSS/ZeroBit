@@ -50,6 +50,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenMapLocationAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.SetAlarmAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.SetTimerAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ShowAlarmsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.CalendarEventDraftAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -118,6 +119,7 @@ class CapabilityRegistry private constructor(
                 SetAlarmAction,
                 SetTimerAction,
                 ShowAlarmsAction,
+                CalendarEventDraftAction,
             ),
         )
 

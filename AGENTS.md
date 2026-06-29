@@ -137,9 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Calendar Event Draft Action**: Add explicit start, end, and
-  timezone values plus bounded title, location, and description sources through
-  a fixed calendar insert intent that never writes directly or requests access.
+- **Target 1: Contact Draft Action**: Add bounded name, phone, and email value
+  sources through a fixed contacts insert intent that never writes directly,
+  accepts no account or raw-contact IDs, and requests no contacts access.
 
 ### Completed Foundations
 
@@ -364,6 +364,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Show Alarms Action**: A config-free typed step opens Android's alarm list
   through fixed `ACTION_SHOW_ALARMS` without reading alarm IDs or state into
   ZeroBit.
+- **Calendar Event Draft Action**: Explicit local times and timezone compile to
+  deterministic bounded instants; fixed `ACTION_INSERT` opens validated text
+  fields as a draft without calendar access or direct writes.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

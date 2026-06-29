@@ -32,6 +32,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.provider.Settings
 import android.provider.AlarmClock
+import android.provider.CalendarContract
 import android.telephony.SmsManager
 import android.util.Log
 import com.vibhor1102.zerobit.R
@@ -42,6 +43,9 @@ import com.vibhor1102.zerobit.openmacro.runtime.BatteryDirection
 import com.vibhor1102.zerobit.openmacro.runtime.ConditionResult
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_EMAIL_BODY_LENGTH
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_EMAIL_SUBJECT_LENGTH
+import com.vibhor1102.zerobit.openmacro.runtime.MAX_CALENDAR_DESCRIPTION_LENGTH
+import com.vibhor1102.zerobit.openmacro.runtime.MAX_CALENDAR_LOCATION_LENGTH
+import com.vibhor1102.zerobit.openmacro.runtime.MAX_CALENDAR_TITLE_LENGTH
 import com.vibhor1102.zerobit.openmacro.runtime.isValidMapQuery
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeActionExecutor
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeCancellation
@@ -703,6 +707,7 @@ class AndroidActionExecutor(
             is RuntimeStep.SetAlarm -> setAlarm(action)
             is RuntimeStep.SetTimer -> setTimer(action)
             is RuntimeStep.ShowAlarms -> showAlarms()
+            is RuntimeStep.CreateCalendarEventDraft -> createCalendarEventDraft(action, context)
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -885,6 +890,55 @@ class AndroidActionExecutor(
             ActionResult.Failed("No clock app can show alarms.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Android could not open the alarm list.")
+        }
+    }
+
+    private fun createCalendarEventDraft(
+        action: RuntimeStep.CreateCalendarEventDraft,
+        context: RuntimeContext,
+    ): ActionResult {
+        val title = when (val result = action.title.resolveText(context, "calendar event title")) {
+            is TextResolution.Failure -> return result.result
+            is TextResolution.Value -> result.value
+        }
+        val location = when (val source = action.location) {
+            null -> null
+            else -> when (val result = source.resolveText(context, "calendar event location")) {
+                is TextResolution.Failure -> return result.result
+                is TextResolution.Value -> result.value
+            }
+        }
+        val description = when (val source = action.description) {
+            null -> null
+            else -> when (val result = source.resolveText(context, "calendar event description")) {
+                is TextResolution.Failure -> return result.result
+                is TextResolution.Value -> result.value
+            }
+        }
+        if (title.isBlank() || title.length > MAX_CALENDAR_TITLE_LENGTH) {
+            return ActionResult.Failed("The resolved calendar event title must be 1 to 200 characters.")
+        }
+        if (location != null && (location.isBlank() || location.length > MAX_CALENDAR_LOCATION_LENGTH)) {
+            return ActionResult.Failed("The resolved calendar event location must be 1 to 500 characters.")
+        }
+        if (description != null && (description.isBlank() || description.length > MAX_CALENDAR_DESCRIPTION_LENGTH)) {
+            return ActionResult.Failed("The resolved calendar event description must be 1 to 5000 characters.")
+        }
+        val intent = Intent(Intent.ACTION_INSERT)
+            .setData(CalendarContract.Events.CONTENT_URI)
+            .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, action.startMillis)
+            .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, action.endMillis)
+            .putExtra(CalendarContract.Events.TITLE, title)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        location?.let { intent.putExtra(CalendarContract.Events.EVENT_LOCATION, it) }
+        description?.let { intent.putExtra(CalendarContract.Events.DESCRIPTION, it) }
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("No calendar app can create an event draft.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Android could not open the calendar event draft.")
         }
     }
 

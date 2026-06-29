@@ -674,6 +674,14 @@ Show Alarms is config-free and compiles to one `ACTION_SHOW_ALARMS` runtime
 step. It opens the clock app's own alarm list, accepts no alarm identifiers or
 arbitrary extras, and does not copy alarm data into ZeroBit.
 
+Calendar Event Draft uses exact minute-level local start and end values plus an
+IANA timezone. Compilation resolves DST gaps by moving forward and overlaps by
+choosing the earlier offset, then freezes a positive duration of at most seven
+days into epoch milliseconds. Bounded title, location, and description sources
+are rechecked after runtime resolution and passed only to fixed
+`ACTION_INSERT` calendar-event extras. ZeroBit never writes the calendar or
+requests calendar access.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

@@ -875,6 +875,7 @@ class MacroBlockEditorTest {
                 "android.app.details",
                 "android.app.notification-settings",
                 "android.alarm.set",
+                "android.calendar.event-draft",
                 "android.email.compose",
                 "android.intent.share-text",
                 "android.map.open",
@@ -989,6 +990,27 @@ class MacroBlockEditorTest {
         val mapAdded = MacroBlockEditor.addTopLevelBlock(document, map.template)
         require(mapAdded is BlockEditResult.Updated)
         assertEquals(emptyList<ValidationIssue>(), OpenMacroValidator.validate(mapAdded.document, registry))
+
+        val calendar = MacroBlockEditor.configureTemplate(
+            registry,
+            document,
+            options.getValue("android.calendar.event-draft"),
+            mapOf(
+                "start" to MacroValue.Text("2026-07-01T09:00"),
+                "end" to MacroValue.Text("2026-07-01T10:00"),
+                "timezone" to MacroValue.Text("Asia/Kolkata"),
+                "title" to reference,
+                "location" to reference,
+                "description" to reference,
+            ),
+        )
+        require(calendar is TemplateConfigurationResult.Configured)
+        val calendarAdded = MacroBlockEditor.addTopLevelBlock(document, calendar.template)
+        require(calendarAdded is BlockEditResult.Updated)
+        assertEquals(
+            emptyList<ValidationIssue>(),
+            OpenMacroValidator.validate(calendarAdded.document, registry),
+        )
     }
 
     @Test

@@ -251,6 +251,15 @@ sealed interface RuntimeStep {
         override val blockId: String,
     ) : RuntimeStep
 
+    data class CreateCalendarEventDraft(
+        override val blockId: String,
+        val startMillis: Long,
+        val endMillis: Long,
+        val title: RuntimeValueSource,
+        val location: RuntimeValueSource?,
+        val description: RuntimeValueSource?,
+    ) : RuntimeStep
+
     data class SetVariable(
         override val blockId: String,
         val name: String,

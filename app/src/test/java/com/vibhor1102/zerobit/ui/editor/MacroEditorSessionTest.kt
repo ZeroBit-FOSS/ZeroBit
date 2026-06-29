@@ -849,6 +849,33 @@ class MacroEditorSessionTest {
     }
 
     @Test
+    fun configuredCalendarDraftSetupCanEnterSource() {
+        val session = MacroEditorSession(pipeline, initialApproved = null)
+        val initial = session.create(SampleMacro.source)
+        val configured = MacroBlockEditor.configureTemplate(
+            CapabilityRegistry.builtIn(),
+            requireNotNull(initial.visibleProposal).source.document,
+            topLevelTemplate("android.calendar.event-draft"),
+            mapOf(
+                "start" to MacroValue.Text("2026-07-01T09:00"),
+                "end" to MacroValue.Text("2026-07-01T10:00"),
+                "timezone" to MacroValue.Text("Asia/Kolkata"),
+                "title" to MacroValue.Text("Planning"),
+            ),
+        )
+        require(configured is TemplateConfigurationResult.Configured)
+
+        val added = session.addTopLevelBlock(initial, configured.template)
+
+        require(added is FormSourceEditResult.Updated)
+        assertTrue(added.state.sourceText.contains("id: \"calendar-event-draft\""))
+        assertTrue(added.state.sourceText.contains("start: \"2026-07-01T09:00\""))
+        assertTrue(added.state.sourceText.contains("timezone: \"Asia/Kolkata\""))
+        assertTrue(added.state.sourceText.contains("title: \"Planning\""))
+        assertTrue(added.state.result is ProposalResult.Ready)
+    }
+
+    @Test
     fun configuredNotificationTriggerSetupCanEnterSource() {
         val session = MacroEditorSession(pipeline, initialApproved = null)
         val initial = session.create(SampleMacro.source)
