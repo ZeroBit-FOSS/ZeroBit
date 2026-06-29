@@ -56,6 +56,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenWifiSettingsActio
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenBluetoothSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenNfcSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenLocationSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAccessibilitySettingsAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -130,6 +131,7 @@ class CapabilityRegistry private constructor(
                 OpenBluetoothSettingsAction,
                 OpenNfcSettingsAction,
                 OpenLocationSettingsAction,
+                OpenAccessibilitySettingsAction,
             ),
         )
 

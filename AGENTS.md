@@ -137,9 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Open Accessibility Settings Action**: Add a config-free typed
-  action for Android's exact accessibility settings route; do not target or
-  enable a service, expose generic settings, or request accessibility access.
+- **Target 1: Open Battery Optimization Settings Action**: Add a config-free
+  typed action for Android's exact battery-optimization settings list; do not
+  request an exemption, target a package, or expose generic intent fields.
 
 ### Completed Foundations
 
@@ -382,6 +382,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Open Location Settings Action**: A config-free typed step opens only the
   location-source settings route without location reads, provider mutation, or
   location permission.
+- **Open Accessibility Settings Action**: A config-free typed step opens only
+  the accessibility settings route without targeting, enabling, or configuring
+  any service.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

@@ -716,6 +716,7 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenBluetoothSettings -> openBluetoothSettings()
             is RuntimeStep.OpenNfcSettings -> openNfcSettings()
             is RuntimeStep.OpenLocationSettings -> openLocationSettings()
+            is RuntimeStep.OpenAccessibilitySettings -> openAccessibilitySettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1046,6 +1047,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android location settings are not available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open location settings.")
+        }
+    }
+
+    private fun openAccessibilitySettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android accessibility settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open accessibility settings.")
         }
     }
 

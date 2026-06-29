@@ -707,6 +707,10 @@ Open Location Settings uses only `Settings.ACTION_LOCATION_SOURCE_SETTINGS`.
 It accepts no provider, enabled-state, generic action, or other config, and it
 neither reads location nor requests location permission.
 
+Open Accessibility Settings uses only `Settings.ACTION_ACCESSIBILITY_SETTINGS`.
+It cannot target, enable, or configure a service, accepts no generic action or
+component fields, and does not itself request accessibility access.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

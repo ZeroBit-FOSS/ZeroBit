@@ -62,6 +62,7 @@ class CapabilityRegistryTest {
                 "Open location settings",
                 "Open NFC settings",
                 "Open Wi-Fi settings",
+                "Open accessibility settings",
                 "Open app details",
                 "Open map location",
                 "Open notification settings",
