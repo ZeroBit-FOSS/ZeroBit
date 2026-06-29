@@ -51,6 +51,7 @@ class CapabilityRegistryTest {
         assertEquals(
             listOf(
                 "Action group",
+                "Compose email",
                 "Copy text to clipboard",
                 "Dial number",
                 "Increment variable",

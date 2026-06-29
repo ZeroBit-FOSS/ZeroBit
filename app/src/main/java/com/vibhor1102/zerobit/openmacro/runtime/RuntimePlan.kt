@@ -220,6 +220,13 @@ sealed interface RuntimeStep {
         val phoneNumber: RuntimeValueSource,
     ) : RuntimeStep
 
+    data class ComposeEmail(
+        override val blockId: String,
+        val recipient: RuntimeValueSource,
+        val subject: RuntimeValueSource,
+        val body: RuntimeValueSource,
+    ) : RuntimeStep
+
     data class SetVariable(
         override val blockId: String,
         val name: String,

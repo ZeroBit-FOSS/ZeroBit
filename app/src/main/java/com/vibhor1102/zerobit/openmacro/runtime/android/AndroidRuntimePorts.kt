@@ -39,6 +39,8 @@ import com.vibhor1102.zerobit.openmacro.model.MacroValue
 import com.vibhor1102.zerobit.openmacro.runtime.ActionResult
 import com.vibhor1102.zerobit.openmacro.runtime.BatteryDirection
 import com.vibhor1102.zerobit.openmacro.runtime.ConditionResult
+import com.vibhor1102.zerobit.openmacro.runtime.MAX_EMAIL_BODY_LENGTH
+import com.vibhor1102.zerobit.openmacro.runtime.MAX_EMAIL_SUBJECT_LENGTH
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeActionExecutor
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeCancellation
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeConditionEvaluator
@@ -52,6 +54,7 @@ import com.vibhor1102.zerobit.openmacro.runtime.RuntimeTriggerEvent
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeTriggerRegistrar
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeValueSource
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeValueSourceResult
+import com.vibhor1102.zerobit.openmacro.runtime.isValidEmailAddress
 import com.vibhor1102.zerobit.openmacro.runtime.ScheduleEventSource
 import com.vibhor1102.zerobit.openmacro.runtime.ScheduleSubscriptionCoordinator
 import com.vibhor1102.zerobit.openmacro.runtime.TriggerSubscriptionResult
@@ -693,6 +696,7 @@ class AndroidActionExecutor(
             is RuntimeStep.Vibrate -> vibrate(action)
             is RuntimeStep.CopyTextToClipboard -> copyTextToClipboard(action, context)
             is RuntimeStep.DialNumber -> dialNumber(action, context)
+            is RuntimeStep.ComposeEmail -> composeEmail(action, context)
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -763,6 +767,48 @@ class AndroidActionExecutor(
             ActionResult.Failed("No dialer app is available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Android could not open the dialer.")
+        }
+    }
+
+    private fun composeEmail(
+        action: RuntimeStep.ComposeEmail,
+        context: RuntimeContext,
+    ): ActionResult {
+        val recipient = when (val result = action.recipient.resolveText(context, "email recipient")) {
+            is TextResolution.Failure -> return result.result
+            is TextResolution.Value -> result.value
+        }
+        val subject = when (val result = action.subject.resolveText(context, "email subject")) {
+            is TextResolution.Failure -> return result.result
+            is TextResolution.Value -> result.value
+        }
+        val body = when (val result = action.body.resolveText(context, "email body")) {
+            is TextResolution.Failure -> return result.result
+            is TextResolution.Value -> result.value
+        }
+        if (!isValidEmailAddress(recipient)) {
+            return ActionResult.Failed("The resolved email recipient is not valid.")
+        }
+        if (subject.isBlank() || subject.length > MAX_EMAIL_SUBJECT_LENGTH) {
+            return ActionResult.Failed("The resolved email subject must be 1 to 998 characters.")
+        }
+        if (body.isBlank() || body.length > MAX_EMAIL_BODY_LENGTH) {
+            return ActionResult.Failed("The resolved email body must be 1 to 20000 characters.")
+        }
+        val intent = Intent(
+            Intent.ACTION_SENDTO,
+            android.net.Uri.fromParts("mailto", recipient, null),
+        )
+            .putExtra(Intent.EXTRA_SUBJECT, subject)
+            .putExtra(Intent.EXTRA_TEXT, body)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("No email app is available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Android could not open the email draft.")
         }
     }
 

@@ -45,6 +45,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.BatterySaverCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatterySaverTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.TimeWindowCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.DialNumberAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.ComposeEmailAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -108,6 +109,7 @@ class CapabilityRegistry private constructor(
                 StopIfAction,
                 ActionGroupAction,
                 DialNumberAction,
+                ComposeEmailAction,
             ),
         )
 

@@ -137,9 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Compose Email Action**: Add validated recipient, subject, and body
-  value sources through a fixed email compose intent that never sends directly,
-  exposes no arbitrary URI shape, and requires no account permission.
+- **Target 1: Open Map Location Action**: Add a bounded literal or referenced
+  location query through a fixed map-view intent assembled by ZeroBit; expose
+  no arbitrary URI and require no location permission.
 
 ### Completed Foundations
 
@@ -349,6 +349,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Dial Number Action**: Setup accepts bounded literal or referenced phone text,
   runtime revalidates it, and fixed `ACTION_DIAL` opens the dialer without placing
   calls or requesting call permission.
+- **Compose Email Action**: Setup accepts validated recipient, subject, and body
+  text sources; runtime rechecks resolved values and fixed `ACTION_SENDTO` opens
+  a draft without sending mail or requesting account permission.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

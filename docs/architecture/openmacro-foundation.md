@@ -644,6 +644,14 @@ symbols while rejecting URI/control injection, and runtime resolution repeats
 that check. Android receives only fixed `ACTION_DIAL` with a `tel` URI assembled
 from parts; ZeroBit never uses `ACTION_CALL` and requests no call permission.
 
+Compose Email requires recipient, subject, and body text sources during setup.
+Literal recipients pass a conservative single-address validator before
+compilation, and referenced recipients are checked after runtime resolution;
+subject and body lengths are bounded at both points. Android receives only
+fixed `ACTION_SENDTO` with a `mailto` URI assembled from the validated address
+plus standard subject and body extras. ZeroBit never sends the message and
+requests no email-account permission.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

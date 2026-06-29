@@ -873,6 +873,7 @@ class MacroBlockEditorTest {
                 "android.app.launch",
                 "android.app.details",
                 "android.app.notification-settings",
+                "android.email.compose",
                 "android.intent.share-text",
                 "android.phone.dial",
                 "android.sms.send",
@@ -955,6 +956,24 @@ class MacroBlockEditorTest {
         val smsAdded = MacroBlockEditor.addTopLevelBlock(document, sms.template)
         require(smsAdded is BlockEditResult.Updated)
         assertEquals(emptyList<ValidationIssue>(), OpenMacroValidator.validate(smsAdded.document, registry))
+
+        val email = MacroBlockEditor.configureTemplate(
+            registry,
+            document,
+            options.getValue("android.email.compose"),
+            mapOf(
+                "recipient" to MacroValue.Text("person@example.com"),
+                "subject" to reference,
+                "body" to reference,
+            ),
+        )
+        require(email is TemplateConfigurationResult.Configured)
+        val emailAdded = MacroBlockEditor.addTopLevelBlock(document, email.template)
+        require(emailAdded is BlockEditResult.Updated)
+        assertEquals(
+            emptyList<ValidationIssue>(),
+            OpenMacroValidator.validate(emailAdded.document, registry),
+        )
     }
 
     @Test
