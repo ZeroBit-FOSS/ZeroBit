@@ -880,6 +880,7 @@ class MacroBlockEditorTest {
                 "android.map.open",
                 "android.phone.dial",
                 "android.sms.send",
+                "android.timer.set",
                 "android.web.open",
             ).sorted(),
             options.map { it.type }.sorted(),
@@ -1047,6 +1048,32 @@ class MacroBlockEditorTest {
             document,
             option,
             option.defaultConfig + ("label" to MacroValue.Text("Morning")),
+        )
+        require(configured is TemplateConfigurationResult.Configured)
+        val added = MacroBlockEditor.addTopLevelBlock(document, configured.template)
+        require(added is BlockEditResult.Updated)
+        assertEquals(emptyList<ValidationIssue>(), OpenMacroValidator.validate(added.document, registry))
+    }
+
+    @Test
+    fun timerSetupPublishesBoundedDefaultsAndOptionalLabel() {
+        val registry = CapabilityRegistry.builtIn()
+        val document = document().copy(conditionTree = null)
+        val option = MacroBlockEditor.topLevelTemplates(
+            registry,
+            CapabilityLane.ACTION,
+            document,
+        ).single { it.type == "android.timer.set" }
+
+        assertTrue(option.setupRequired)
+        assertEquals(MacroValue.Number(BigDecimal("300")), option.defaultConfig["seconds"])
+        assertEquals(MacroValue.Boolean(false), option.defaultConfig["skipUi"])
+        assertEquals(null, option.defaultConfig["label"])
+        val configured = MacroBlockEditor.configureTemplate(
+            registry,
+            document,
+            option,
+            option.defaultConfig + ("label" to MacroValue.Text("Tea")),
         )
         require(configured is TemplateConfigurationResult.Configured)
         val added = MacroBlockEditor.addTopLevelBlock(document, configured.template)

@@ -240,6 +240,13 @@ sealed interface RuntimeStep {
         val skipUi: Boolean,
     ) : RuntimeStep
 
+    data class SetTimer(
+        override val blockId: String,
+        val durationSeconds: Int,
+        val label: String?,
+        val skipUi: Boolean,
+    ) : RuntimeStep
+
     data class SetVariable(
         override val blockId: String,
         val name: String,

@@ -665,6 +665,11 @@ normal `SET_ALARM` intent permission but receives no access to existing alarms
 or clock data, and macro source cannot add ringtone, repeat, package, or other
 intent fields.
 
+Set Timer accepts a whole-number duration from 1 to 86400 seconds, an optional
+bounded label, and an explicit skip-UI boolean. It compiles only to
+`ACTION_SET_TIMER` with length, message, and skip-UI extras, reusing the normal
+clock intent permission without reading timer or alarm state.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

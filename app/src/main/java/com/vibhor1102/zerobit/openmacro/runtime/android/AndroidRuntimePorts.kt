@@ -701,6 +701,7 @@ class AndroidActionExecutor(
             is RuntimeStep.ComposeEmail -> composeEmail(action, context)
             is RuntimeStep.OpenMapLocation -> openMapLocation(action, context)
             is RuntimeStep.SetAlarm -> setAlarm(action)
+            is RuntimeStep.SetTimer -> setTimer(action)
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -854,6 +855,22 @@ class AndroidActionExecutor(
             ActionResult.Failed("No clock app can set an alarm.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Android could not set the alarm.")
+        }
+    }
+
+    private fun setTimer(action: RuntimeStep.SetTimer): ActionResult {
+        val intent = Intent(AlarmClock.ACTION_SET_TIMER)
+            .putExtra(AlarmClock.EXTRA_LENGTH, action.durationSeconds)
+            .putExtra(AlarmClock.EXTRA_SKIP_UI, action.skipUi)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        action.label?.let { intent.putExtra(AlarmClock.EXTRA_MESSAGE, it) }
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("No clock app can set a timer.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Android could not set the timer.")
         }
     }
 

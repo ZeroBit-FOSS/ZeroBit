@@ -62,6 +62,7 @@ class CapabilityRegistryTest {
                 "Open web page",
                 "Send SMS",
                 "Set alarm",
+                "Set timer",
                 "Set variable",
                 "Share text with app",
                 "Show notification",
