@@ -137,9 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Open Data Usage Settings Action**: Add a config-free typed action
-  for Android's exact data-usage settings route; do not target a subscriber or
-  package, inspect usage, change policy, or expose generic intent fields.
+- **Target 1: Open Display Settings Action**: Add a config-free typed action for
+  Android's exact display settings route; do not write brightness, rotation, or
+  other display state and do not expose generic intent fields.
 
 ### Completed Foundations
 
@@ -388,6 +388,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Open Battery Optimization Settings Action**: A config-free typed step opens
   only the system optimization list without package targeting, exemption
   requests, or exemption permission.
+- **Open Data Usage Settings Action**: A config-free typed step opens only the
+  top-level data-usage route without subscriber/package targeting, usage reads,
+  or policy mutation.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

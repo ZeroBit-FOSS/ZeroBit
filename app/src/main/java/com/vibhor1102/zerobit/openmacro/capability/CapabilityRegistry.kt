@@ -58,6 +58,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenNfcSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenLocationSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAccessibilitySettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenBatteryOptimizationSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenDataUsageSettingsAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -134,6 +135,7 @@ class CapabilityRegistry private constructor(
                 OpenLocationSettingsAction,
                 OpenAccessibilitySettingsAction,
                 OpenBatteryOptimizationSettingsAction,
+                OpenDataUsageSettingsAction,
             ),
         )
 

@@ -718,6 +718,7 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenLocationSettings -> openLocationSettings()
             is RuntimeStep.OpenAccessibilitySettings -> openAccessibilitySettings()
             is RuntimeStep.OpenBatteryOptimizationSettings -> openBatteryOptimizationSettings()
+            is RuntimeStep.OpenDataUsageSettings -> openDataUsageSettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1074,6 +1075,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android battery optimization settings are not available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open battery optimization settings.")
+        }
+    }
+
+    private fun openDataUsageSettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_DATA_USAGE_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android data usage settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open data usage settings.")
         }
     }
 

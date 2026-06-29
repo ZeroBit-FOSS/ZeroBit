@@ -716,6 +716,10 @@ Open Battery Optimization Settings uses only the system-wide
 package or exemption request, declares no exemption permission, and cannot
 change optimization state directly.
 
+Open Data Usage Settings uses only `Settings.ACTION_DATA_USAGE_SETTINGS`. It
+accepts no subscriber, package, or policy fields, reads no usage statistics,
+changes no network policy, and requests no usage access.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

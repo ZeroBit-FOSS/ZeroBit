@@ -65,6 +65,7 @@ class CapabilityRegistryTest {
                 "Open accessibility settings",
                 "Open app details",
                 "Open battery optimization settings",
+                "Open data usage settings",
                 "Open map location",
                 "Open notification settings",
                 "Open web page",
