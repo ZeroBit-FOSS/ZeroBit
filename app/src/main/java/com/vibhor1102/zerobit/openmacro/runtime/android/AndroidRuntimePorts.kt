@@ -719,6 +719,7 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenAccessibilitySettings -> openAccessibilitySettings()
             is RuntimeStep.OpenBatteryOptimizationSettings -> openBatteryOptimizationSettings()
             is RuntimeStep.OpenDataUsageSettings -> openDataUsageSettings()
+            is RuntimeStep.OpenDisplaySettings -> openDisplaySettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1088,6 +1089,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android data usage settings are not available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open data usage settings.")
+        }
+    }
+
+    private fun openDisplaySettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_DISPLAY_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android display settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open display settings.")
         }
     }
 

@@ -720,6 +720,10 @@ Open Data Usage Settings uses only `Settings.ACTION_DATA_USAGE_SETTINGS`. It
 accepts no subscriber, package, or policy fields, reads no usage statistics,
 changes no network policy, and requests no usage access.
 
+Open Display Settings uses only `Settings.ACTION_DISPLAY_SETTINGS`. It accepts
+no brightness, rotation, timeout, or generic action fields and requests no
+write-settings access.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the
