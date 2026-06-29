@@ -723,6 +723,7 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenSoundSettings -> openSoundSettings()
             is RuntimeStep.OpenSecuritySettings -> openSecuritySettings()
             is RuntimeStep.OpenPrivacySettings -> openPrivacySettings()
+            is RuntimeStep.OpenDateTimeSettings -> openDateTimeSettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1144,6 +1145,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android privacy settings are not available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open privacy settings.")
+        }
+    }
+
+    private fun openDateTimeSettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_DATE_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android date and time settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open date and time settings.")
         }
     }
 

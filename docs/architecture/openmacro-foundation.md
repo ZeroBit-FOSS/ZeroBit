@@ -736,6 +736,10 @@ Open Privacy Settings uses only `Settings.ACTION_PRIVACY_SETTINGS`. It accepts
 no package, permission-history, sensor, dashboard, or generic action fields and
 does not inspect or change privacy state.
 
+Open Date & Time Settings uses only `Settings.ACTION_DATE_SETTINGS`. It accepts
+no date, clock, timezone, automatic-time, or generic action fields and does not
+read or mutate system clock state.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the
