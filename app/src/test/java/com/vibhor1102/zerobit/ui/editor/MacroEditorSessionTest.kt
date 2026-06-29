@@ -876,6 +876,30 @@ class MacroEditorSessionTest {
     }
 
     @Test
+    fun configuredContactDraftSetupCanEnterSource() {
+        val session = MacroEditorSession(pipeline, initialApproved = null)
+        val initial = session.create(SampleMacro.source)
+        val configured = MacroBlockEditor.configureTemplate(
+            CapabilityRegistry.builtIn(),
+            requireNotNull(initial.visibleProposal).source.document,
+            topLevelTemplate("android.contact.draft"),
+            mapOf(
+                "name" to MacroValue.Text("Ada Lovelace"),
+                "email" to MacroValue.Text("ada@example.com"),
+            ),
+        )
+        require(configured is TemplateConfigurationResult.Configured)
+
+        val added = session.addTopLevelBlock(initial, configured.template)
+
+        require(added is FormSourceEditResult.Updated)
+        assertTrue(added.state.sourceText.contains("id: \"contact-draft\""))
+        assertTrue(added.state.sourceText.contains("name: \"Ada Lovelace\""))
+        assertTrue(added.state.sourceText.contains("email: \"ada@example.com\""))
+        assertTrue(added.state.result is ProposalResult.Ready)
+    }
+
+    @Test
     fun configuredNotificationTriggerSetupCanEnterSource() {
         val session = MacroEditorSession(pipeline, initialApproved = null)
         val initial = session.create(SampleMacro.source)

@@ -33,6 +33,7 @@ import android.os.VibratorManager
 import android.provider.Settings
 import android.provider.AlarmClock
 import android.provider.CalendarContract
+import android.provider.ContactsContract
 import android.telephony.SmsManager
 import android.util.Log
 import com.vibhor1102.zerobit.R
@@ -46,6 +47,8 @@ import com.vibhor1102.zerobit.openmacro.runtime.MAX_EMAIL_SUBJECT_LENGTH
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_CALENDAR_DESCRIPTION_LENGTH
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_CALENDAR_LOCATION_LENGTH
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_CALENDAR_TITLE_LENGTH
+import com.vibhor1102.zerobit.openmacro.runtime.MAX_CONTACT_NAME_LENGTH
+import com.vibhor1102.zerobit.openmacro.runtime.isDialablePhoneNumber
 import com.vibhor1102.zerobit.openmacro.runtime.isValidMapQuery
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeActionExecutor
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeCancellation
@@ -708,6 +711,7 @@ class AndroidActionExecutor(
             is RuntimeStep.SetTimer -> setTimer(action)
             is RuntimeStep.ShowAlarms -> showAlarms()
             is RuntimeStep.CreateCalendarEventDraft -> createCalendarEventDraft(action, context)
+            is RuntimeStep.CreateContactDraft -> createContactDraft(action, context)
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -939,6 +943,53 @@ class AndroidActionExecutor(
             ActionResult.Failed("No calendar app can create an event draft.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Android could not open the calendar event draft.")
+        }
+    }
+
+    private fun createContactDraft(
+        action: RuntimeStep.CreateContactDraft,
+        context: RuntimeContext,
+    ): ActionResult {
+        val name = when (val result = action.name.resolveText(context, "contact name")) {
+            is TextResolution.Failure -> return result.result
+            is TextResolution.Value -> result.value
+        }
+        val phoneNumber = when (val source = action.phoneNumber) {
+            null -> null
+            else -> when (val result = source.resolveText(context, "contact phone number")) {
+                is TextResolution.Failure -> return result.result
+                is TextResolution.Value -> result.value
+            }
+        }
+        val email = when (val source = action.email) {
+            null -> null
+            else -> when (val result = source.resolveText(context, "contact email")) {
+                is TextResolution.Failure -> return result.result
+                is TextResolution.Value -> result.value
+            }
+        }
+        if (name.isBlank() || name.length > MAX_CONTACT_NAME_LENGTH) {
+            return ActionResult.Failed("The resolved contact name must be 1 to 200 characters.")
+        }
+        if (phoneNumber != null && !isDialablePhoneNumber(phoneNumber)) {
+            return ActionResult.Failed("The resolved contact phone number is not valid.")
+        }
+        if (email != null && !isValidEmailAddress(email)) {
+            return ActionResult.Failed("The resolved contact email is not valid.")
+        }
+        val intent = Intent(Intent.ACTION_INSERT)
+            .setType(ContactsContract.Contacts.CONTENT_TYPE)
+            .putExtra(ContactsContract.Intents.Insert.NAME, name)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        phoneNumber?.let { intent.putExtra(ContactsContract.Intents.Insert.PHONE, it) }
+        email?.let { intent.putExtra(ContactsContract.Intents.Insert.EMAIL, it) }
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("No contacts app can create a contact draft.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Android could not open the contact draft.")
         }
     }
 

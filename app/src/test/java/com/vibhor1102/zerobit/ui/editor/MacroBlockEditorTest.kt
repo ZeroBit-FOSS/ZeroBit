@@ -876,6 +876,7 @@ class MacroBlockEditorTest {
                 "android.app.notification-settings",
                 "android.alarm.set",
                 "android.calendar.event-draft",
+                "android.contact.draft",
                 "android.email.compose",
                 "android.intent.share-text",
                 "android.map.open",
@@ -1011,6 +1012,21 @@ class MacroBlockEditorTest {
             emptyList<ValidationIssue>(),
             OpenMacroValidator.validate(calendarAdded.document, registry),
         )
+
+        val contact = MacroBlockEditor.configureTemplate(
+            registry,
+            document,
+            options.getValue("android.contact.draft"),
+            mapOf(
+                "name" to reference,
+                "phoneNumber" to reference,
+                "email" to reference,
+            ),
+        )
+        require(contact is TemplateConfigurationResult.Configured)
+        val contactAdded = MacroBlockEditor.addTopLevelBlock(document, contact.template)
+        require(contactAdded is BlockEditResult.Updated)
+        assertEquals(emptyList<ValidationIssue>(), OpenMacroValidator.validate(contactAdded.document, registry))
     }
 
     @Test

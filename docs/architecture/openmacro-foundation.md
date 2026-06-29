@@ -682,6 +682,13 @@ are rechecked after runtime resolution and passed only to fixed
 `ACTION_INSERT` calendar-event extras. ZeroBit never writes the calendar or
 requests calendar access.
 
+Contact Draft requires a bounded name and optionally accepts phone and email
+text sources. Literal contact details use the same phone and email predicates as
+the dialer and mail actions, and referenced values are rechecked at runtime.
+Android receives only fixed `ACTION_INSERT` contact extras; ZeroBit accepts no
+account or raw-contact identifiers, writes nothing directly, and requests no
+contacts access.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

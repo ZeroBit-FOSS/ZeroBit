@@ -137,9 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Contact Draft Action**: Add bounded name, phone, and email value
-  sources through a fixed contacts insert intent that never writes directly,
-  accepts no account or raw-contact IDs, and requests no contacts access.
+- **Target 1: Open Wi-Fi Settings Action**: Add a config-free typed action for
+  Android's exact Wi-Fi settings route; do not expose a generic settings action,
+  arbitrary intent string, or direct Wi-Fi mutation.
 
 ### Completed Foundations
 
@@ -367,6 +367,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Calendar Event Draft Action**: Explicit local times and timezone compile to
   deterministic bounded instants; fixed `ACTION_INSERT` opens validated text
   fields as a draft without calendar access or direct writes.
+- **Contact Draft Action**: Bounded name plus optional validated phone and email
+  sources open through fixed contact `ACTION_INSERT`; no account IDs, contacts
+  access, or direct writes are supported.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

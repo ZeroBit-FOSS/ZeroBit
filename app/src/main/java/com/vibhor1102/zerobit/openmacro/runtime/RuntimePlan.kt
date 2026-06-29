@@ -260,6 +260,13 @@ sealed interface RuntimeStep {
         val description: RuntimeValueSource?,
     ) : RuntimeStep
 
+    data class CreateContactDraft(
+        override val blockId: String,
+        val name: RuntimeValueSource,
+        val phoneNumber: RuntimeValueSource?,
+        val email: RuntimeValueSource?,
+    ) : RuntimeStep
+
     data class SetVariable(
         override val blockId: String,
         val name: String,
