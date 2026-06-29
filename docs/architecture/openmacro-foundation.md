@@ -652,6 +652,12 @@ fixed `ACTION_SENDTO` with a `mailto` URI assembled from the validated address
 plus standard subject and body extras. ZeroBit never sends the message and
 requests no email-account permission.
 
+Open Map Location stores only a bounded literal or referenced location query.
+Runtime resolution rejects blank, oversized, or control-bearing text, then
+percent-encodes the query into ZeroBit's fixed `geo:0,0?q=` shape and opens it
+with `ACTION_VIEW`. Macro source cannot supply an arbitrary URI, and the action
+does not read device location or request location permission.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

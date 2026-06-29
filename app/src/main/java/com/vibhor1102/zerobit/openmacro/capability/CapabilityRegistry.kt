@@ -46,6 +46,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.BatterySaverTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.TimeWindowCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.DialNumberAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ComposeEmailAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenMapLocationAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -110,6 +111,7 @@ class CapabilityRegistry private constructor(
                 ActionGroupAction,
                 DialNumberAction,
                 ComposeEmailAction,
+                OpenMapLocationAction,
             ),
         )
 

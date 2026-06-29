@@ -41,6 +41,7 @@ import com.vibhor1102.zerobit.openmacro.runtime.BatteryDirection
 import com.vibhor1102.zerobit.openmacro.runtime.ConditionResult
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_EMAIL_BODY_LENGTH
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_EMAIL_SUBJECT_LENGTH
+import com.vibhor1102.zerobit.openmacro.runtime.isValidMapQuery
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeActionExecutor
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeCancellation
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeConditionEvaluator
@@ -697,6 +698,7 @@ class AndroidActionExecutor(
             is RuntimeStep.CopyTextToClipboard -> copyTextToClipboard(action, context)
             is RuntimeStep.DialNumber -> dialNumber(action, context)
             is RuntimeStep.ComposeEmail -> composeEmail(action, context)
+            is RuntimeStep.OpenMapLocation -> openMapLocation(action, context)
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -809,6 +811,30 @@ class AndroidActionExecutor(
             ActionResult.Failed("No email app is available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Android could not open the email draft.")
+        }
+    }
+
+    private fun openMapLocation(
+        action: RuntimeStep.OpenMapLocation,
+        context: RuntimeContext,
+    ): ActionResult {
+        val query = when (val result = action.query.resolveText(context, "map location")) {
+            is TextResolution.Failure -> return result.result
+            is TextResolution.Value -> result.value
+        }
+        if (!isValidMapQuery(query)) {
+            return ActionResult.Failed("The resolved map location is not valid.")
+        }
+        val uri = android.net.Uri.parse("geo:0,0?q=${android.net.Uri.encode(query)}")
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("No map app is available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Android could not open the map location.")
         }
     }
 

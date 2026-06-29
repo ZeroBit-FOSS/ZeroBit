@@ -137,9 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Open Map Location Action**: Add a bounded literal or referenced
-  location query through a fixed map-view intent assembled by ZeroBit; expose
-  no arbitrary URI and require no location permission.
+- **Target 1: Set Alarm Action**: Add validated hour, minute, optional label,
+  and skip-UI choice through Android's fixed alarm intent; never request clock
+  data access or expose arbitrary intent fields.
 
 ### Completed Foundations
 
@@ -352,6 +352,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Compose Email Action**: Setup accepts validated recipient, subject, and body
   text sources; runtime rechecks resolved values and fixed `ACTION_SENDTO` opens
   a draft without sending mail or requesting account permission.
+- **Open Map Location Action**: Setup accepts bounded literal or referenced
+  search text, runtime revalidates and encodes it into a fixed `geo` query, and
+  opens a map app without reading location or accepting arbitrary URIs.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

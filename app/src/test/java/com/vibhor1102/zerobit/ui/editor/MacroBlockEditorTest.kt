@@ -875,6 +875,7 @@ class MacroBlockEditorTest {
                 "android.app.notification-settings",
                 "android.email.compose",
                 "android.intent.share-text",
+                "android.map.open",
                 "android.phone.dial",
                 "android.sms.send",
                 "android.web.open",
@@ -974,6 +975,17 @@ class MacroBlockEditorTest {
             emptyList<ValidationIssue>(),
             OpenMacroValidator.validate(emailAdded.document, registry),
         )
+
+        val map = MacroBlockEditor.configureTemplate(
+            registry,
+            document,
+            options.getValue("android.map.open"),
+            mapOf("query" to reference),
+        )
+        require(map is TemplateConfigurationResult.Configured)
+        val mapAdded = MacroBlockEditor.addTopLevelBlock(document, map.template)
+        require(mapAdded is BlockEditResult.Updated)
+        assertEquals(emptyList<ValidationIssue>(), OpenMacroValidator.validate(mapAdded.document, registry))
     }
 
     @Test

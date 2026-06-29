@@ -57,6 +57,7 @@ class CapabilityRegistryTest {
                 "Increment variable",
                 "Launch app",
                 "Open app details",
+                "Open map location",
                 "Open notification settings",
                 "Open web page",
                 "Send SMS",

@@ -227,6 +227,11 @@ sealed interface RuntimeStep {
         val body: RuntimeValueSource,
     ) : RuntimeStep
 
+    data class OpenMapLocation(
+        override val blockId: String,
+        val query: RuntimeValueSource,
+    ) : RuntimeStep
+
     data class SetVariable(
         override val blockId: String,
         val name: String,
