@@ -711,6 +711,11 @@ Open Accessibility Settings uses only `Settings.ACTION_ACCESSIBILITY_SETTINGS`.
 It cannot target, enable, or configure a service, accepts no generic action or
 component fields, and does not itself request accessibility access.
 
+Open Battery Optimization Settings uses only the system-wide
+`Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS` list. It accepts no
+package or exemption request, declares no exemption permission, and cannot
+change optimization state directly.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the
