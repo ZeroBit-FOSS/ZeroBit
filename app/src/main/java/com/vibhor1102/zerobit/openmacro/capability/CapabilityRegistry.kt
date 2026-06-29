@@ -54,6 +54,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.CalendarEventDraftAct
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ContactDraftAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenWifiSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenBluetoothSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenNfcSettingsAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -126,6 +127,7 @@ class CapabilityRegistry private constructor(
                 ContactDraftAction,
                 OpenWifiSettingsAction,
                 OpenBluetoothSettingsAction,
+                OpenNfcSettingsAction,
             ),
         )
 

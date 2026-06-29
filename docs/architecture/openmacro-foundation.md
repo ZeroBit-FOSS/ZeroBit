@@ -699,6 +699,10 @@ Open Bluetooth Settings follows the same explicit boundary with
 radio-toggle, generic settings, or arbitrary intent configuration and requests
 no Bluetooth permission.
 
+Open NFC Settings is another config-free dedicated step using only
+`Settings.ACTION_NFC_SETTINGS`. It performs no tag reads or writes, accepts no
+payload or enabled-state fields, and requests no NFC permission.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the
