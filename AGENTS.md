@@ -67,6 +67,9 @@ files should use the SPDX identifier `GPL-3.0-or-later` where practical.
 ## Branches and Git Hygiene
 
 - `main` is the stable integration branch. Working and committing directly on `main` is allowed and expected.
+- In autonomous continuation mode, act with full developer authority and
+  responsibility: make and commit completed code changes without requesting
+  explicit permission.
 - Keep commits narrow and understandable. Do not mix formatting, refactors, and
   behavior changes unless they are inseparable.
 - Do not commit APKs, keystores, signing secrets, local SDK paths, generated
@@ -134,17 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Variable Creation and Condition-Tree Forms**: Add safe
-  create/rename/delete operations for variable declarations and visual
-  AND/OR/NOT tree editing without losing source comments or breaking references.
-- **Target 2: Android Workspace Picker**: Add persisted Storage Access Framework
-  folder selection and a macro list/editor backed by the workspace port; never
-  move approvals, secrets, runtime state, or logs into that folder.
-- **Target 3: App and Intent Actions**: Expand safe app launching and explicit
-  intent actions with bounded fields, package targeting, and clear failure
-  explanations; do not expose an arbitrary hidden shell.
-- **Target 4: Action Groups**: Add bounded nested action groups with explicit
-  error and continuation policies; avoid a general scripting language.
+- **Target 1: Compose Email Action**: Add validated recipient, subject, and body
+  value sources through a fixed email compose intent that never sends directly,
+  exposes no arbitrary URI shape, and requires no account permission.
 
 ### Completed Foundations
 
@@ -216,13 +211,155 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Bounded Web Action**: Web opening accepts only literal HTTP/HTTPS addresses
   with a host and no embedded credentials; arbitrary URI schemes and intent
   payloads remain unsupported.
+- **Bounded Intent Actions**: Text sharing, app details, and app notification
+  settings use typed runtime steps, exact package validation, and fixed Android
+  intent shapes instead of arbitrary action strings or extras.
+- **Source-Level Action Groups**: OpenMacro source can define bounded nested
+  action groups with explicit stop/continue failure policy, recursive
+  validation, permission discovery, and deterministic runtime execution.
+- **Existing Action Group Forms**: The visual editor shows existing grouped
+  child actions, edits their generated scalar fields through the shared model,
+  and keeps grouped permission/explanation review accurate.
+- **Action Group Structure Controls**: Existing groups can add bounded
+  default-backed child actions, remove non-final children, and move children up
+  or down while staying inside the shared proposal validator.
 - **Workspace Mutation Boundary**: Workspace storage now has a replaceable port
   plus explicit list/read/write/delete operations. Rename updates the declared
   macro ID with a comment-preserving patch, refuses overwrite, and rolls back
   the new file if removing the old file fails.
+- **Android Workspace Picker**: The editor can persist a Storage Access
+  Framework folder, save valid macros under `macros/`, list workspace macro
+  files, and open one into the same visual/code editor. Approval history,
+  secrets, runtime state, and logs remain app-private.
+- **Workspace Macro Management**: The Android editor can create collision-safe
+  starter macros, rename through the transactional workspace mutation, and
+  delete source after explicit confirmation without altering approvals,
+  secrets, runtime state, or logs.
+- **Workspace Draft Safety**: The editor tracks its exact last workspace
+  read/write baseline, shows saved versus unsaved state, and confirms before an
+  open, create, or active-file rename replaces a draft. Folder changes retain
+  the draft and clear the old baseline.
+- **Workspace External Refresh**: Manual refresh distinguishes unchanged,
+  modified, missing, and invalid active files. Reload protects local drafts,
+  and detected external edits require confirmation before overwrite.
+- **Workspace Conflict-Safe Save**: Normal saves compare the target against the
+  exact editor baseline immediately before writing. Modified, missing, invalid,
+  and occupied targets require an explicit overwrite or recreate confirmation.
+- **Workspace Save-As Semantics**: A changed declared macro ID requires Save as
+  new or a guarded transactional file rename. Neither choice renames approval,
+  runtime, secret, or diagnostic state.
+- **Top-Level Block Structure Controls**: The visual editor can add bounded
+  default-backed triggers, conditions, and actions, remove non-final required
+  blocks, and reorder each lane through the shared proposal validator.
+- **Comment-Preserving Top-Level Structure Patches**: Top-level add/remove/move
+  edits touch only local block-list ranges, preserve surrounding source, reject
+  unsupported flow-style lists, and immediately revalidate patched text.
+- **Comment-Preserving Grouped Action Patches**: Grouped add/remove/move uses
+  recursive local sequence edits, protects final children, preserves surrounding
+  source, and immediately revalidates patched text.
+- **Comment-Preserving Variable Add Patch**: Variable creation locally inserts,
+  expands, or appends the declaration sequence, preserves surrounding source,
+  rejects unsupported flow lists, and immediately revalidates patched text.
+- **Local Visual Source Editing**: Visual form and structure changes no longer
+  retain a whole-document writer fallback; unsupported source shapes fail
+  explicitly instead of being normalized silently.
+- **Capability-Backed Add Palette**: Top-level visual add choices come from
+  opt-in capability metadata with safe ID bases and validated starter configs,
+  removing the editor's hard-coded capability enum.
+- **Document-Aware Capability Starters**: Capability factories can inspect the
+  active document; variable actions appear only for compatible declarations,
+  and all visible starters remain validator-clean.
+- **Searchable Capability Add Picker**: Compact dialogs replace expanding add
+  lists and filter safe starters by capability name, description, or type.
+- **Registry-Backed Nested Add Pickers**: Action groups and condition trees use
+  the same document-aware capability starters as top-level lanes, validate every
+  visible option, and reject wrong-lane insertion before source mutation.
+- **Context-Aware Capability Creation**: One creation contract receives the
+  insertion location; Action Group starts with a unique Stop Actions child and
+  is hidden when another nested group would exceed the four-level bound.
+- **Validated Pre-Insert Capability Setup**: Open Web and exact-package actions
+  remain searchable, collect required text before insertion, and pass the real
+  capability validator before top-level or nested source mutation is allowed.
+- **Typed Pre-Insert Capability Setup**: Share Text and SMS reuse generated
+  controls for literals and document-valid value references, validate before
+  insertion, and can switch selected references back to literal text.
+- **Searchable Value Reference Picker**: Normal forms and pre-insert setup show
+  every document- and type-filtered reference through one compact searchable
+  dialog instead of capping the choices as inline buttons.
+- **Bounded Installed App Picker**: Exact-package setup and existing forms can
+  choose from a sorted, capped launcher-app snapshot loaded off the UI thread;
+  manual entry remains available and broad package access is never requested.
+- **Notification Trigger Pre-Insert Setup**: Notification Received starts with
+  minimal capture, optional exact-package filtering, bounded capture choices,
+  and shared package validation before source mutation.
+- **Schedule Pre-Insert Setup**: Time Schedule starts with explicit portable
+  time, weekday, UTC, windowed-delivery, and alarm-window values and validates
+  every generated setup field before source mutation.
+- **Searchable Timezone Picker**: Schedule setup and existing forms can choose
+  from a sorted, capped IANA timezone snapshot while retaining manual entry and
+  validator authority; large picker result sets render lazily.
+- **Pre-Insert Access Preview**: Validator-clean setup drafts show capability-
+  derived Android access such as SMS or exact alarms without requesting access
+  or bypassing the existing approval and recovery flows.
+- **Bounded Vibrate Action**: A validator-clean 250 ms starter compiles to one
+  Android vibration capped at five seconds, reports unavailable hardware, and
+  uses only the normal manifest vibration permission.
+- **Clipboard Text Action**: Bounded literal or referenced text copies through a
+  safe starter and Android clipboard step whose diagnostics never include the
+  copied payload.
+- **Charging State Condition**: Charging and not-charging checks use one sticky
+  Android battery snapshot per evaluation, fail on unknown status, and never
+  poll or retain battery history.
+- **Battery Level Condition**: Current battery percentage comparisons use one
+  sticky Android battery snapshot and the trigger's exact whole-number threshold
+  semantics; fractional thresholds now fail validation instead of truncating.
+- **Power Connection State Condition**: Plugged-in and unplugged checks inspect
+  one sticky battery snapshot, distinguish known Android power sources in
+  diagnostics, and fail closed on unknown source values.
+- **Screen Interactive State Condition**: Screen-on and screen-off checks read
+  Android's current interactive state once, need no permission, and install no
+  observer or polling work.
+- **Device Lock State Expansion**: The existing config-free unlocked condition
+  remains compatible while a bounded field now supports explicit locked and
+  unlocked checks through the same keyguard-backed runtime step.
+- **Power Disconnected Trigger**: Android's disconnection broadcast now has a
+  validated starter and typed runtime subscription alongside Power Connected,
+  without polling or retained battery state.
+- **Wi-Fi Connectivity Triggers**: Connected and disconnected transitions use
+  owned Android default-network callbacks, suppress duplicate callback updates,
+  expose only bounded state context, and never poll or capture SSIDs.
+- **Airplane Mode State and Trigger**: Enabled and disabled checks read one
+  strict global value, while transitions use Android's change broadcast and
+  expose only bounded state context without polling or extra access.
+- **Ringer Mode State and Trigger**: Normal, vibrate, and silent share one typed
+  runtime vocabulary; checks read once and transitions use Android's broadcast
+  with bounded state context and no polling or extra access.
+- **Battery Saver State and Trigger**: Checks read Android's power service once;
+  transitions use an owned change-broadcast subscription, reread authoritative
+  state, and expose only bounded context without polling or extra access.
+- **Power Source Condition Expansion**: Existing plugged/unplugged files remain
+  valid while plugged checks can optionally require typed AC, USB, wireless, or
+  dock power from one sticky battery snapshot.
+- **Power Trigger Context**: Config-free power events expose bounded connection
+  state, while connected events add a known canonical source from one optional
+  sticky battery read without retaining history.
+- **Time Window Condition**: Explicit-timezone daytime and overnight windows use
+  shared strict schedule parsing, half-open boundaries, deterministic DST-safe
+  instant evaluation, one clock read, and no polling.
+- **Dial Number Action**: Setup accepts bounded literal or referenced phone text,
+  runtime revalidates it, and fixed `ACTION_DIAL` opens the dialer without placing
+  calls or requesting call permission.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.
+- **Visual Variable Declaration Operations**: The visual editor can create text,
+  number, boolean, and secret variable declarations from bounded valid templates
+  with collision-safe names, rename declarations and their references with local
+  source patches, and delete only unreferenced declarations.
+- **Condition Tree Structure Forms**: Existing condition trees render their
+  AND/OR/NOT structure in the visual editor. AND/OR groups can switch logic and
+  append, remove, wrap, or unwrap condition children with local source patches
+  that preserve existing child conditions and comments.
 - **Standard Capability Expansion**: Screen On/Off and Battery Level triggers,
   Wi-Fi Connected condition, and Write Log and Send SMS actions are registered
   and compiled into deterministic runtime steps.
