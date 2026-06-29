@@ -728,6 +728,10 @@ Open Sound Settings uses only `Settings.ACTION_SOUND_SETTINGS`. It accepts no
 volume, ringtone, DND, stream, or generic action fields and does not mutate
 audio state directly.
 
+Open Security Settings uses only `Settings.ACTION_SECURITY_SETTINGS`. It
+accepts no credential, lock, biometric, certificate, or generic action fields
+and neither inspects nor changes security state.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

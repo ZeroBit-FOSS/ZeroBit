@@ -721,6 +721,7 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenDataUsageSettings -> openDataUsageSettings()
             is RuntimeStep.OpenDisplaySettings -> openDisplaySettings()
             is RuntimeStep.OpenSoundSettings -> openSoundSettings()
+            is RuntimeStep.OpenSecuritySettings -> openSecuritySettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1116,6 +1117,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android sound settings are not available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open sound settings.")
+        }
+    }
+
+    private fun openSecuritySettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_SECURITY_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android security settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open security settings.")
         }
     }
 
