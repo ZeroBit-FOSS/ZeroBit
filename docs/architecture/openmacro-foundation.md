@@ -703,6 +703,10 @@ Open NFC Settings is another config-free dedicated step using only
 `Settings.ACTION_NFC_SETTINGS`. It performs no tag reads or writes, accepts no
 payload or enabled-state fields, and requests no NFC permission.
 
+Open Location Settings uses only `Settings.ACTION_LOCATION_SOURCE_SETTINGS`.
+It accepts no provider, enabled-state, generic action, or other config, and it
+neither reads location nor requests location permission.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

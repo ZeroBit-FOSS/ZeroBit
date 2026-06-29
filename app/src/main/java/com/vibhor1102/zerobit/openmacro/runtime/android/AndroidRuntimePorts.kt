@@ -715,6 +715,7 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenWifiSettings -> openWifiSettings()
             is RuntimeStep.OpenBluetoothSettings -> openBluetoothSettings()
             is RuntimeStep.OpenNfcSettings -> openNfcSettings()
+            is RuntimeStep.OpenLocationSettings -> openLocationSettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1032,6 +1033,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android NFC settings are not available on this device.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open NFC settings.")
+        }
+    }
+
+    private fun openLocationSettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android location settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open location settings.")
         }
     }
 

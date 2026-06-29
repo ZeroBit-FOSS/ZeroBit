@@ -59,6 +59,7 @@ class CapabilityRegistryTest {
                 "Increment variable",
                 "Launch app",
                 "Open Bluetooth settings",
+                "Open location settings",
                 "Open NFC settings",
                 "Open Wi-Fi settings",
                 "Open app details",

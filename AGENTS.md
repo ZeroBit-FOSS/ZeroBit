@@ -137,9 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Open Location Settings Action**: Add a config-free typed action
-  for Android's exact location-source settings route; do not read location,
-  request location permission, expose generic settings, or mutate providers.
+- **Target 1: Open Accessibility Settings Action**: Add a config-free typed
+  action for Android's exact accessibility settings route; do not target or
+  enable a service, expose generic settings, or request accessibility access.
 
 ### Completed Foundations
 
@@ -379,6 +379,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Open NFC Settings Action**: A config-free typed step opens only the exact
   NFC settings route without tag access, payloads, adapter mutation, or NFC
   permission.
+- **Open Location Settings Action**: A config-free typed step opens only the
+  location-source settings route without location reads, provider mutation, or
+  location permission.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.
