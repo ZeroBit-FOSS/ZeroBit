@@ -720,6 +720,7 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenBatteryOptimizationSettings -> openBatteryOptimizationSettings()
             is RuntimeStep.OpenDataUsageSettings -> openDataUsageSettings()
             is RuntimeStep.OpenDisplaySettings -> openDisplaySettings()
+            is RuntimeStep.OpenSoundSettings -> openSoundSettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1102,6 +1103,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android display settings are not available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open display settings.")
+        }
+    }
+
+    private fun openSoundSettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_SOUND_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android sound settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open sound settings.")
         }
     }
 

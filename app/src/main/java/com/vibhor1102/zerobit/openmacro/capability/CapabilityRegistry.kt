@@ -60,6 +60,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAccessibilitySett
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenBatteryOptimizationSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenDataUsageSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenDisplaySettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenSoundSettingsAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -138,6 +139,7 @@ class CapabilityRegistry private constructor(
                 OpenBatteryOptimizationSettingsAction,
                 OpenDataUsageSettingsAction,
                 OpenDisplaySettingsAction,
+                OpenSoundSettingsAction,
             ),
         )
 

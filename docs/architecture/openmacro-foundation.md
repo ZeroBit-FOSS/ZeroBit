@@ -724,6 +724,10 @@ Open Display Settings uses only `Settings.ACTION_DISPLAY_SETTINGS`. It accepts
 no brightness, rotation, timeout, or generic action fields and requests no
 write-settings access.
 
+Open Sound Settings uses only `Settings.ACTION_SOUND_SETTINGS`. It accepts no
+volume, ringtone, DND, stream, or generic action fields and does not mutate
+audio state directly.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the
