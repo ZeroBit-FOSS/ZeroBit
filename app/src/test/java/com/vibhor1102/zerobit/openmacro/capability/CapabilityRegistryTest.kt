@@ -69,6 +69,7 @@ class CapabilityRegistryTest {
                 "Open display settings",
                 "Open map location",
                 "Open notification settings",
+                "Open privacy settings",
                 "Open security settings",
                 "Open sound settings",
                 "Open web page",

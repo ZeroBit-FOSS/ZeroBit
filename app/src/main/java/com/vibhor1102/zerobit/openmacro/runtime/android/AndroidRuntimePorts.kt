@@ -722,6 +722,7 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenDisplaySettings -> openDisplaySettings()
             is RuntimeStep.OpenSoundSettings -> openSoundSettings()
             is RuntimeStep.OpenSecuritySettings -> openSecuritySettings()
+            is RuntimeStep.OpenPrivacySettings -> openPrivacySettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1130,6 +1131,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android security settings are not available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open security settings.")
+        }
+    }
+
+    private fun openPrivacySettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_PRIVACY_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android privacy settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open privacy settings.")
         }
     }
 

@@ -62,6 +62,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenDataUsageSettings
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenDisplaySettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenSoundSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenSecuritySettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenPrivacySettingsAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -142,6 +143,7 @@ class CapabilityRegistry private constructor(
                 OpenDisplaySettingsAction,
                 OpenSoundSettingsAction,
                 OpenSecuritySettingsAction,
+                OpenPrivacySettingsAction,
             ),
         )
 

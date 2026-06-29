@@ -732,6 +732,10 @@ Open Security Settings uses only `Settings.ACTION_SECURITY_SETTINGS`. It
 accepts no credential, lock, biometric, certificate, or generic action fields
 and neither inspects nor changes security state.
 
+Open Privacy Settings uses only `Settings.ACTION_PRIVACY_SETTINGS`. It accepts
+no package, permission-history, sensor, dashboard, or generic action fields and
+does not inspect or change privacy state.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the
