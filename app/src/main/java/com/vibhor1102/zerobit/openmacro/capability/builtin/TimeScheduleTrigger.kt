@@ -6,9 +6,11 @@ package com.vibhor1102.zerobit.openmacro.capability.builtin
 
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityCreation
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityFieldKind
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
+import com.vibhor1102.zerobit.openmacro.capability.CapabilitySetup
 import com.vibhor1102.zerobit.openmacro.capability.TriggerOutput
 import com.vibhor1102.zerobit.openmacro.capability.rejectUnknownConfig
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
@@ -18,10 +20,6 @@ import com.vibhor1102.zerobit.openmacro.runtime.RuntimeStep
 import com.vibhor1102.zerobit.openmacro.runtime.ScheduleDelivery
 import com.vibhor1102.zerobit.openmacro.runtime.ScheduleSpec
 import com.vibhor1102.zerobit.openmacro.validation.ValidationIssue
-import java.time.DayOfWeek
-import java.time.LocalTime
-import java.time.ZoneId
-import java.time.format.DateTimeParseException
 
 object TimeScheduleTrigger : CapabilityDefinition {
     override val type = "android.time.schedule"
@@ -29,6 +27,28 @@ object TimeScheduleTrigger : CapabilityDefinition {
     override val displayName = "Time schedule"
     override val description =
         "Starts on selected days at a local wall-clock time in an explicit timezone."
+    override val creation = CapabilityCreation(
+        idBase = "time-schedule",
+        setup = CapabilitySetup(
+            fieldKeys = listOf(
+                "time",
+                "days",
+                "timezone",
+                "delivery",
+                "window_minutes",
+            ),
+            initialConfig = mapOf(
+                "time" to MacroValue.Text("08:00"),
+                "days" to MacroValue.ListValue(
+                    listOf("mon", "tue", "wed", "thu", "fri")
+                        .map(MacroValue::Text),
+                ),
+                "timezone" to MacroValue.Text("UTC"),
+                "delivery" to MacroValue.Text("windowed"),
+                "window_minutes" to MacroValue.Number(java.math.BigDecimal("15")),
+            ),
+        ),
+    )
     override val triggerOutputs = listOf(
         TriggerOutput(
             key = "schedule.instant",
@@ -91,10 +111,10 @@ object TimeScheduleTrigger : CapabilityDefinition {
                     path,
                 ),
             )
-            if (parseTime(block.config["time"]) == null) {
+            if (parseLocalTime(block.config["time"]) == null) {
                 add(issue(path, "time", "invalid_schedule_time", "Use a 24-hour time such as 07:30."))
             }
-            if (parseDays(block.config["days"]) == null) {
+            if (parseWeekdays(block.config["days"]) == null) {
                 add(
                     issue(
                         path,
@@ -104,7 +124,7 @@ object TimeScheduleTrigger : CapabilityDefinition {
                     ),
                 )
             }
-            if (parseZone(block.config["timezone"]) == null) {
+            if (parseTimezone(block.config["timezone"]) == null) {
                 add(
                     issue(
                         path,
@@ -138,9 +158,7 @@ object TimeScheduleTrigger : CapabilityDefinition {
 
     override fun explain(block: MacroBlock): String {
         val schedule = block.toScheduleSpec()
-        val days = schedule.daysOfWeek
-            .sortedBy(DayOfWeek::getValue)
-            .joinToString { it.name.lowercase().take(3) }
+        val days = schedule.daysOfWeek.shortNames()
         val delivery = when (schedule.delivery) {
             ScheduleDelivery.WINDOWED ->
                 "within ${schedule.windowMinutes} minutes to save battery"
@@ -160,38 +178,12 @@ object TimeScheduleTrigger : CapabilityDefinition {
         RuntimeStep.ObserveSchedule(block.id, block.toScheduleSpec())
 
     private fun MacroBlock.toScheduleSpec() = ScheduleSpec(
-        localTime = requireNotNull(parseTime(config["time"])),
-        daysOfWeek = requireNotNull(parseDays(config["days"])),
-        zoneId = requireNotNull(parseZone(config["timezone"])),
+        localTime = requireNotNull(parseLocalTime(config["time"])),
+        daysOfWeek = requireNotNull(parseWeekdays(config["days"])),
+        zoneId = requireNotNull(parseTimezone(config["timezone"])),
         delivery = requireNotNull(parseDelivery(config["delivery"])),
         windowMinutes = requireNotNull(parseWindow(config["window_minutes"])),
     )
-
-    private fun parseTime(value: MacroValue?): LocalTime? {
-        val text = (value as? MacroValue.Text)?.value ?: return null
-        if (!TIME_PATTERN.matches(text)) {
-            return null
-        }
-        return try {
-            LocalTime.parse(text)
-        } catch (_: DateTimeParseException) {
-            null
-        }
-    }
-
-    private fun parseDays(value: MacroValue?): Set<DayOfWeek>? {
-        val raw = (value as? MacroValue.ListValue)?.values ?: return null
-        val days = raw.map { child ->
-            val text = (child as? MacroValue.Text)?.value ?: return null
-            DAY_NAMES[text.lowercase()] ?: return null
-        }
-        return days.toSet().takeIf { days.isNotEmpty() && it.size == days.size }
-    }
-
-    private fun parseZone(value: MacroValue?): ZoneId? {
-        val text = (value as? MacroValue.Text)?.value ?: return null
-        return runCatching { ZoneId.of(text) }.getOrNull()
-    }
 
     private fun parseDelivery(value: MacroValue?): ScheduleDelivery? {
         if (value == null) {
@@ -228,14 +220,4 @@ object TimeScheduleTrigger : CapabilityDefinition {
     private fun java.math.BigInteger.toIntExactOrNull() =
         runCatching { intValueExact() }.getOrNull()
 
-    private val DAY_NAMES = mapOf(
-        "mon" to DayOfWeek.MONDAY,
-        "tue" to DayOfWeek.TUESDAY,
-        "wed" to DayOfWeek.WEDNESDAY,
-        "thu" to DayOfWeek.THURSDAY,
-        "fri" to DayOfWeek.FRIDAY,
-        "sat" to DayOfWeek.SATURDAY,
-        "sun" to DayOfWeek.SUNDAY,
-    )
-    private val TIME_PATTERN = Regex("""(?:[01]\d|2[0-3]):[0-5]\d""")
 }

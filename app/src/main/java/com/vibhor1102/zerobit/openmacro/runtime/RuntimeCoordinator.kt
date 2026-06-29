@@ -562,11 +562,37 @@ class RuntimeCoordinator(
         actions: List<RuntimeStep>,
         context: RuntimeContext,
         cancellation: RuntimeRunCancellation,
-    ): Boolean {
+    ): Boolean = when (
+        executeActions(
+            macroId = macroId,
+            generation = generation,
+            runId = runId,
+            actions = actions,
+            context = context,
+            cancellation = cancellation,
+            failurePolicy = ActionExecutionFailurePolicy.STOP,
+        )
+    ) {
+        is ActionExecutionOutcome.Completed,
+        ActionExecutionOutcome.Stopped -> true
+        ActionExecutionOutcome.Cancelled,
+        ActionExecutionOutcome.Failed -> false
+    }
+
+    private fun executeActions(
+        macroId: String,
+        generation: Long,
+        runId: Long,
+        actions: List<RuntimeStep>,
+        context: RuntimeContext,
+        cancellation: RuntimeRunCancellation,
+        failurePolicy: ActionExecutionFailurePolicy,
+    ): ActionExecutionOutcome {
+        var hadFailure = false
         for (action in actions) {
             if (!isSessionActive(macroId, generation)) {
                 recordCancellation(macroId, runId)
-                return false
+                return ActionExecutionOutcome.Cancelled
             }
             if (action is RuntimeStep.StopActions) {
                 diagnostics.record(
@@ -576,7 +602,7 @@ class RuntimeCoordinator(
                     blockId = action.blockId,
                     message = "Stopped before later actions.",
                 )
-                return true
+                return ActionExecutionOutcome.Stopped
             }
             if (action is RuntimeStep.StopIf) {
                 val comparison = RuntimeStep.CompareValues(
@@ -594,7 +620,7 @@ class RuntimeCoordinator(
                             blockId = action.blockId,
                             message = "Comparison passed; stopped before later actions.",
                         )
-                        return true
+                        return ActionExecutionOutcome.Stopped
                     }
                     is ConditionResult.Blocked -> {
                         diagnostics.record(
@@ -614,7 +640,11 @@ class RuntimeCoordinator(
                             blockId = action.blockId,
                             message = result.message,
                         )
-                        return false
+                        if (failurePolicy == ActionExecutionFailurePolicy.CONTINUE) {
+                            hadFailure = true
+                            continue
+                        }
+                        return ActionExecutionOutcome.Failed
                     }
                     null -> error("Stop-if must compile to a value comparison.")
                 }
@@ -630,8 +660,64 @@ class RuntimeCoordinator(
                     )
                     DelayWaitResult.CANCELLED -> {
                         recordCancellation(macroId, runId)
-                        return false
+                        return ActionExecutionOutcome.Cancelled
                     }
+                }
+                continue
+            }
+            if (action is RuntimeStep.ActionGroup) {
+                when (
+                    val groupOutcome = executeActions(
+                        macroId = macroId,
+                        generation = generation,
+                        runId = runId,
+                        actions = action.actions,
+                        context = context,
+                        cancellation = cancellation,
+                        failurePolicy = action.failurePolicy.toExecutionFailurePolicy(),
+                    )
+                ) {
+                    is ActionExecutionOutcome.Completed -> {
+                        diagnostics.record(
+                            macroId = macroId,
+                            kind = RuntimeDiagnosticKind.ACTION_SUCCEEDED,
+                            runId = runId,
+                            blockId = action.blockId,
+                            message = if (groupOutcome.hadFailures) {
+                                "Action group completed after continuing past a failed action."
+                            } else {
+                                "Action group completed."
+                            },
+                        )
+                        if (groupOutcome.hadFailures) {
+                            hadFailure = true
+                        }
+                    }
+                    ActionExecutionOutcome.Stopped -> {
+                        diagnostics.record(
+                            macroId = macroId,
+                            kind = RuntimeDiagnosticKind.ACTION_SUCCEEDED,
+                            runId = runId,
+                            blockId = action.blockId,
+                            message = "Action group stopped this run.",
+                        )
+                        return ActionExecutionOutcome.Stopped
+                    }
+                    ActionExecutionOutcome.Failed -> {
+                        diagnostics.record(
+                            macroId = macroId,
+                            kind = RuntimeDiagnosticKind.ACTION_FAILED,
+                            runId = runId,
+                            blockId = action.blockId,
+                            message = "Action group stopped after a failed action.",
+                        )
+                        if (failurePolicy == ActionExecutionFailurePolicy.CONTINUE) {
+                            hadFailure = true
+                            continue
+                        }
+                        return ActionExecutionOutcome.Failed
+                    }
+                    ActionExecutionOutcome.Cancelled -> return ActionExecutionOutcome.Cancelled
                 }
                 continue
             }
@@ -656,15 +742,19 @@ class RuntimeCoordinator(
                         blockId = action.blockId,
                         message = result.message,
                     )
-                    return false
+                    if (failurePolicy == ActionExecutionFailurePolicy.CONTINUE) {
+                        hadFailure = true
+                        continue
+                    }
+                    return ActionExecutionOutcome.Failed
                 }
             }
             if (!isSessionActive(macroId, generation)) {
                 recordCancellation(macroId, runId)
-                return false
+                return ActionExecutionOutcome.Cancelled
             }
         }
-        return true
+        return ActionExecutionOutcome.Completed(hadFailures = hadFailure)
     }
 
     private fun isSessionActive(macroId: String, generation: Long): Boolean =
@@ -756,6 +846,29 @@ private enum class DelayWaitResult {
     COMPLETED,
     CANCELLED,
 }
+
+private enum class ActionExecutionFailurePolicy {
+    STOP,
+    CONTINUE,
+}
+
+private sealed interface ActionExecutionOutcome {
+    data class Completed(
+        val hadFailures: Boolean = false,
+    ) : ActionExecutionOutcome
+
+    data object Stopped : ActionExecutionOutcome
+
+    data object Failed : ActionExecutionOutcome
+
+    data object Cancelled : ActionExecutionOutcome
+}
+
+private fun ActionGroupFailurePolicy.toExecutionFailurePolicy(): ActionExecutionFailurePolicy =
+    when (this) {
+        ActionGroupFailurePolicy.STOP -> ActionExecutionFailurePolicy.STOP
+        ActionGroupFailurePolicy.CONTINUE -> ActionExecutionFailurePolicy.CONTINUE
+    }
 
 sealed interface RuntimeLifecycleResult {
     data class Enabled(

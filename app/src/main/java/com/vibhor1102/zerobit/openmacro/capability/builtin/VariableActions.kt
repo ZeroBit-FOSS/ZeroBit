@@ -6,6 +6,7 @@ package com.vibhor1102.zerobit.openmacro.capability.builtin
 
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityCreation
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityFieldKind
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
@@ -15,6 +16,7 @@ import com.vibhor1102.zerobit.openmacro.capability.requireText
 import com.vibhor1102.zerobit.openmacro.capability.text
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
 import com.vibhor1102.zerobit.openmacro.model.MacroValue
+import com.vibhor1102.zerobit.openmacro.model.MacroVariable
 import com.vibhor1102.zerobit.openmacro.model.MacroVariableType
 import com.vibhor1102.zerobit.openmacro.model.OpenMacroDocument
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeStep
@@ -27,6 +29,19 @@ object SetVariableAction : CapabilityDefinition {
     override val lane = CapabilityLane.ACTION
     override val displayName = "Set variable"
     override val description = "Stores a new value in a declared local variable."
+    override val creation = CapabilityCreation(
+        idBase = "set-variable",
+        contextConfig = { context ->
+            context.document.variables.firstNotNullOfOrNull { variable ->
+                variable.defaultLiteral()?.let { value ->
+                    mapOf(
+                        "name" to MacroValue.Text(variable.name),
+                        "value" to value,
+                    )
+                }
+            }
+        },
+    )
     override val fields = listOf(
         variableNameField(),
         CapabilityField(
@@ -100,6 +115,17 @@ object IncrementVariableAction : CapabilityDefinition {
     override val lane = CapabilityLane.ACTION
     override val displayName = "Increment variable"
     override val description = "Adds an amount to a declared number variable."
+    override val creation = CapabilityCreation(
+        idBase = "increment-variable",
+        contextConfig = { context ->
+            context.document.variables.firstOrNull { it.type == MacroVariableType.NUMBER }?.let {
+                mapOf(
+                    "name" to MacroValue.Text(it.name),
+                    "amount" to MacroValue.Number(BigDecimal.ONE),
+                )
+            }
+        },
+    )
     override val fields = listOf(
         variableNameField(),
         CapabilityField(
@@ -160,6 +186,14 @@ object ToggleVariableAction : CapabilityDefinition {
     override val lane = CapabilityLane.ACTION
     override val displayName = "Toggle variable"
     override val description = "Flips a declared boolean variable."
+    override val creation = CapabilityCreation(
+        idBase = "toggle-variable",
+        contextConfig = { context ->
+            context.document.variables.firstOrNull { it.type == MacroVariableType.BOOLEAN }?.let {
+                mapOf("name" to MacroValue.Text(it.name))
+            }
+        },
+    )
     override val fields = listOf(variableNameField())
 
     override fun validate(block: MacroBlock, path: String): List<ValidationIssue> =
@@ -195,6 +229,14 @@ private fun variableNameField() = CapabilityField(
     required = true,
     help = "The name of a variable declared by this macro.",
 )
+
+private fun MacroVariable.defaultLiteral(): MacroValue? =
+    when (type) {
+        MacroVariableType.TEXT -> MacroValue.Text("")
+        MacroVariableType.NUMBER -> MacroValue.Number(BigDecimal.ZERO)
+        MacroVariableType.BOOLEAN -> MacroValue.Boolean(false)
+        MacroVariableType.SECRET -> null
+    }
 
 private fun missingValue(path: String) = ValidationIssue(
     "$path.config.value",

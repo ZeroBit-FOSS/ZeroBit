@@ -4,12 +4,18 @@
 
 package com.vibhor1102.zerobit.openmacro.source
 
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityRegistry
 import com.vibhor1102.zerobit.openmacro.model.MacroValue
+import com.vibhor1102.zerobit.openmacro.validation.OpenMacroValidator
+import java.nio.file.Files
+import java.nio.file.Path
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class OpenMacroYamlReaderTest {
+    private val registry = CapabilityRegistry.builtIn()
+
     @Test
     fun readsStrictYamlAndPreservesTheExactSource() {
         val text = """
@@ -142,6 +148,33 @@ class OpenMacroYamlReaderTest {
             "title: $nestedValue",
         )
         assertIssue(deeplyNested, expectedCode = "nesting_too_deep")
+    }
+
+    @Test
+    fun examplesParseAndValidateAgainstBuiltInCapabilities() {
+        listOf(
+            "examples/charger-greeting.openmacro.yaml",
+            "examples/app-intent-actions.openmacro.yaml",
+        ).forEach { examplePath ->
+            val source = exampleFile(examplePath).toFile().readText()
+            val result = OpenMacroYamlReader.read(source)
+
+            require(result is OpenMacroSourceResult.Success) {
+                "Expected $examplePath to parse, got $result"
+            }
+            assertEquals(
+                emptyList<String>(),
+                OpenMacroValidator.validate(result.source.document, registry).map { it.code },
+            )
+        }
+    }
+
+    private fun exampleFile(relativePath: String): Path {
+        val start = Path.of("").toAbsolutePath()
+        return generateSequence(start) { it.parent }
+            .map { it.resolve(relativePath) }
+            .firstOrNull(Files::exists)
+            ?: error("Could not find $relativePath from $start.")
     }
 
     private fun assertIssue(source: String, expectedCode: String) {

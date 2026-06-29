@@ -145,6 +145,96 @@ class OpenMacroProposalPipelineTest {
         )
     }
 
+    @Test
+    fun explainsBoundedIntentActionsInPlainEnglish() {
+        val proposal = ready(intentActionsSource())
+
+        assertEquals(
+            listOf(
+                "Open Android app details for package com.example.chat.",
+                "Open Android notification settings for package com.example.chat.",
+                "Share \u201cHello there\u201d with package com.example.chat.",
+            ),
+            proposal.explanation.blocksIn(CapabilityLane.ACTION).map { it.summary },
+        )
+        assertTrue(proposal.explanation.requiredPermissions.isEmpty())
+    }
+
+    @Test
+    fun changingIntentTargetRequiresApprovalWithBeforeAndAfterExplanation() {
+        val approved = ApprovedMacroSnapshot.from(ready(intentActionsSource()))
+        val changed = ready(
+            intentActionsSource().replace(
+                "package: com.example.chat",
+                "package: com.example.mail",
+            ),
+            approved,
+        )
+
+        assertTrue(changed.comparison.behaviorChanged)
+        assertTrue(changed.comparison.approvalRequired)
+        assertEquals(
+            listOf(
+                BehaviorChangeKind.BLOCK_CHANGED,
+                BehaviorChangeKind.BLOCK_CHANGED,
+                BehaviorChangeKind.BLOCK_CHANGED,
+            ),
+            changed.comparison.changes.map { it.kind },
+        )
+        assertEquals(
+            listOf(
+                "Open Android app details for package com.example.chat.",
+                "Open Android notification settings for package com.example.chat.",
+                "Share \u201cHello there\u201d with package com.example.chat.",
+            ),
+            changed.comparison.changes.map { it.before },
+        )
+        assertEquals(
+            listOf(
+                "Open Android app details for package com.example.mail.",
+                "Open Android notification settings for package com.example.mail.",
+                "Share \u201cHello there\u201d with package com.example.mail.",
+            ),
+            changed.comparison.changes.map { it.after },
+        )
+    }
+
+    @Test
+    fun groupedActionsContributePermissionsToExplanation() {
+        val proposal = ready(groupedSmsSource())
+
+        assertEquals(
+            setOf(AndroidPermission.SEND_SMS),
+            proposal.explanation.requiredPermissions,
+        )
+        assertEquals(
+            setOf(AndroidPermission.SEND_SMS),
+            proposal.runtimePlan.requiredPermissions,
+        )
+        val summary = proposal.explanation.blocksIn(CapabilityLane.ACTION).single().summary
+        assertTrue(summary.contains("Run 1 grouped action"))
+        assertTrue(summary.contains("Send"))
+        assertTrue(summary.contains("Hello"))
+    }
+
+    @Test
+    fun groupedActionChildChangeExplainsNestedBeforeAndAfter() {
+        val approved = ApprovedMacroSnapshot.from(ready(groupedSmsSource()))
+        val changed = ready(
+            groupedSmsSource().replace("message: Hello", "message: Updated"),
+            approved,
+        )
+
+        assertEquals(
+            listOf(BehaviorChangeKind.BLOCK_CHANGED),
+            changed.comparison.changes.map { it.kind },
+        )
+        val change = changed.comparison.changes.single()
+        assertEquals("group", change.blockId)
+        assertTrue(change.before.orEmpty().contains("Hello"))
+        assertTrue(change.after.orEmpty().contains("Updated"))
+    }
+
     private fun ready(
         source: String,
         approved: ApprovedMacroSnapshot? = null,
@@ -173,5 +263,50 @@ class OpenMacroProposalPipelineTest {
             config:
               title: Charging started
               message: The charger is connected.
+    """.trimIndent() + "\n"
+
+    private fun intentActionsSource() = """
+        format: openmacro/v0.1
+        metadata:
+          id: intent-actions
+          name: Intent actions
+        triggers:
+          - id: charger-connected
+            type: android.power.connected
+        actions:
+          - id: open-details
+            type: android.app.details
+            config:
+              package: com.example.chat
+          - id: open-notification-settings
+            type: android.app.notification-settings
+            config:
+              package: com.example.chat
+          - id: share-text
+            type: android.intent.share-text
+            config:
+              package: com.example.chat
+              text: Hello there
+    """.trimIndent() + "\n"
+
+    private fun groupedSmsSource() = """
+        format: openmacro/v0.1
+        metadata:
+          id: grouped-sms
+          name: Grouped SMS
+        triggers:
+          - id: charger-connected
+            type: android.power.connected
+        actions:
+          - id: group
+            type: openmacro.action.group
+            config:
+              failurePolicy: stop
+              actions:
+                - id: sms
+                  type: android.sms.send
+                  config:
+                    phoneNumber: "+1234567890"
+                    message: Hello
     """.trimIndent() + "\n"
 }

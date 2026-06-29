@@ -1,0 +1,25 @@
+format: openmacro/v0.1
+
+metadata:
+  id: app-intent-actions
+  name: App intent actions
+  description: Show bounded package-targeted Android intent actions.
+
+triggers:
+  - id: charger-connected
+    type: android.power.connected
+
+actions:
+  - id: share-status
+    type: android.intent.share-text
+    config:
+      package: com.example.chat
+      text: ZeroBit macro ran.
+  - id: open-app-details
+    type: android.app.details
+    config:
+      package: com.example.chat
+  - id: open-notification-settings
+    type: android.app.notification-settings
+    config:
+      package: com.example.chat

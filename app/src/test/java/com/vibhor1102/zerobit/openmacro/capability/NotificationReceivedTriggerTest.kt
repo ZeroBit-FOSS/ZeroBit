@@ -14,6 +14,7 @@ import com.vibhor1102.zerobit.openmacro.runtime.RuntimePlanCompiler
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeStep
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeValueSource
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NotificationReceivedTriggerTest {
@@ -79,6 +80,32 @@ class NotificationReceivedTriggerTest {
             listOf("unknown_notification_field", "duplicate_notification_field"),
             result.issues.map { it.code },
         )
+    }
+
+    @Test
+    fun rejectsNonPackageNotificationFilter() {
+        val document = document(
+            capture = listOf("title"),
+            actionField = "notification.title",
+        ).copy(
+            triggers = listOf(
+                MacroBlock(
+                    id = "notification",
+                    type = "android.notification.received",
+                    config = mapOf(
+                        "package" to MacroValue.Text("not a package"),
+                        "capture" to MacroValue.ListValue(
+                            listOf(MacroValue.Text("title")),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val result = compiler.compile(document, "sha256:invalid-package")
+
+        require(result is PlanCompilationResult.Invalid)
+        assertTrue(result.issues.any { it.code == "invalid_package_name" })
     }
 
     private fun document(

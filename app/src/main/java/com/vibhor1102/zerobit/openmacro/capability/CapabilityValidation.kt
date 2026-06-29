@@ -68,6 +68,30 @@ internal fun MacroBlock.requireText(
     }
 }
 
+internal fun MacroBlock.requireAndroidPackageName(
+    key: String,
+    path: String,
+): List<ValidationIssue> =
+    buildList {
+        addAll(requireText(key, path, MAX_ANDROID_PACKAGE_LENGTH))
+        val packageName = runCatching { text(key) }.getOrNull()
+        if (packageName != null && !ANDROID_PACKAGE_PATTERN.matches(packageName)) {
+            add(
+                ValidationIssue(
+                    "$path.config.$key",
+                    "invalid_package_name",
+                    "Use an exact Android package name such as com.example.app.",
+                ),
+            )
+        }
+    }
+
+internal fun MacroBlock.optionalAndroidPackageName(
+    key: String,
+    path: String,
+): List<ValidationIssue> =
+    if (config[key] == null) emptyList() else requireAndroidPackageName(key, path)
+
 internal fun MacroBlock.text(key: String): String =
     (config.getValue(key) as MacroValue.Text).value
 
@@ -280,3 +304,7 @@ internal fun OpenMacroDocument.triggerOutputTypes(
         }
     }
 }
+
+private const val MAX_ANDROID_PACKAGE_LENGTH = 255
+private val ANDROID_PACKAGE_PATTERN =
+    Regex("""[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+""")

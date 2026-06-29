@@ -5,6 +5,7 @@
 package com.vibhor1102.zerobit.openmacro.capability
 
 import com.vibhor1102.zerobit.openmacro.capability.builtin.NotificationShowAction
+import com.vibhor1102.zerobit.openmacro.model.MacroValue
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Test
@@ -16,14 +17,59 @@ class CapabilityRegistryTest {
 
         assertEquals(
             listOf(
+                "Airplane mode changed",
                 "Battery level",
+                "Battery saver changed",
                 "Notification received",
                 "Power connected",
+                "Power disconnected",
+                "Ringer mode changed",
                 "Screen turned off",
                 "Screen turned on",
                 "Time schedule",
+                "Wi-Fi connected",
+                "Wi-Fi disconnected",
             ),
             registry.list(CapabilityLane.TRIGGER).map { it.displayName },
+        )
+        assertEquals(
+            listOf(
+                "Airplane mode",
+                "Battery charging",
+                "Battery level",
+                "Battery saver",
+                "Device lock state",
+                "Power connection",
+                "Ringer mode",
+                "Screen state",
+                "Time window",
+                "Value comparison",
+                "Wi-Fi connected",
+            ),
+            registry.list(CapabilityLane.CONDITION).map { it.displayName },
+        )
+        assertEquals(
+            listOf(
+                "Action group",
+                "Copy text to clipboard",
+                "Dial number",
+                "Increment variable",
+                "Launch app",
+                "Open app details",
+                "Open notification settings",
+                "Open web page",
+                "Send SMS",
+                "Set variable",
+                "Share text with app",
+                "Show notification",
+                "Stop actions",
+                "Stop actions if",
+                "Toggle variable",
+                "Vibrate",
+                "Wait",
+                "Write log",
+            ),
+            registry.list(CapabilityLane.ACTION).map { it.displayName },
         )
         assertSame(
             NotificationShowAction,
@@ -36,6 +82,25 @@ class CapabilityRegistryTest {
         CapabilityRegistry.of(
             NotificationShowAction,
             NotificationShowAction,
+        )
+    }
+
+    @Test
+    fun visualCreationIsCapabilityOwnedAndOptIn() {
+        val registry = CapabilityRegistry.builtIn()
+
+        assertEquals("battery-level", registry.find("android.battery.level")?.creation?.idBase)
+        assertEquals(
+            "Automation ran",
+            (registry.find("android.notification.show")
+                ?.creation
+                ?.defaultConfig
+                ?.get("message") as? MacroValue.Text)
+                ?.value,
+        )
+        assertEquals(
+            listOf("phoneNumber", "message"),
+            registry.find("android.sms.send")?.creation?.setup?.fieldKeys,
         )
     }
 }

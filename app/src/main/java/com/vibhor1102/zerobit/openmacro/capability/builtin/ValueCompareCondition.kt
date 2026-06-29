@@ -6,6 +6,7 @@ package com.vibhor1102.zerobit.openmacro.capability.builtin
 
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityCreation
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityFieldKind
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
@@ -32,6 +33,10 @@ object ValueCompareCondition : CapabilityDefinition {
     override val displayName = "Compare values"
     override val description =
         "Compares typed literal, variable, secret, or trigger-context values."
+    override val creation = CapabilityCreation(
+        idBase = "compare-values",
+        defaultConfig = defaultValueComparisonConfig(),
+    )
     override val fields = listOf(
         CapabilityField(
             key = "left",
@@ -196,3 +201,9 @@ private fun MacroBlock.operatorOrNull(): ValueComparisonOperator? =
         "is_missing" -> ValueComparisonOperator.IS_MISSING
         else -> null
     }
+
+internal fun defaultValueComparisonConfig(): Map<String, MacroValue> = mapOf(
+    "left" to MacroValue.Text("value"),
+    "operator" to MacroValue.Text("equals"),
+    "right" to MacroValue.Text("value"),
+)

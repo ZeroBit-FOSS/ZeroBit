@@ -26,12 +26,12 @@ class RuntimePlanCompiler(
         }
 
         val permissions = mutableSetOf<AndroidPermission>()
-        val triggers = compileBlocks(document.triggers, CapabilityLane.TRIGGER, permissions)
-        val conditions = compileBlocks(document.conditions, CapabilityLane.CONDITION, permissions)
+        val triggers = compileBlocks(document, document.triggers, CapabilityLane.TRIGGER, permissions)
+        val conditions = compileBlocks(document, document.conditions, CapabilityLane.CONDITION, permissions)
         val conditionTree = document.conditionTree?.let {
-            compileConditionNode(it, permissions)
+            compileConditionNode(document, it, permissions)
         }
-        val actions = compileBlocks(document.actions, CapabilityLane.ACTION, permissions)
+        val actions = compileBlocks(document, document.actions, CapabilityLane.ACTION, permissions)
 
         return PlanCompilationResult.Success(
             RuntimePlan(
@@ -48,36 +48,39 @@ class RuntimePlanCompiler(
     }
 
     private fun compileConditionNode(
+        document: OpenMacroDocument,
         node: MacroConditionNode,
         permissions: MutableSet<AndroidPermission>,
     ): RuntimeConditionNode = when (node) {
         is MacroConditionNode.Condition -> RuntimeConditionNode.Condition(
             compileBlocks(
+                document = document,
                 blocks = listOf(node.block),
                 expectedLane = CapabilityLane.CONDITION,
                 permissions = permissions,
             ).single(),
         )
         is MacroConditionNode.All -> RuntimeConditionNode.All(
-            node.children.map { compileConditionNode(it, permissions) },
+            node.children.map { compileConditionNode(document, it, permissions) },
         )
         is MacroConditionNode.Any -> RuntimeConditionNode.Any(
-            node.children.map { compileConditionNode(it, permissions) },
+            node.children.map { compileConditionNode(document, it, permissions) },
         )
         is MacroConditionNode.Not -> RuntimeConditionNode.Not(
-            compileConditionNode(node.child, permissions),
+            compileConditionNode(document, node.child, permissions),
         )
     }
 
     private fun compileBlocks(
+        document: OpenMacroDocument,
         blocks: List<MacroBlock>,
         expectedLane: CapabilityLane,
         permissions: MutableSet<AndroidPermission>,
     ): List<RuntimeStep> = blocks.map { block ->
         val definition = checkNotNull(registry.find(block.type))
         check(definition.lane == expectedLane)
-        permissions += definition.requiredPermissions(block)
-        definition.compile(block)
+        permissions += definition.requiredPermissions(block, document, registry)
+        definition.compile(block, document, registry)
     }
 }
 

@@ -6,9 +6,11 @@ package com.vibhor1102.zerobit.openmacro.capability.builtin
 
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityCreation
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityFieldKind
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
+import com.vibhor1102.zerobit.openmacro.capability.CapabilitySetup
 import com.vibhor1102.zerobit.openmacro.capability.rejectUnknownConfig
 import com.vibhor1102.zerobit.openmacro.capability.requireText
 import com.vibhor1102.zerobit.openmacro.capability.text
@@ -23,6 +25,10 @@ object OpenWebUrlAction : CapabilityDefinition {
     override val displayName = "Open web page"
     override val description =
         "Opens one explicit HTTP or HTTPS address in a browser."
+    override val creation = CapabilityCreation(
+        idBase = "open-web",
+        setup = CapabilitySetup(fieldKeys = listOf("url")),
+    )
     override val fields = listOf(
         CapabilityField(
             key = "url",

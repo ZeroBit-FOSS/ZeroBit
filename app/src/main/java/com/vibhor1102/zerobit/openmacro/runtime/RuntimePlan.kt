@@ -47,6 +47,10 @@ sealed interface RuntimeStep {
         override val blockId: String,
     ) : RuntimeStep
 
+    data class ObservePowerDisconnected(
+        override val blockId: String,
+    ) : RuntimeStep
+
     data class ObserveScreenOn(
         override val blockId: String,
     ) : RuntimeStep
@@ -63,6 +67,27 @@ sealed interface RuntimeStep {
 
     data class CheckDeviceUnlocked(
         override val blockId: String,
+        val expectedUnlocked: Boolean = true,
+    ) : RuntimeStep
+
+    data class ObserveWifiConnectivity(
+        override val blockId: String,
+        val connected: Boolean,
+    ) : RuntimeStep
+
+    data class ObserveAirplaneMode(
+        override val blockId: String,
+        val expectedEnabled: Boolean,
+    ) : RuntimeStep
+
+    data class ObserveRingerMode(
+        override val blockId: String,
+        val expectedMode: RingerMode,
+    ) : RuntimeStep
+
+    data class ObserveBatterySaver(
+        override val blockId: String,
+        val expectedEnabled: Boolean,
     ) : RuntimeStep
 
     data class CheckWifiConnected(
@@ -117,9 +142,82 @@ sealed interface RuntimeStep {
         val packageName: String,
     ) : RuntimeStep
 
+    data class CheckBatteryCharging(
+        override val blockId: String,
+        val expectedCharging: Boolean,
+    ) : RuntimeStep
+
+    data class CheckBatteryLevel(
+        override val blockId: String,
+        val level: Int,
+        val direction: BatteryDirection,
+    ) : RuntimeStep
+
+    data class CheckPowerConnection(
+        override val blockId: String,
+        val expectedPluggedIn: Boolean,
+        val expectedSource: PowerSource? = null,
+    ) : RuntimeStep
+
+    data class CheckScreenInteractive(
+        override val blockId: String,
+        val expectedInteractive: Boolean,
+    ) : RuntimeStep
+
+    data class CheckAirplaneMode(
+        override val blockId: String,
+        val expectedEnabled: Boolean,
+    ) : RuntimeStep
+
+    data class CheckRingerMode(
+        override val blockId: String,
+        val expectedMode: RingerMode,
+    ) : RuntimeStep
+
+    data class CheckBatterySaver(
+        override val blockId: String,
+        val expectedEnabled: Boolean,
+    ) : RuntimeStep
+
+    data class CheckTimeWindow(
+        override val blockId: String,
+        val window: TimeWindowSpec,
+    ) : RuntimeStep
+
     data class OpenWebUrl(
         override val blockId: String,
         val url: String,
+    ) : RuntimeStep
+
+    data class OpenAppDetails(
+        override val blockId: String,
+        val packageName: String,
+    ) : RuntimeStep
+
+    data class OpenAppNotificationSettings(
+        override val blockId: String,
+        val packageName: String,
+    ) : RuntimeStep
+
+    data class ShareTextIntent(
+        override val blockId: String,
+        val packageName: String,
+        val text: RuntimeValueSource,
+    ) : RuntimeStep
+
+    data class Vibrate(
+        override val blockId: String,
+        val durationMillis: Long,
+    ) : RuntimeStep
+
+    data class CopyTextToClipboard(
+        override val blockId: String,
+        val text: RuntimeValueSource,
+    ) : RuntimeStep
+
+    data class DialNumber(
+        override val blockId: String,
+        val phoneNumber: RuntimeValueSource,
     ) : RuntimeStep
 
     data class SetVariable(
@@ -172,6 +270,17 @@ sealed interface RuntimeStep {
         val operator: ValueComparisonOperator,
         val right: RuntimeValueSource?,
     ) : RuntimeStep
+
+    data class ActionGroup(
+        override val blockId: String,
+        val failurePolicy: ActionGroupFailurePolicy,
+        val actions: List<RuntimeStep>,
+    ) : RuntimeStep
+}
+
+enum class ActionGroupFailurePolicy {
+    STOP,
+    CONTINUE,
 }
 
 sealed interface RuntimeValueSource {
@@ -192,6 +301,19 @@ enum class BatteryDirection {
     GOES_BELOW,
     GOES_ABOVE,
     EQUALS
+}
+
+enum class RingerMode {
+    NORMAL,
+    VIBRATE,
+    SILENT,
+}
+
+enum class PowerSource {
+    AC,
+    USB,
+    WIRELESS,
+    DOCK,
 }
 
 enum class NotificationField(

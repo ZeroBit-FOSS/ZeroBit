@@ -5,6 +5,7 @@
 package com.vibhor1102.zerobit.openmacro.capability
 
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
+import com.vibhor1102.zerobit.openmacro.model.MacroValue
 import com.vibhor1102.zerobit.openmacro.model.MacroVariableType
 import com.vibhor1102.zerobit.openmacro.model.OpenMacroDocument
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeStep
@@ -20,6 +21,8 @@ interface CapabilityDefinition {
     val displayName: String
     val description: String
     val fields: List<CapabilityField>
+    val creation: CapabilityCreation?
+        get() = null
     val triggerOutputs: List<TriggerOutput>
         get() = emptyList()
 
@@ -36,9 +39,27 @@ interface CapabilityDefinition {
 
     fun explain(block: MacroBlock): String
 
+    fun explain(
+        block: MacroBlock,
+        document: OpenMacroDocument,
+        registry: CapabilityRegistry,
+    ): String = explain(block)
+
     fun requiredPermissions(block: MacroBlock): Set<AndroidPermission>
 
+    fun requiredPermissions(
+        block: MacroBlock,
+        document: OpenMacroDocument,
+        registry: CapabilityRegistry,
+    ): Set<AndroidPermission> = requiredPermissions(block)
+
     fun compile(block: MacroBlock): RuntimeStep
+
+    fun compile(
+        block: MacroBlock,
+        document: OpenMacroDocument,
+        registry: CapabilityRegistry,
+    ): RuntimeStep = compile(block)
 }
 
 enum class CapabilityLane {
@@ -63,6 +84,37 @@ data class TriggerOutput(
     val type: MacroVariableType,
     val description: String,
 )
+
+data class CapabilityCreation(
+    val idBase: String,
+    val defaultConfig: Map<String, MacroValue> = emptyMap(),
+    val contextConfig: ((CapabilityCreationContext) -> Map<String, MacroValue>?)? = null,
+    val setup: CapabilitySetup? = null,
+) {
+    fun configFor(context: CapabilityCreationContext): Map<String, MacroValue>? =
+        if (contextConfig == null) defaultConfig else contextConfig.invoke(context)
+}
+
+data class CapabilitySetup(
+    val fieldKeys: List<String>,
+    val initialConfig: Map<String, MacroValue> = emptyMap(),
+)
+
+data class CapabilityCreationContext(
+    val document: OpenMacroDocument,
+    val insertion: CapabilityInsertion,
+)
+
+sealed interface CapabilityInsertion {
+    object TopLevel : CapabilityInsertion
+
+    data class ActionGroup(
+        val parentBlockId: String,
+        val parentDepth: Int,
+    ) : CapabilityInsertion
+
+    data class ConditionGroup(val path: String) : CapabilityInsertion
+}
 
 enum class CapabilityFieldKind {
     TEXT,

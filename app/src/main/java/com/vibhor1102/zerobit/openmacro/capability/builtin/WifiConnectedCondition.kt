@@ -6,6 +6,7 @@ package com.vibhor1102.zerobit.openmacro.capability.builtin
 
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityCreation
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityFieldKind
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
@@ -20,6 +21,7 @@ object WifiConnectedCondition : CapabilityDefinition {
     override val lane = CapabilityLane.CONDITION
     override val displayName = "Wi-Fi connected"
     override val description = "Continues only when the device is connected to a Wi-Fi network."
+    override val creation = CapabilityCreation("wifi-connected")
     override val fields = listOf(
         CapabilityField(
             key = "ssid",

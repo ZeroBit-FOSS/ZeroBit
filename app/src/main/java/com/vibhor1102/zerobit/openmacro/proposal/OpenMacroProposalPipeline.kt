@@ -64,14 +64,15 @@ class OpenMacroProposalPipeline(
 
     private fun explain(document: OpenMacroDocument): MacroExplanation {
         val blocks = buildList {
-            addAll(explainBlocks(document.triggers, CapabilityLane.TRIGGER))
+            addAll(explainBlocks(document, document.triggers, CapabilityLane.TRIGGER))
             addAll(
                 explainBlocks(
-                    document.conditionTree?.conditionBlocks() ?: document.conditions,
-                    CapabilityLane.CONDITION,
+                    document = document,
+                    blocks = document.conditionTree?.conditionBlocks() ?: document.conditions,
+                    lane = CapabilityLane.CONDITION,
                 ),
             )
-            addAll(explainBlocks(document.actions, CapabilityLane.ACTION))
+            addAll(explainBlocks(document, document.actions, CapabilityLane.ACTION))
         }
         return MacroExplanation(
             macroId = document.metadata.id,
@@ -83,6 +84,7 @@ class OpenMacroProposalPipeline(
     }
 
     private fun explainBlocks(
+        document: OpenMacroDocument,
         blocks: List<MacroBlock>,
         lane: CapabilityLane,
     ): List<BlockExplanation> = blocks.map { block ->
@@ -93,8 +95,8 @@ class OpenMacroProposalPipeline(
             capabilityType = block.type,
             lane = lane,
             displayName = definition.displayName,
-            summary = definition.explain(block),
-            requiredPermissions = definition.requiredPermissions(block),
+            summary = definition.explain(block, document, registry),
+            requiredPermissions = definition.requiredPermissions(block, document, registry),
         )
     }
 

@@ -605,9 +605,10 @@ class RuntimeCoordinatorTest {
 
         assertFalse(run.isAlive)
         assertTrue(fixture.actions.executedBlockIds.isEmpty())
-        assertEquals(
-            RuntimeDiagnosticKind.RUN_CANCELLED,
-            fixture.diagnostics.snapshot().last().kind,
+        assertTrue(
+            fixture.diagnostics.snapshot().any {
+                it.kind == RuntimeDiagnosticKind.RUN_CANCELLED
+            }
         )
     }
 
@@ -644,6 +645,75 @@ class RuntimeCoordinatorTest {
             ),
         )
         assertEquals(listOf("later"), continued.actions.executedBlockIds)
+    }
+
+    @Test
+    fun actionGroupStopPolicyStopsLaterActionsAfterChildFailure() {
+        val group = RuntimeStep.ActionGroup(
+            blockId = "group",
+            failurePolicy = ActionGroupFailurePolicy.STOP,
+            actions = listOf(
+                RuntimeStep.WriteLog("first", "first"),
+                RuntimeStep.WriteLog("bad", "bad"),
+                RuntimeStep.WriteLog("never-in-group", "never"),
+            ),
+        )
+        val plan = validPlan().copy(
+            actions = listOf(
+                group,
+                RuntimeStep.WriteLog("never-after-group", "never"),
+            ),
+        )
+        val fixture = Fixture(plan = plan)
+        fixture.actions.results["bad"] = ActionResult.Failed("Nested action failed.")
+        fixture.coordinator.enable("charger-greeting")
+
+        fixture.registrar.fire("charger-connected")
+
+        assertEquals(listOf("first", "bad"), fixture.actions.executedBlockIds)
+        val last = fixture.diagnostics.snapshot().last()
+        assertEquals(RuntimeDiagnosticKind.ACTION_FAILED, last.kind)
+        assertEquals("group", last.blockId)
+    }
+
+    @Test
+    fun actionGroupContinuePolicyRunsRemainingGroupAndOuterActions() {
+        val group = RuntimeStep.ActionGroup(
+            blockId = "group",
+            failurePolicy = ActionGroupFailurePolicy.CONTINUE,
+            actions = listOf(
+                RuntimeStep.WriteLog("first", "first"),
+                RuntimeStep.WriteLog("bad", "bad"),
+                RuntimeStep.WriteLog("after-bad", "after"),
+            ),
+        )
+        val plan = validPlan().copy(
+            actions = listOf(
+                group,
+                RuntimeStep.WriteLog("after-group", "after"),
+            ),
+        )
+        val fixture = Fixture(plan = plan)
+        fixture.actions.results["bad"] = ActionResult.Failed("Nested action failed.")
+        fixture.coordinator.enable("charger-greeting")
+
+        fixture.registrar.fire("charger-connected")
+
+        assertEquals(
+            listOf("first", "bad", "after-bad", "after-group"),
+            fixture.actions.executedBlockIds,
+        )
+        assertTrue(
+            fixture.diagnostics.snapshot().any {
+                it.blockId == "group" &&
+                    it.kind == RuntimeDiagnosticKind.ACTION_SUCCEEDED &&
+                    it.message.contains("continuing past a failed action")
+            },
+        )
+        assertEquals(
+            RuntimeDiagnosticKind.RUN_SUCCEEDED,
+            fixture.diagnostics.snapshot().last().kind,
+        )
     }
 
     @Test

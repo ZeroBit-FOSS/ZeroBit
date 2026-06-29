@@ -72,6 +72,37 @@ class CapabilityFormModelTest {
     }
 
     @Test
+    fun filtersReferenceOptionsByNameOrType() {
+        val options = listOf(
+            ValueReferenceOption(
+                label = "Variable: counter",
+                type = MacroVariableType.NUMBER,
+                value = MacroValue.ObjectValue(
+                    mapOf("variable" to MacroValue.Text("counter")),
+                ),
+            ),
+            ValueReferenceOption(
+                label = "Trigger: notification.title",
+                type = MacroVariableType.TEXT,
+                value = MacroValue.ObjectValue(
+                    mapOf("trigger" to MacroValue.Text("notification.title")),
+                ),
+            ),
+        )
+
+        assertEquals(options, filterValueReferenceOptions(options, "  "))
+        assertEquals(
+            listOf("Variable: counter"),
+            filterValueReferenceOptions(options, "COUNTER").map { it.label },
+        )
+        assertEquals(
+            listOf("Trigger: notification.title"),
+            filterValueReferenceOptions(options, "text").map { it.label },
+        )
+        assertTrue(filterValueReferenceOptions(options, "missing").isEmpty())
+    }
+
+    @Test
     fun returnsNullForUnsupportedCapabilityWithoutDiscardingTheBlock() {
         val document = OpenMacroDocument(
             format = "openmacro/v0.1",
@@ -114,5 +145,101 @@ class CapabilityFormModelTest {
             listOf("windowed", "exact"),
             form.fields.single { it.key == "delivery" }.allowedValues,
         )
+    }
+
+    @Test
+    fun exposesBoundedIntentActionFields() {
+        val shareAction = MacroBlock(
+            id = "share",
+            type = "android.intent.share-text",
+            config = mapOf(
+                "package" to MacroValue.Text("com.example.chat"),
+                "text" to MacroValue.ObjectValue(
+                    mapOf("variable" to MacroValue.Text("message")),
+                ),
+            ),
+        )
+        val detailsAction = MacroBlock(
+            id = "details",
+            type = "android.app.details",
+            config = mapOf("package" to MacroValue.Text("com.example.chat")),
+        )
+        val notificationSettingsAction = MacroBlock(
+            id = "notification-settings",
+            type = "android.app.notification-settings",
+            config = mapOf("package" to MacroValue.Text("com.example.chat")),
+        )
+        val document = OpenMacroDocument(
+            format = "openmacro/v0.1",
+            metadata = MacroMetadata("forms", "Forms"),
+            variables = listOf(
+                MacroVariable("message", MacroVariableType.TEXT),
+                MacroVariable("count", MacroVariableType.NUMBER),
+            ),
+            triggers = emptyList(),
+            conditions = emptyList(),
+            actions = listOf(shareAction, detailsAction, notificationSettingsAction),
+        )
+
+        val shareForm = checkNotNull(factory.create(document, shareAction))
+        val detailsForm = checkNotNull(factory.create(document, detailsAction))
+        val notificationSettingsForm =
+            checkNotNull(factory.create(document, notificationSettingsAction))
+        val shareText = shareForm.fields.single { it.key == "text" }
+
+        assertEquals("Share text with app", shareForm.title)
+        assertEquals(listOf("package", "text"), shareForm.fields.map { it.key })
+        assertTrue(shareText.acceptsValueSources)
+        assertEquals(
+            listOf("Variable: message"),
+            shareText.referenceOptions.map { it.label },
+        )
+        assertEquals("Open app details", detailsForm.title)
+        assertEquals(listOf("package"), detailsForm.fields.map { it.key })
+        assertTrue(detailsForm.fields.single().referenceOptions.isEmpty())
+        assertEquals("Open notification settings", notificationSettingsForm.title)
+        assertEquals(
+            listOf("package"),
+            notificationSettingsForm.fields.map { it.key },
+        )
+        assertTrue(notificationSettingsForm.fields.single().referenceOptions.isEmpty())
+    }
+
+    @Test
+    fun exposesActionGroupFailurePolicyAsBoundedChoice() {
+        val groupAction = MacroBlock(
+            id = "group",
+            type = "openmacro.action.group",
+            config = mapOf(
+                "failurePolicy" to MacroValue.Text("continue"),
+                "actions" to MacroValue.ListValue(
+                    listOf(
+                        MacroValue.ObjectValue(
+                            mapOf(
+                                "id" to MacroValue.Text("log"),
+                                "type" to MacroValue.Text("android.log.write"),
+                                "config" to MacroValue.ObjectValue(
+                                    mapOf("message" to MacroValue.Text("inside")),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+        val document = OpenMacroDocument(
+            format = "openmacro/v0.1",
+            metadata = MacroMetadata("forms", "Forms"),
+            triggers = emptyList(),
+            conditions = emptyList(),
+            actions = listOf(groupAction),
+        )
+
+        val form = checkNotNull(factory.create(document, groupAction))
+        val field = form.fields.single()
+
+        assertEquals("failurePolicy", field.key)
+        assertEquals(listOf("stop", "continue"), field.allowedValues)
+        assertEquals(MacroValue.Text("continue"), field.currentValue)
     }
 }

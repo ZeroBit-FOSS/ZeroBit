@@ -6,10 +6,13 @@ package com.vibhor1102.zerobit.openmacro.capability.builtin
 
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityCreation
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityFieldKind
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
+import com.vibhor1102.zerobit.openmacro.capability.CapabilitySetup
 import com.vibhor1102.zerobit.openmacro.capability.TriggerOutput
+import com.vibhor1102.zerobit.openmacro.capability.optionalAndroidPackageName
 import com.vibhor1102.zerobit.openmacro.capability.rejectUnknownConfig
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
 import com.vibhor1102.zerobit.openmacro.model.MacroValue
@@ -24,6 +27,17 @@ object NotificationReceivedTrigger : CapabilityDefinition {
     override val displayName = "Notification received"
     override val description =
         "Starts when Android posts a notification matching the optional app filter."
+    override val creation = CapabilityCreation(
+        idBase = "notification-received",
+        setup = CapabilitySetup(
+            fieldKeys = listOf("package", "capture"),
+            initialConfig = mapOf(
+                "capture" to MacroValue.ListValue(
+                    listOf(MacroValue.Text("title")),
+                ),
+            ),
+        ),
+    )
     override val fields = listOf(
         CapabilityField(
             key = "package",
@@ -59,32 +73,7 @@ object NotificationReceivedTrigger : CapabilityDefinition {
         buildList {
             addAll(block.rejectUnknownConfig(setOf("package", "capture"), path))
 
-            val packageValue = block.config["package"]
-            if (packageValue != null) {
-                when {
-                    packageValue !is MacroValue.Text -> add(
-                        ValidationIssue(
-                            "$path.config.package",
-                            "wrong_config_type",
-                            "Configuration 'package' must be text.",
-                        ),
-                    )
-                    packageValue.value.isBlank() -> add(
-                        ValidationIssue(
-                            "$path.config.package",
-                            "blank_config",
-                            "Configuration 'package' must not be blank.",
-                        ),
-                    )
-                    packageValue.value.length > 255 -> add(
-                        ValidationIssue(
-                            "$path.config.package",
-                            "config_too_long",
-                            "Configuration 'package' must be 255 characters or fewer.",
-                        ),
-                    )
-                }
-            }
+            addAll(block.optionalAndroidPackageName("package", path))
 
             val capture = block.config["capture"]
             if (capture == null) {

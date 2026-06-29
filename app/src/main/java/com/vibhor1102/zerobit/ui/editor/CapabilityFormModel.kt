@@ -38,6 +38,18 @@ data class ValueReferenceOption(
     val value: MacroValue.ObjectValue,
 )
 
+fun filterValueReferenceOptions(
+    options: List<ValueReferenceOption>,
+    query: String,
+): List<ValueReferenceOption> {
+    val search = query.trim()
+    if (search.isEmpty()) return options
+    return options.filter { option ->
+        option.label.contains(search, ignoreCase = true) ||
+            option.type.name.contains(search, ignoreCase = true)
+    }
+}
+
 class CapabilityFormModelFactory(
     private val registry: CapabilityRegistry,
 ) {

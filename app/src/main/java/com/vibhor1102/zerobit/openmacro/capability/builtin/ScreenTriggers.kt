@@ -6,6 +6,7 @@ package com.vibhor1102.zerobit.openmacro.capability.builtin
 
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityCreation
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
 import com.vibhor1102.zerobit.openmacro.capability.TriggerOutput
@@ -20,6 +21,7 @@ object ScreenOnTrigger : CapabilityDefinition {
     override val lane = CapabilityLane.TRIGGER
     override val displayName = "Screen turned on"
     override val description = "Starts when Android reports that the screen was turned on."
+    override val creation = CapabilityCreation("screen-on")
     override val triggerOutputs = listOf(screenStateOutput())
     override val fields: List<CapabilityField> = emptyList()
 
@@ -40,6 +42,7 @@ object ScreenOffTrigger : CapabilityDefinition {
     override val lane = CapabilityLane.TRIGGER
     override val displayName = "Screen turned off"
     override val description = "Starts when Android reports that the screen was turned off."
+    override val creation = CapabilityCreation("screen-off")
     override val triggerOutputs = listOf(screenStateOutput())
     override val fields: List<CapabilityField> = emptyList()
 

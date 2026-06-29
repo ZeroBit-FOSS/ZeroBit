@@ -6,6 +6,7 @@ package com.vibhor1102.zerobit.openmacro.capability.builtin
 
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityCreation
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityFieldKind
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
@@ -16,6 +17,7 @@ import com.vibhor1102.zerobit.openmacro.capability.requireTextSource
 import com.vibhor1102.zerobit.openmacro.capability.validateTextSource
 import com.vibhor1102.zerobit.openmacro.capability.valueSource
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
+import com.vibhor1102.zerobit.openmacro.model.MacroValue
 import com.vibhor1102.zerobit.openmacro.model.OpenMacroDocument
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeStep
 import com.vibhor1102.zerobit.openmacro.validation.ValidationIssue
@@ -25,6 +27,13 @@ object NotificationShowAction : CapabilityDefinition {
     override val lane = CapabilityLane.ACTION
     override val displayName = "Show notification"
     override val description = "Displays a local Android notification."
+    override val creation = CapabilityCreation(
+        idBase = "show-notification",
+        defaultConfig = mapOf(
+            "title" to MacroValue.Text("ZeroBit"),
+            "message" to MacroValue.Text("Automation ran"),
+        ),
+    )
     override val fields = listOf(
         CapabilityField(
             key = "title",

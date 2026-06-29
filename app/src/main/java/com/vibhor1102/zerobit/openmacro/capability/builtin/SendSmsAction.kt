@@ -6,10 +6,12 @@ package com.vibhor1102.zerobit.openmacro.capability.builtin
 
 import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
+import com.vibhor1102.zerobit.openmacro.capability.CapabilityCreation
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityFieldKind
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityRegistry
+import com.vibhor1102.zerobit.openmacro.capability.CapabilitySetup
 import com.vibhor1102.zerobit.openmacro.capability.describeValueSource
 import com.vibhor1102.zerobit.openmacro.capability.rejectUnknownConfig
 import com.vibhor1102.zerobit.openmacro.capability.requireTextSource
@@ -25,6 +27,10 @@ object SendSmsAction : CapabilityDefinition {
     override val lane = CapabilityLane.ACTION
     override val displayName = "Send SMS"
     override val description = "Sends an SMS message to a phone number."
+    override val creation = CapabilityCreation(
+        idBase = "send-sms",
+        setup = CapabilitySetup(fieldKeys = listOf("phoneNumber", "message")),
+    )
     override val fields = listOf(
         CapabilityField(
             key = "phoneNumber",

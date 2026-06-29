@@ -286,6 +286,11 @@ retain their capability block IDs, while AND/OR/NOT outcomes identify the
 logical tree path that decided the run. This keeps short-circuit behavior
 explainable without logging sensitive compared values.
 
+The visual editor now renders the existing tree shape, can switch AND/OR groups
+with a local key patch, and can append, remove, wrap, or unwrap condition
+children while preserving existing child conditions, comments, and nearby
+formatting.
+
 ## Generated capability forms
 
 Capability field metadata now produces editor-facing form models with labels,
@@ -295,9 +300,9 @@ appear only when that macro requested them. Unsupported capability blocks remain
 preserved and return no editable form rather than being approximated.
 
 Model-level block edits can update or remove configuration values across normal
-lanes and nested condition trees. The remaining editor step is a targeted YAML
-source patcher so visual edits preserve comments and surrounding formatting
-instead of invoking the canonical formatter.
+lanes and nested condition trees. The targeted YAML source patcher preserves
+comments and surrounding formatting for focused visual edits instead of invoking
+the canonical formatter.
 
 The targeted patcher replaces existing values by their parsed source offsets,
 writes collection and reference values in compact flow-style YAML, inserts
@@ -380,6 +385,29 @@ embedded credentials and non-web schemes, and launches it through a browsable
 Android intent. Dynamic URLs and arbitrary URI schemes remain unsupported until
 their data-flow and approval risks have dedicated schemas.
 
+Bounded intent actions follow the same pattern. `android.intent.share-text`,
+`android.app.details`, and `android.app.notification-settings` each compile to
+a typed runtime step with a fixed Android intent shape. Macro source can provide
+the exact target package and, for sharing, a text value source; it cannot provide
+arbitrary action strings, components, raw extras, shell commands, or hidden URI
+schemes.
+
+Action groups are source-level runtime composition, not a scripting escape
+hatch. `openmacro.action.group` accepts a bounded nested action list plus an
+explicit `stop` or `continue` failure policy. Nested actions still pass through
+the same capability validators, permission discovery, and runtime step compiler;
+group children cannot be triggers or conditions, cannot reuse top-level block
+IDs, and cannot nest deeper than the documented limit. Visual editing for group
+children can build on this source shape without changing the approved runtime
+plan contract.
+
+The first structure controls stay deliberately narrow: the visual editor can
+append only bounded action types with valid defaults, currently write-log,
+delay, and stop actions. It can also move grouped children within their parent
+group and remove a child only when another child remains, keeping structure
+changes inside the shared proposal validator instead of creating broken
+placeholder blocks.
+
 Workspace operations now sit behind a `MacroWorkspaceStore` port so a future
 Storage Access Framework adapter can replace direct paths without changing
 review and approval logic. The port has explicit list, read, write, and delete
@@ -388,9 +416,241 @@ declared macro ID without reformatting comments, writes the new file, then
 removes the old one with rollback if that final step fails. Approval history
 remains app-private throughout.
 
+Android now has that first Storage Access Framework adapter. The selected tree
+URI is persisted, macros are stored only under `macros/*.openmacro.yaml`, and
+the editor can save the current valid macro, list workspace macros, and open one
+back into the same visual/code editing session. Approval history, secrets,
+runtime state, and diagnostics still stay in app-private storage.
+
+Workspace management builds on the same port. The editor can create a valid
+starter macro without overwriting an existing ID, rename source with the
+transactional comment-preserving mutation, and delete source only after an
+explicit warning. These operations never rename or remove an approved snapshot,
+enabled-runtime intent, local secret, or diagnostic record.
+
+The editor also keeps the exact ID and source text from its last workspace read
+or write. It marks later visual or code edits as unsaved and asks before opening
+or creating another macro, or renaming the active workspace file, would replace
+that draft. Changing workspace folders does not replace the editor contents; it
+clears the old baseline so the current source is correctly treated as unsaved in
+the new folder.
+
+Manual workspace refresh lists the folder again and compares the active source
+with that baseline. Unchanged, externally modified, missing, and invalid files
+have separate states. Reload reads the file again and uses the existing draft
+replacement confirmation; saving over a detected modified or invalid file has
+its own overwrite confirmation. None of these checks alter the approved runtime
+snapshot.
+
+Normal saves repeat the comparison immediately before writing. The guarded
+workspace mutation accepts a matching baseline or an unused new ID, but reports
+modified, missing, invalid, and already-existing targets without writing.
+Unconditional write remains a separate callback used only after the editor's
+overwrite or recreate confirmation.
+
+Changing a tracked macro's declared ID no longer implies an accidental second
+file. The editor requires either Save as new, which keeps the old source and
+guards the new target, or Rename file, which verifies the old baseline, refuses
+an occupied target, writes the complete current editor source, and removes the
+old file with rollback. Approval history and runtime state keep their original
+identity in both cases.
+
+The visual editor can now add bounded default-backed top-level triggers,
+conditions, and actions, then remove or reorder them. Required trigger and
+action lanes cannot become empty, condition-list controls stay disabled when a
+condition tree owns that lane, IDs are collision-safe, and every result passes
+through the shared proposal validator before becoming visible editor state.
+
+Those top-level structure edits now use source-location patches rather than the
+whole-document writer. Add touches only the chosen sequence, remove touches only
+the selected item (or converts the final optional condition to `[]`), and move
+swaps only adjacent item ranges. Surrounding comments and scalar formatting are
+preserved; compact flow-style block lists are rejected as unsupported instead
+of being rewritten speculatively, and patched text is validated immediately.
+
+Grouped-action structure edits use the same local approach. Recursive YAML-node
+lookup finds groups inside groups, add derives indentation from the existing
+child list, remove protects the final child, and move swaps adjacent child
+ranges. Flow-style child lists fail closed, nested generated-form lookup now
+finds child actions recursively, and the exact patched source returns through
+the shared proposal validator.
+
+Variable creation is local as well. It inserts a new `variables` section before
+triggers when absent, expands an empty list, or appends to an existing block
+list while preserving nearby comments. Secret declarations include only their
+local key identifier. Unsupported flow-style lists fail closed. With recursive
+config lookup in place, the editor session no longer retains a whole-document
+writer fallback for visual form edits.
+
+Top-level add choices now come from capability metadata rather than an editor
+enum. A capability opts in with a collision-safe ID base and a complete starter
+config; the registry-backed palette currently exposes thirteen context-free trigger,
+condition, and action starters. Tests add every published starter to a document
+and run the full validator, while capabilities without a safe context-free
+starter remain hidden instead of producing an invalid placeholder.
+
+Creation metadata can now derive a nullable starter config from the active
+document. Set Variable chooses the first writable primitive declaration,
+Increment requires a number, and Toggle requires a boolean; each option vanishes
+when no compatible declaration exists. Literal value comparison and conditional
+stop starters are also published. Palette tests validate every visible option
+and verify that secret-only documents do not expose variable mutation actions.
+
+Visual add controls now open one bounded searchable picker instead of expanding
+every capability inline. Search covers the capability name, description, and
+stable type. The same registry-backed, document-aware starters drive top-level
+lanes, nested action groups, and condition-tree groups; tests insert and validate
+every nested option, while wrong-lane templates fail before source mutation.
+
+Capability creation now receives an explicit top-level, action-group, or
+condition-group insertion location through one factory contract. Action Group is
+the first location-aware starter: it begins with a collision-safe Stop Actions
+child, remains validator-clean through four group levels, and is omitted from a
+level-four parent's picker so the editor never proposes a forbidden fifth level.
+
+Capabilities may also opt into pre-insert setup instead of publishing an invalid
+placeholder. Open Web, Launch App, App Details, Notification Settings, Share
+Text, and SMS remain searchable and run the capability's real validator before
+the source callback is allowed. Setup reuses generated field controls, so text
+can remain literal or use only document-valid variable, secret, or trigger
+references; users can switch a reference back to literal text. Unconfigured
+templates are rejected again at the editor model boundary, and valid setup works
+identically in top-level and nested action pickers.
+
+Value-source fields no longer show only the first three references as inline
+buttons. Normal forms and pre-insert setup share one bounded searchable dialog
+over every reference already filtered by the document and expected field type;
+an empty search result is explicit, and selecting a value returns through the
+same config callback used by literal edits.
+
+Exact-package fields can use a searchable installed-app chooser during setup or
+later editing while retaining manual package entry. Android queries only normal
+launcher activities declared through a launcher-intent visibility query, loads
+off the UI thread, deduplicates and sorts packages deterministically, caps the
+snapshot at 250 entries, and requests no broad package-list permission. Query
+failure simply leaves manual entry available and does not affect macro runtime.
+
+Notification Received is now discoverable through the same typed setup flow. It
+starts with only the title field captured, keeps the exact-package filter absent
+unless the user adds or selects one, exposes bounded package/title/text capture
+choices, and rejects an empty capture set or malformed package before source
+mutation. The package validator is shared with other exact-package capabilities.
+
+Time Schedule also uses validated pre-insert setup. Its initial proposal is
+fully explicit and portable: 08:00 on weekdays in UTC, windowed delivery, and a
+15-minute window. Time, day set, IANA timezone, delivery mode, and window remain
+editable through generated controls, and malformed zones or other schedule
+values cannot reach the source patch callback.
+
+Schedule setup and existing schedule forms can fill the same explicit timezone
+text field from a searchable, sorted, capped snapshot of Java's installed IANA
+zone database. Manual entry remains available and the schedule validator stays
+authoritative. Timezone, launcher-app, and value-reference result lists render
+lazily so large bounded catalogs do not eagerly compose every row.
+
+Once a setup draft is validator-clean, the dialog previews Android access from
+the capability's own permission discovery before insertion. SMS shows messaging
+access, exact schedule delivery shows exact-alarm access, and windowed delivery
+does not. This preview is informational only; permission requests remain in the
+existing approval and recovery flows.
+
+Vibrate is a deterministic one-shot action with a generated numeric form and a
+250-millisecond starter. Validation requires a whole duration from 1 through
+5000 milliseconds before compilation. Android uses `VibrationEffect`, reports
+missing hardware or service failure explicitly, and relies only on the normal
+manifest vibration permission rather than a runtime access prompt.
+
+Copy Text to Clipboard accepts a bounded literal or validated text value source
+and starts with a harmless `Copied by ZeroBit` value. Runtime resolution fails
+closed when referenced data is unavailable or not text. Android writes a neutral
+clipboard label, while action diagnostics report only generic success or failure
+and never include the copied payload.
+
+Battery Charging is a bounded-choice condition for charging or not charging. It
+compiles to a boolean expectation and evaluates one current sticky Android
+battery snapshot per condition check, treating charging/full and discharging/not-
+charging explicitly. Missing or unknown platform status fails with diagnostics;
+the evaluator does not poll or retain battery history.
+
+Battery Level reuses one exact whole-percentage threshold model for both triggers
+and conditions. Conditions compare against one sticky Android battery snapshot;
+triggers react only when a later battery event crosses the approved threshold.
+Fractional and out-of-range thresholds fail validation instead of being rounded,
+and neither path polls or retains broad battery history.
+
+Power Connection is a separate bounded condition because a plugged-in device is
+not always actively charging. It checks one sticky battery snapshot for unplugged,
+AC, USB, wireless, or dock power and reports the known source when it blocks an
+unplugged-only macro. Unknown platform values fail rather than being guessed.
+
+Screen State checks Android's current interactive state once when conditions run.
+It supports explicit screen-on and screen-off choices, needs no permission, and
+does not install an observer, poll, or retain screen history.
+
+The original config-free Device Unlocked condition remains valid and still means
+unlocked. New source can choose locked or unlocked through one bounded field;
+both compile to the same keyguard-backed runtime check with opposite expectations.
+
+Power Disconnected complements the existing Power Connected trigger through
+Android's matching system broadcast. Both subscriptions are event-driven,
+permission-free, and carry no unnecessary battery snapshot or retained state.
+
+Wi-Fi Connected and Disconnected triggers use one Android default-network
+callback per enabled trigger. A small transition tracker suppresses repeated
+capability updates and ignores the initial state; cancellation unregisters the
+owned callback exactly once. Events expose only `wifi.state`, avoiding SSID and
+location-sensitive data, and use the existing network-state permission.
+
+Airplane Mode supports both a current-state condition and a transition trigger.
+The condition reads Android's global setting once and accepts only documented
+binary values. The trigger consumes Android's change broadcast, filters the
+approved target state, and exposes only `airplane_mode.state`; neither path polls,
+retains history, or requests additional access.
+
+Ringer Mode uses one typed normal, vibrate, or silent vocabulary across its
+condition and transition trigger. The condition reads the audio service once;
+the trigger filters Android's ringer-mode broadcast and exposes `ringer.state`.
+Unknown platform values fail closed, and no listener, polling, or extra access is
+introduced.
+
+Battery Saver also has a current-state condition and target-state trigger. Both
+use Android's power service; the trigger owns one dynamic system-broadcast
+subscription and rereads the authoritative state when notified because the
+broadcast carries no state payload. It exposes only `battery_saver.state`, and
+subscription cancellation unregisters its receiver exactly once.
+
+Power Connection keeps its original plugged-in and unplugged source files valid.
+An optional bounded source can now narrow plugged-in checks to AC, USB, wireless,
+or dock power. Compilation uses a typed source, Android decodes only known
+platform constants from one sticky battery snapshot, and conflicting unplugged
+plus exact-source files fail validation.
+
+Power Connected and Disconnected retain their config-free source format while
+publishing bounded `power.state` context. Connected delivery also reads one
+sticky battery snapshot and publishes canonical `power.source` when Android
+reports a known AC, USB, wireless, or dock source. If that optional lookup is
+unavailable, the connection event still runs and source-dependent resolution
+fails through the existing explicit missing-value path.
+
+Time Window shares strict local-time, unique-weekday, and IANA-timezone parsing
+with Time Schedule. Its immutable runtime model evaluates one `Instant` against
+a half-open local interval: start is included, end is excluded, and overnight
+windows belong to their starting weekday. Instant-to-zone conversion makes DST
+gaps and overlaps deterministic without scheduling, polling, or retained state.
+
+Dial Number accepts a literal or validated text value source during required
+setup. A shared bounded predicate allows common international and service-code
+symbols while rejecting URI/control injection, and runtime resolution repeats
+that check. Android receives only fixed `ACTION_DIAL` with a `tel` URI assembled
+from parts; ZeroBit never uses `ACTION_CALL` and requests no call permission.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the
-shared proposal validator. They never display or edit the secret value. Adding,
-renaming, and deleting declarations remains separate work because those
-operations must update or reject references atomically.
+shared proposal validator. They never display or edit the secret value. New
+declarations can also be created from bounded text, number, boolean, and secret
+templates with collision-safe names and valid defaults. Renaming a declaration
+uses local source patches to update the declaration, variable action targets,
+and `{variable: ...}` value references together, including nested action-group
+children. Deleting a declaration is allowed only when no block targets it and no
+value source references it.
