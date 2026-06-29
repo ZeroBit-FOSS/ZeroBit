@@ -137,9 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Open Bluetooth Settings Action**: Add a config-free typed action
-  for Android's exact Bluetooth settings route; do not expose generic settings,
-  arbitrary intent strings, device scans, pairing, or direct radio mutation.
+- **Target 1: Open NFC Settings Action**: Add a config-free typed action for
+  Android's exact NFC settings route; do not expose generic settings, arbitrary
+  intent strings, tag reads/writes, or direct NFC mutation.
 
 ### Completed Foundations
 
@@ -373,6 +373,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Open Wi-Fi Settings Action**: A config-free typed step opens only Android's
   exact Wi-Fi settings route without generic intent fields or direct network
   mutation.
+- **Open Bluetooth Settings Action**: A config-free typed step opens only the
+  exact Bluetooth settings route without scans, pairing, radio mutation, or
+  Bluetooth permissions.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

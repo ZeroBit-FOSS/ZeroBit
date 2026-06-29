@@ -58,6 +58,7 @@ class CapabilityRegistryTest {
                 "Dial number",
                 "Increment variable",
                 "Launch app",
+                "Open Bluetooth settings",
                 "Open Wi-Fi settings",
                 "Open app details",
                 "Open map location",

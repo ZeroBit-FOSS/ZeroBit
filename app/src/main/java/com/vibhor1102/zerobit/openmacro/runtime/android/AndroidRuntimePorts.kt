@@ -713,6 +713,7 @@ class AndroidActionExecutor(
             is RuntimeStep.CreateCalendarEventDraft -> createCalendarEventDraft(action, context)
             is RuntimeStep.CreateContactDraft -> createContactDraft(action, context)
             is RuntimeStep.OpenWifiSettings -> openWifiSettings()
+            is RuntimeStep.OpenBluetoothSettings -> openBluetoothSettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1004,6 +1005,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android Wi-Fi settings are not available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open Wi-Fi settings.")
+        }
+    }
+
+    private fun openBluetoothSettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android Bluetooth settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open Bluetooth settings.")
         }
     }
 
