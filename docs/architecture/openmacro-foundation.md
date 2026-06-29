@@ -689,6 +689,11 @@ Android receives only fixed `ACTION_INSERT` contact extras; ZeroBit accepts no
 account or raw-contact identifiers, writes nothing directly, and requests no
 contacts access.
 
+Open Wi-Fi Settings is config-free and compiles to one dedicated runtime step
+that launches only `Settings.ACTION_WIFI_SETTINGS`. It cannot carry an arbitrary
+settings action or extras, and it does not enable, disable, or connect Wi-Fi on
+the user's behalf.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

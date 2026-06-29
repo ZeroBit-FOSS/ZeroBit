@@ -712,6 +712,7 @@ class AndroidActionExecutor(
             is RuntimeStep.ShowAlarms -> showAlarms()
             is RuntimeStep.CreateCalendarEventDraft -> createCalendarEventDraft(action, context)
             is RuntimeStep.CreateContactDraft -> createContactDraft(action, context)
+            is RuntimeStep.OpenWifiSettings -> openWifiSettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -990,6 +991,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("No contacts app can create a contact draft.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Android could not open the contact draft.")
+        }
+    }
+
+    private fun openWifiSettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android Wi-Fi settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open Wi-Fi settings.")
         }
     }
 

@@ -267,6 +267,10 @@ sealed interface RuntimeStep {
         val email: RuntimeValueSource?,
     ) : RuntimeStep
 
+    data class OpenWifiSettings(
+        override val blockId: String,
+    ) : RuntimeStep
+
     data class SetVariable(
         override val blockId: String,
         val name: String,

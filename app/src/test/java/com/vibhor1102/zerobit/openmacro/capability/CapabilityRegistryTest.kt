@@ -58,6 +58,7 @@ class CapabilityRegistryTest {
                 "Dial number",
                 "Increment variable",
                 "Launch app",
+                "Open Wi-Fi settings",
                 "Open app details",
                 "Open map location",
                 "Open notification settings",
