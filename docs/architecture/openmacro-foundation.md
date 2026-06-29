@@ -670,6 +670,10 @@ bounded label, and an explicit skip-UI boolean. It compiles only to
 `ACTION_SET_TIMER` with length, message, and skip-UI extras, reusing the normal
 clock intent permission without reading timer or alarm state.
 
+Show Alarms is config-free and compiles to one `ACTION_SHOW_ALARMS` runtime
+step. It opens the clock app's own alarm list, accepts no alarm identifiers or
+arbitrary extras, and does not copy alarm data into ZeroBit.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

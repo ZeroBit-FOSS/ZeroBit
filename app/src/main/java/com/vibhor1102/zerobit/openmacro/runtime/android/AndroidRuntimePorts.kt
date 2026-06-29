@@ -702,6 +702,7 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenMapLocation -> openMapLocation(action, context)
             is RuntimeStep.SetAlarm -> setAlarm(action)
             is RuntimeStep.SetTimer -> setTimer(action)
+            is RuntimeStep.ShowAlarms -> showAlarms()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -871,6 +872,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("No clock app can set a timer.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Android could not set the timer.")
+        }
+    }
+
+    private fun showAlarms(): ActionResult {
+        val intent = Intent(AlarmClock.ACTION_SHOW_ALARMS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("No clock app can show alarms.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Android could not open the alarm list.")
         }
     }
 

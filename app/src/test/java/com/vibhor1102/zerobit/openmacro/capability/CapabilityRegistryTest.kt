@@ -65,6 +65,7 @@ class CapabilityRegistryTest {
                 "Set timer",
                 "Set variable",
                 "Share text with app",
+                "Show alarms",
                 "Show notification",
                 "Stop actions",
                 "Stop actions if",

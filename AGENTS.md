@@ -137,9 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Show Alarms Action**: Add a config-free fixed Android clock intent
-  that opens the user's alarm list, reuses the normal clock-app permission, and
-  does not read or retain alarm data inside ZeroBit.
+- **Target 1: Calendar Event Draft Action**: Add explicit start, end, and
+  timezone values plus bounded title, location, and description sources through
+  a fixed calendar insert intent that never writes directly or requests access.
 
 ### Completed Foundations
 
@@ -361,6 +361,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Set Timer Action**: A bounded whole-second duration, optional label, and
   skip-UI choice compile to fixed `ACTION_SET_TIMER` extras with no clock-state
   access or arbitrary intent fields.
+- **Show Alarms Action**: A config-free typed step opens Android's alarm list
+  through fixed `ACTION_SHOW_ALARMS` without reading alarm IDs or state into
+  ZeroBit.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

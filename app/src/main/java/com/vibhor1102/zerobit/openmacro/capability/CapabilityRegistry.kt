@@ -49,6 +49,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.ComposeEmailAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenMapLocationAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.SetAlarmAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.SetTimerAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.ShowAlarmsAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -116,6 +117,7 @@ class CapabilityRegistry private constructor(
                 OpenMapLocationAction,
                 SetAlarmAction,
                 SetTimerAction,
+                ShowAlarmsAction,
             ),
         )
 
