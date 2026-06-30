@@ -753,6 +753,18 @@ class AndroidActionExecutor(
                 action.packageName,
                 "app overlay",
             )
+            is RuntimeStep.OpenAppAllFilesAccessSettings -> openPackageSettingsRoute(
+                Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                action.packageName,
+                "app all-files access",
+            )
+            is RuntimeStep.OpenAppUnknownSourcesSettings -> openPackageSettingsRoute(
+                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                action.packageName,
+                "app unknown sources",
+            )
+            is RuntimeStep.OpenAppNotificationBubbleSettings ->
+                openAppNotificationBubbleSettings(action.packageName)
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1362,6 +1374,22 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android $routeName settings are not available for '$packageName'.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open $routeName settings.")
+        }
+    }
+
+    private fun openAppNotificationBubbleSettings(packageName: String): ActionResult {
+        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_BUBBLE_SETTINGS)
+            .putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed(
+                "Android app notification-bubble settings are not available for '$packageName'.",
+            )
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open app notification-bubble settings.")
         }
     }
 

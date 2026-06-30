@@ -386,6 +386,21 @@ sealed interface RuntimeStep {
         val packageName: String,
     ) : RuntimeStep
 
+    data class OpenAppAllFilesAccessSettings(
+        override val blockId: String,
+        val packageName: String,
+    ) : RuntimeStep
+
+    data class OpenAppUnknownSourcesSettings(
+        override val blockId: String,
+        val packageName: String,
+    ) : RuntimeStep
+
+    data class OpenAppNotificationBubbleSettings(
+        override val blockId: String,
+        val packageName: String,
+    ) : RuntimeStep
+
     data class SetVariable(
         override val blockId: String,
         val name: String,

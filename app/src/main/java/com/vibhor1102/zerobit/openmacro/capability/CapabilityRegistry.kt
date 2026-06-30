@@ -81,6 +81,9 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenNotificationListe
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAppLanguageSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAppOverlaySettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAppPictureInPictureSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAppAllFilesAccessSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAppUnknownSourcesSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAppNotificationBubbleSettingsAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -180,6 +183,9 @@ class CapabilityRegistry private constructor(
                 OpenAppLanguageSettingsAction,
                 OpenAppOverlaySettingsAction,
                 OpenAppPictureInPictureSettingsAction,
+                OpenAppAllFilesAccessSettingsAction,
+                OpenAppUnknownSourcesSettingsAction,
+                OpenAppNotificationBubbleSettingsAction,
             ),
         )
 

@@ -47,6 +47,39 @@ object OpenAppOverlaySettingsAction : ExactPackageSettingsAction(
     compileStep = { blockId, packageName -> RuntimeStep.OpenAppOverlaySettings(blockId, packageName) },
 )
 
+object OpenAppAllFilesAccessSettingsAction : ExactPackageSettingsAction(
+    type = "android.app.all-files-access-settings",
+    displayName = "Open app all files access settings",
+    description = "Opens all-files access settings for one exact Android package.",
+    idBase = "open-app-all-files-access-settings",
+    explanationPrefix = "Open all-files access settings for",
+    compileStep = { blockId, packageName ->
+        RuntimeStep.OpenAppAllFilesAccessSettings(blockId, packageName)
+    },
+)
+
+object OpenAppUnknownSourcesSettingsAction : ExactPackageSettingsAction(
+    type = "android.app.unknown-sources-settings",
+    displayName = "Open app unknown sources settings",
+    description = "Opens install-unknown-apps settings for one exact Android package.",
+    idBase = "open-app-unknown-sources-settings",
+    explanationPrefix = "Open install-unknown-apps settings for",
+    compileStep = { blockId, packageName ->
+        RuntimeStep.OpenAppUnknownSourcesSettings(blockId, packageName)
+    },
+)
+
+object OpenAppNotificationBubbleSettingsAction : ExactPackageSettingsAction(
+    type = "android.app.notification-bubble-settings",
+    displayName = "Open app notification bubble settings",
+    description = "Opens notification-bubble settings for one exact Android package.",
+    idBase = "open-app-notification-bubble-settings",
+    explanationPrefix = "Open notification-bubble settings for",
+    compileStep = { blockId, packageName ->
+        RuntimeStep.OpenAppNotificationBubbleSettings(blockId, packageName)
+    },
+)
+
 abstract class ExactPackageSettingsAction(
     final override val type: String,
     final override val displayName: String,

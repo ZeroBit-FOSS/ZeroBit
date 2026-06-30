@@ -135,9 +135,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Open App All Files Access Settings Action**: Add required exact-
-  package setup and Android's fixed app-specific all-files access route; reuse
-  the app picker, request no access, and expose no arbitrary package URI.
+- **Target 1: Torch Action**: Add explicit on/off control through CameraManager,
+  deterministic flash-camera selection, honest camera permission discovery,
+  and clear unavailable/in-use diagnostics; do not add toggle ambiguity.
 
 ### Completed Foundations
 
@@ -433,6 +433,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **App Language, Picture-in-Picture, and Overlay Settings Actions**: Shared
   exact-package setup compiles to distinct fixed package routes without direct
   state mutation, access grants, or arbitrary URIs.
+- **App All Files, Unknown Sources, and Notification Bubble Settings Actions**:
+  Shared exact-package setup opens only fixed routes without granting access,
+  installing software, reading files, or mutating notification behavior.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

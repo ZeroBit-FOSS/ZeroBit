@@ -786,6 +786,11 @@ validation and required setup while compiling to distinct runtime steps.
 Android package URIs are assembled with `Uri.fromParts`; macros cannot provide
 an arbitrary URI, mutate locale/PiP/overlay state, or request those accesses.
 
+App All Files Access, Unknown Sources, and Notification Bubble Settings extend
+the same exact-package family. The first two use package URIs assembled by
+ZeroBit; bubbles use only Android's fixed package extra. None grants access,
+installs software, reads files, or changes notification behavior directly.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

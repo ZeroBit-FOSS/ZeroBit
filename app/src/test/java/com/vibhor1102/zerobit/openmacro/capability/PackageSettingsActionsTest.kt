@@ -28,6 +28,12 @@ class PackageSettingsActionsTest {
                 RuntimeStep.OpenAppPictureInPictureSettings("settings", packageName),
             "android.app.overlay-settings" to
                 RuntimeStep.OpenAppOverlaySettings("settings", packageName),
+            "android.app.all-files-access-settings" to
+                RuntimeStep.OpenAppAllFilesAccessSettings("settings", packageName),
+            "android.app.unknown-sources-settings" to
+                RuntimeStep.OpenAppUnknownSourcesSettings("settings", packageName),
+            "android.app.notification-bubble-settings" to
+                RuntimeStep.OpenAppNotificationBubbleSettings("settings", packageName),
         )
 
         cases.forEachIndexed { index, (type, expected) ->
@@ -44,6 +50,9 @@ class PackageSettingsActionsTest {
             "android.app.language-settings",
             "android.app.picture-in-picture-settings",
             "android.app.overlay-settings",
+            "android.app.all-files-access-settings",
+            "android.app.unknown-sources-settings",
+            "android.app.notification-bubble-settings",
         )
         types.forEachIndexed { index, type ->
             val invalidPackage = compiler.compile(
