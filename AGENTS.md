@@ -135,9 +135,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Open Airplane Mode Settings Action**: Add a config-free typed
-  action for Android's exact airplane-mode settings route; do not toggle the
-  mode directly, change radios, or expose generic intent fields.
+- **Target 1: Open Notification Settings Action**: Add a config-free typed
+  action for Android's top-level notification settings route; do not target a
+  package/channel, inspect notifications, change policy, or expose generic fields.
 
 ### Completed Foundations
 
@@ -416,6 +416,8 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Open Storage Settings Action**: A config-free typed step opens only the
   internal-storage route without volume/path targeting, file inspection,
   clearing, or deletion.
+- **Open Airplane Mode Settings Action**: A config-free typed step opens only
+  the Airplane mode settings route without changing mode or radio state.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

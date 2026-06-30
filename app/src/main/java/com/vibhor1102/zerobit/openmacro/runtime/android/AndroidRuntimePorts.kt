@@ -728,6 +728,7 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenKeyboardSettings -> openKeyboardSettings()
             is RuntimeStep.OpenAppsSettings -> openAppsSettings()
             is RuntimeStep.OpenStorageSettings -> openStorageSettings()
+            is RuntimeStep.OpenAirplaneModeSettings -> openAirplaneModeSettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1214,6 +1215,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android storage settings are not available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open storage settings.")
+        }
+    }
+
+    private fun openAirplaneModeSettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_AIRPLANE_MODE_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android Airplane mode settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open Airplane mode settings.")
         }
     }
 

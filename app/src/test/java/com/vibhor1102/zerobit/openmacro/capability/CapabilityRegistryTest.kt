@@ -58,6 +58,7 @@ class CapabilityRegistryTest {
                 "Dial number",
                 "Increment variable",
                 "Launch app",
+                "Open Airplane mode settings",
                 "Open Bluetooth settings",
                 "Open location settings",
                 "Open NFC settings",
