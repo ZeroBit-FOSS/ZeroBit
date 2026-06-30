@@ -215,6 +215,11 @@ sealed interface RuntimeStep {
         val enabled: Boolean,
     ) : RuntimeStep
 
+    data class SetMediaVolume(
+        override val blockId: String,
+        val percentage: Int,
+    ) : RuntimeStep
+
     data class CopyTextToClipboard(
         override val blockId: String,
         val text: RuntimeValueSource,

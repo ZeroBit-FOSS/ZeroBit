@@ -694,6 +694,7 @@ class AndroidActionExecutor(
     }
     private val clipboardManager = appContext.getSystemService(ClipboardManager::class.java)
     private val cameraManager = appContext.getSystemService(CameraManager::class.java)
+    private val audioManager = appContext.getSystemService(AudioManager::class.java)
     private val nextNotificationId = AtomicInteger(1)
 
     override fun execute(action: RuntimeStep, context: RuntimeContext): ActionResult =
@@ -708,6 +709,7 @@ class AndroidActionExecutor(
             is RuntimeStep.ShareTextIntent -> shareText(action, context)
             is RuntimeStep.Vibrate -> vibrate(action)
             is RuntimeStep.SetTorch -> setTorch(action)
+            is RuntimeStep.SetMediaVolume -> setMediaVolume(action)
             is RuntimeStep.CopyTextToClipboard -> copyTextToClipboard(action, context)
             is RuntimeStep.DialNumber -> dialNumber(action, context)
             is RuntimeStep.ComposeEmail -> composeEmail(action, context)
@@ -1232,6 +1234,22 @@ class AndroidActionExecutor(
             ActionResult.Failed("The selected torch camera is no longer available.")
         } catch (_: RuntimeException) {
             ActionResult.Failed("Android could not change the torch.")
+        }
+    }
+
+    private fun setMediaVolume(action: RuntimeStep.SetMediaVolume): ActionResult {
+        val manager = audioManager
+            ?: return ActionResult.Failed("Android audio service is unavailable.")
+        return try {
+            val maximum = manager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            val index = mediaVolumeIndex(action.percentage, maximum)
+                ?: return ActionResult.Failed("Android media volume range is unavailable.")
+            manager.setStreamVolume(AudioManager.STREAM_MUSIC, index, 0)
+            ActionResult.Succeeded
+        } catch (_: SecurityException) {
+            ActionResult.Failed("Android did not allow the media volume change.")
+        } catch (_: RuntimeException) {
+            ActionResult.Failed("Android could not change media volume.")
         }
     }
 

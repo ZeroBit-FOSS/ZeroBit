@@ -31,6 +31,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenWebUrlAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ShareTextIntentAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.VibrateAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.SetTorchAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.SetMediaVolumeAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ClipboardTextAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryChargingCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryLevelCondition
@@ -140,6 +141,7 @@ class CapabilityRegistry private constructor(
                 ShareTextIntentAction,
                 VibrateAction,
                 SetTorchAction,
+                SetMediaVolumeAction,
                 ClipboardTextAction,
                 SetVariableAction,
                 IncrementVariableAction,

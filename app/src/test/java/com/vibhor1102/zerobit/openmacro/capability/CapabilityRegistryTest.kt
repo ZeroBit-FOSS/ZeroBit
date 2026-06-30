@@ -96,6 +96,7 @@ class CapabilityRegistryTest {
                 "Open web page",
                 "Send SMS",
                 "Set alarm",
+                "Set media volume",
                 "Set timer",
                 "Set torch",
                 "Set variable",

@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Media Volume Action**: Add bounded media-volume percentage
-  control through AudioManager, map percentages against the runtime maximum,
-  and avoid ringtone, alarm, call, DND, or general audio-policy mutation.
+- **Target 1: Media Volume Condition**: Add bounded current media-volume
+  comparison through one AudioManager snapshot, reuse runtime percentage
+  mapping semantics, and avoid observers, polling, or non-media streams.
 
 ### Completed Foundations
 
+- **Bounded Media Volume Action**: Whole percentages map against Android's
+  runtime media maximum and change only the media stream under the normal
+  manifest permission, without user-granted access or broader audio mutation.
 - **Explicit Torch Action**: Torch on/off compiles to a typed CameraManager
   step with deterministic flash-camera selection, recoverable camera access,
   optional-hardware support, and bounded unavailable or in-use diagnostics.

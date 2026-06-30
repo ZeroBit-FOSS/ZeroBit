@@ -797,6 +797,13 @@ prefers a rear flash camera with stable ID ordering, falls back to another flash
 camera, and reports absent, busy, disconnected, or policy-disabled hardware
 without exposing a general camera API to macro files.
 
+Set Media Volume accepts one whole percentage from 0 through 100 and compiles
+to a typed step with no user-granted access. The app declares Android's normal
+`MODIFY_AUDIO_SETTINGS` permission. Runtime maps the percentage against the
+device's current media-stream maximum and changes only
+`AudioManager.STREAM_MUSIC` without UI, ringtone, alarm, call, DND, or general
+audio-policy flags.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the
