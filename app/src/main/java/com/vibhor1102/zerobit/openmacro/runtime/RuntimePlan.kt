@@ -210,6 +210,11 @@ sealed interface RuntimeStep {
         val durationMillis: Long,
     ) : RuntimeStep
 
+    data class SetTorch(
+        override val blockId: String,
+        val enabled: Boolean,
+    ) : RuntimeStep
+
     data class CopyTextToClipboard(
         override val blockId: String,
         val text: RuntimeValueSource,

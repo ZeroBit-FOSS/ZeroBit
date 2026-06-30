@@ -135,11 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Torch Action**: Add explicit on/off control through CameraManager,
-  deterministic flash-camera selection, honest camera permission discovery,
-  and clear unavailable/in-use diagnostics; do not add toggle ambiguity.
+- **Target 1: Media Volume Action**: Add bounded media-volume percentage
+  control through AudioManager, map percentages against the runtime maximum,
+  and avoid ringtone, alarm, call, DND, or general audio-policy mutation.
 
 ### Completed Foundations
+
+- **Explicit Torch Action**: Torch on/off compiles to a typed CameraManager
+  step with deterministic flash-camera selection, recoverable camera access,
+  optional-hardware support, and bounded unavailable or in-use diagnostics.
 
 - **Local Variables & Secrets Store**: OpenMacro has typed declarations,
   schema and validator coverage, durable non-secret values, Android

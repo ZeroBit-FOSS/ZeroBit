@@ -791,6 +791,12 @@ the same exact-package family. The first two use package URIs assembled by
 ZeroBit; bubbles use only Android's fixed package extra. None grants access,
 installs software, reads files, or changes notification behavior directly.
 
+Set Torch accepts one required Boolean state rather than a toggle, declares
+camera access before approval, and compiles to a typed runtime step. Android
+prefers a rear flash camera with stable ID ordering, falls back to another flash
+camera, and reports absent, busy, disconnected, or policy-disabled hardware
+without exposing a general camera API to macro files.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

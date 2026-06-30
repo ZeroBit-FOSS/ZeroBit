@@ -79,6 +79,7 @@ private fun RuntimeLifecycleResult.toRecoveryStatus(
 }
 
 fun AndroidPermission.userFacingName(): String = when (this) {
+    AndroidPermission.CAMERA -> "camera permission"
     AndroidPermission.POST_NOTIFICATIONS -> "notification permission"
     AndroidPermission.SEND_SMS -> "SMS permission"
     AndroidPermission.ACCESS_NETWORK_STATE -> "network-state access"

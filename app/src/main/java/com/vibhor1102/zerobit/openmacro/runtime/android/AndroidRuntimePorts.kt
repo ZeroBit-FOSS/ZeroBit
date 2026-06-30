@@ -24,6 +24,9 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import android.media.AudioManager
+import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
 import android.os.Build
 import android.os.BatteryManager
 import android.os.PowerManager
@@ -690,6 +693,7 @@ class AndroidActionExecutor(
         appContext.getSystemService(Vibrator::class.java)
     }
     private val clipboardManager = appContext.getSystemService(ClipboardManager::class.java)
+    private val cameraManager = appContext.getSystemService(CameraManager::class.java)
     private val nextNotificationId = AtomicInteger(1)
 
     override fun execute(action: RuntimeStep, context: RuntimeContext): ActionResult =
@@ -703,6 +707,7 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenAppNotificationSettings -> openAppNotificationSettings(action)
             is RuntimeStep.ShareTextIntent -> shareText(action, context)
             is RuntimeStep.Vibrate -> vibrate(action)
+            is RuntimeStep.SetTorch -> setTorch(action)
             is RuntimeStep.CopyTextToClipboard -> copyTextToClipboard(action, context)
             is RuntimeStep.DialNumber -> dialNumber(action, context)
             is RuntimeStep.ComposeEmail -> composeEmail(action, context)
@@ -1202,6 +1207,34 @@ class AndroidActionExecutor(
         }
     }
 
+    @SuppressLint("MissingPermission")
+    private fun setTorch(action: RuntimeStep.SetTorch): ActionResult {
+        val manager = cameraManager
+            ?: return ActionResult.Failed("Android camera service is unavailable.")
+        return try {
+            val candidates = manager.cameraIdList.map { cameraId ->
+                val characteristics = manager.getCameraCharacteristics(cameraId)
+                TorchCameraCandidate(
+                    id = cameraId,
+                    hasFlash = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true,
+                    lensFacing = characteristics.get(CameraCharacteristics.LENS_FACING),
+                )
+            }
+            val cameraId = selectTorchCameraId(candidates)
+                ?: return ActionResult.Failed("This device does not have an available torch.")
+            manager.setTorchMode(cameraId, action.enabled)
+            ActionResult.Succeeded
+        } catch (problem: CameraAccessException) {
+            ActionResult.Failed(torchCameraFailureMessage(problem.reason))
+        } catch (_: SecurityException) {
+            ActionResult.Failed("Camera permission is required to control the torch.")
+        } catch (_: IllegalArgumentException) {
+            ActionResult.Failed("The selected torch camera is no longer available.")
+        } catch (_: RuntimeException) {
+            ActionResult.Failed("Android could not change the torch.")
+        }
+    }
+
     private fun openLanguagesSettings(): ActionResult {
         val intent = Intent(Settings.ACTION_LOCALE_SETTINGS)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -1599,6 +1632,9 @@ class AndroidRuntimePermissionChecker(
         required: Set<AndroidPermission>,
     ): Set<AndroidPermission> = required.filterTo(mutableSetOf()) { permission ->
         when (permission) {
+            AndroidPermission.CAMERA ->
+                appContext.checkSelfPermission(Manifest.permission.CAMERA) !=
+                    PackageManager.PERMISSION_GRANTED
             AndroidPermission.POST_NOTIFICATIONS ->
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                     appContext.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=

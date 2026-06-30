@@ -97,6 +97,7 @@ class CapabilityRegistryTest {
                 "Send SMS",
                 "Set alarm",
                 "Set timer",
+                "Set torch",
                 "Set variable",
                 "Share text with app",
                 "Show alarms",

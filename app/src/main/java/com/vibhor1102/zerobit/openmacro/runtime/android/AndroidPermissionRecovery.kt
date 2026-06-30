@@ -30,6 +30,11 @@ object AndroidPermissionRecoveryFactory {
         context: Context,
         permission: AndroidPermission,
     ): AndroidPermissionRecovery = when (permission) {
+        AndroidPermission.CAMERA ->
+            AndroidPermissionRecovery.RequestRuntimePermission(
+                Manifest.permission.CAMERA,
+                "Allow ZeroBit to control the torch when an approved macro runs.",
+            )
         AndroidPermission.POST_NOTIFICATIONS ->
             AndroidPermissionRecovery.RequestRuntimePermission(
                 Manifest.permission.POST_NOTIFICATIONS,
