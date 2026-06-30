@@ -875,6 +875,11 @@ suppresses initial, duplicate, and partial-removal callbacks, emits only bounded
 `wired_headset.state` context, and unregisters deterministically without using
 device metadata.
 
+Battery Temperature compares one sticky battery snapshot against a bounded
+-100.0 C to 100.0 C threshold. Source and runtime preserve Android's native
+tenths-of-a-degree precision as integers for below, above, and equal checks;
+the condition installs no observer and retains no temperature history.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Battery Temperature Condition**: Add bounded above/below/equal
-  checks from one sticky battery snapshot, preserve Android's tenths-of-degree
-  precision, and avoid observers, history, permissions, or polling.
+- **Target 1: Battery Temperature Trigger**: Add bounded threshold crossings
+  through the sticky battery broadcast, preserve exact tenths precision,
+  suppress the initial sample and duplicates, and expose bounded temperature.
 
 ### Completed Foundations
 
+- **Battery Temperature Condition**: Above/below/equal checks preserve exact
+  tenths-of-degree precision from one bounded sticky battery snapshot without
+  observers, history, permissions, or polling.
 - **Wired Headset Trigger**: Connected/disconnected transitions use one owned
   audio-device callback, reread bounded output types, suppress duplicates and
   partial removals, expose only state, and unregister deterministically.

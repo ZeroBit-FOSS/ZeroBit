@@ -219,6 +219,12 @@ sealed interface RuntimeStep {
         val expectedConnected: Boolean,
     ) : RuntimeStep
 
+    data class CheckBatteryTemperature(
+        override val blockId: String,
+        val thresholdTenthsCelsius: Int,
+        val comparison: BatteryTemperatureComparison,
+    ) : RuntimeStep
+
     data class CheckPowerConnection(
         override val blockId: String,
         val expectedPluggedIn: Boolean,
@@ -569,6 +575,12 @@ enum class MediaVolumeComparison {
 enum class ScreenOrientation {
     PORTRAIT,
     LANDSCAPE,
+}
+
+enum class BatteryTemperatureComparison {
+    BELOW,
+    ABOVE,
+    EQUALS,
 }
 
 enum class RingerMode {

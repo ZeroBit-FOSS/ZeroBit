@@ -53,6 +53,7 @@ import com.vibhor1102.zerobit.openmacro.capability.AndroidPermission
 import com.vibhor1102.zerobit.openmacro.model.MacroValue
 import com.vibhor1102.zerobit.openmacro.runtime.ActionResult
 import com.vibhor1102.zerobit.openmacro.runtime.BatteryDirection
+import com.vibhor1102.zerobit.openmacro.runtime.BatteryTemperatureComparison
 import com.vibhor1102.zerobit.openmacro.runtime.ConditionResult
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_EMAIL_BODY_LENGTH
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_EMAIL_SUBJECT_LENGTH
@@ -660,6 +661,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckDarkTheme -> evaluateDarkTheme(condition)
             is RuntimeStep.CheckScreenOrientation -> evaluateScreenOrientation(condition)
             is RuntimeStep.CheckWiredHeadsetConnected -> evaluateWiredHeadset(condition)
+            is RuntimeStep.CheckBatteryTemperature -> evaluateBatteryTemperature(condition)
             is RuntimeStep.CheckPowerConnection -> evaluatePowerConnection(condition)
             is RuntimeStep.CheckScreenInteractive -> evaluateScreenInteractive(condition)
             is RuntimeStep.CheckAirplaneMode -> evaluateAirplaneMode(condition)
@@ -724,6 +726,33 @@ class AndroidConditionEvaluator(
                 "Battery level is $percentage%; expected $comparison ${condition.level}%.",
             )
         }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun evaluateBatteryTemperature(
+        condition: RuntimeStep.CheckBatteryTemperature,
+    ): ConditionResult {
+        val battery = appContext.registerReceiver(
+            null,
+            IntentFilter(Intent.ACTION_BATTERY_CHANGED),
+        ) ?: return ConditionResult.Failed("Android battery temperature is unavailable.")
+        val currentTenths = validBatteryTemperatureTenthsOrNull(
+            battery.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, Int.MIN_VALUE),
+        ) ?: return ConditionResult.Failed("Android battery temperature is invalid.")
+        val matched = batteryTemperatureMatches(
+            currentTenths,
+            condition.thresholdTenthsCelsius,
+            condition.comparison,
+        )
+        if (matched) return ConditionResult.Passed
+        val comparison = when (condition.comparison) {
+            BatteryTemperatureComparison.BELOW -> "below"
+            BatteryTemperatureComparison.ABOVE -> "above"
+            BatteryTemperatureComparison.EQUALS -> "equal to"
+        }
+        return ConditionResult.Blocked(
+            "Battery temperature is ${formatTenthsCelsius(currentTenths)} C; expected $comparison ${formatTenthsCelsius(condition.thresholdTenthsCelsius)} C.",
+        )
     }
 
     private fun evaluateMediaVolume(
