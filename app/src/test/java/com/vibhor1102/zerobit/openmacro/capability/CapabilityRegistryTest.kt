@@ -42,6 +42,7 @@ class CapabilityRegistryTest {
                 "Battery saver",
                 "Bluetooth state",
                 "Device lock state",
+                "Location services",
                 "Media volume",
                 "NFC state",
                 "Power connection",

@@ -832,6 +832,12 @@ broadcast. It ignores transitional and unknown values, emits only the requested
 stable transition with bounded `nfc.state` context, and unregisters on
 cancellation. No tag, intent payload, or foreground-dispatch surface is added.
 
+Location Services checks explicit enabled or disabled state without requesting
+location-data access. Android 9 and newer use one `LocationManager` state read;
+Android 8.x uses one strict legacy secure-mode read. Unknown or unavailable
+state fails closed, and the condition never inspects providers, coordinates,
+location history, or polling signals.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

@@ -25,6 +25,7 @@ import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
+import android.location.LocationManager
 import android.nfc.NfcManager
 import android.nfc.NfcAdapter
 import android.media.AudioManager
@@ -493,6 +494,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckMediaVolume -> evaluateMediaVolume(condition)
             is RuntimeStep.CheckBluetoothEnabled -> evaluateBluetoothState(condition)
             is RuntimeStep.CheckNfcEnabled -> evaluateNfcState(condition)
+            is RuntimeStep.CheckLocationServicesEnabled -> evaluateLocationServices(condition)
             is RuntimeStep.CheckPowerConnection -> evaluatePowerConnection(condition)
             is RuntimeStep.CheckScreenInteractive -> evaluateScreenInteractive(condition)
             is RuntimeStep.CheckAirplaneMode -> evaluateAirplaneMode(condition)
@@ -654,6 +656,39 @@ class AndroidConditionEvaluator(
             ConditionResult.Blocked("NFC is disabled.")
         } else {
             ConditionResult.Blocked("NFC is enabled.")
+        }
+    }
+
+    private fun evaluateLocationServices(
+        condition: RuntimeStep.CheckLocationServicesEnabled,
+    ): ConditionResult {
+        val enabled = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val manager = appContext.getSystemService(LocationManager::class.java)
+                    ?: return ConditionResult.Failed("Android location service is unavailable.")
+                manager.isLocationEnabled
+            } else {
+                @Suppress("DEPRECATION")
+                val mode = Settings.Secure.getInt(
+                    appContext.contentResolver,
+                    Settings.Secure.LOCATION_MODE,
+                )
+                locationServicesEnabledFromLegacyMode(mode)
+                    ?: return ConditionResult.Failed("Android reported an unknown location services state.")
+            }
+        } catch (_: Settings.SettingNotFoundException) {
+            return ConditionResult.Failed("Android location services state is unavailable.")
+        } catch (_: SecurityException) {
+            return ConditionResult.Failed("Android did not allow the location services check.")
+        } catch (_: RuntimeException) {
+            return ConditionResult.Failed("Android could not read location services state.")
+        }
+        return if (enabled == condition.expectedEnabled) {
+            ConditionResult.Passed
+        } else if (condition.expectedEnabled) {
+            ConditionResult.Blocked("Location services are disabled.")
+        } else {
+            ConditionResult.Blocked("Location services are enabled.")
         }
     }
 

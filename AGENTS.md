@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Location Services Condition**: Add explicit enabled/disabled
-  checks from one system state read across supported Android versions, require
-  no location data permission, and avoid providers, coordinates, or polling.
+- **Target 1: Location Services Trigger**: Add explicit enabled/disabled
+  transitions through an owned mode-change receiver, reread authoritative state
+  across supported Android versions, and expose no provider or coordinate data.
 
 ### Completed Foundations
 
+- **Location Services Condition**: Enabled/disabled checks use one
+  version-aware system state read without location permission, providers,
+  coordinates, history, observers, or polling.
 - **NFC State Trigger**: Enabled/disabled transitions use an owned public
   adapter-state receiver, ignore transitional values, expose only bounded state,
   and never read tag or payload data.

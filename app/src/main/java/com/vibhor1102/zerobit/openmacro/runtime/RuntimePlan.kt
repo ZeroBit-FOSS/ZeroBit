@@ -179,6 +179,11 @@ sealed interface RuntimeStep {
         val expectedEnabled: Boolean,
     ) : RuntimeStep
 
+    data class CheckLocationServicesEnabled(
+        override val blockId: String,
+        val expectedEnabled: Boolean,
+    ) : RuntimeStep
+
     data class CheckPowerConnection(
         override val blockId: String,
         val expectedPluggedIn: Boolean,

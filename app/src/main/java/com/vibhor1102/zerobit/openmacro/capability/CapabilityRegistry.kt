@@ -37,6 +37,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.BluetoothStateConditi
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BluetoothStateTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.NfcStateCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.NfcStateTrigger
+import com.vibhor1102.zerobit.openmacro.capability.builtin.LocationServicesCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ClipboardTextAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryChargingCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryLevelCondition
@@ -141,6 +142,7 @@ class CapabilityRegistry private constructor(
                 MediaVolumeCondition,
                 BluetoothStateCondition,
                 NfcStateCondition,
+                LocationServicesCondition,
                 NotificationShowAction,
                 WriteLogAction,
                 SendSmsAction,
