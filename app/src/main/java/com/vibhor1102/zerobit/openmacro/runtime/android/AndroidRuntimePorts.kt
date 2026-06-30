@@ -513,6 +513,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckBluetoothEnabled -> evaluateBluetoothState(condition)
             is RuntimeStep.CheckNfcEnabled -> evaluateNfcState(condition)
             is RuntimeStep.CheckLocationServicesEnabled -> evaluateLocationServices(condition)
+            is RuntimeStep.CheckDarkTheme -> evaluateDarkTheme(condition)
             is RuntimeStep.CheckPowerConnection -> evaluatePowerConnection(condition)
             is RuntimeStep.CheckScreenInteractive -> evaluateScreenInteractive(condition)
             is RuntimeStep.CheckAirplaneMode -> evaluateAirplaneMode(condition)
@@ -688,6 +689,18 @@ class AndroidConditionEvaluator(
             ConditionResult.Blocked("Location services are disabled.")
         } else {
             ConditionResult.Blocked("Location services are enabled.")
+        }
+    }
+
+    private fun evaluateDarkTheme(condition: RuntimeStep.CheckDarkTheme): ConditionResult {
+        val dark = darkThemeEnabledOrNull(appContext.resources.configuration.uiMode)
+            ?: return ConditionResult.Failed("Android theme state is undefined.")
+        return if (dark == condition.expectedDark) {
+            ConditionResult.Passed
+        } else if (condition.expectedDark) {
+            ConditionResult.Blocked("Android is using light theme.")
+        } else {
+            ConditionResult.Blocked("Android is using dark theme.")
         }
     }
 

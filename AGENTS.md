@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Dark Theme Condition**: Add explicit dark/light checks from one
-  current configuration snapshot, fail closed for undefined night mode, and
-  require no observer, permission, or polling.
+- **Target 1: Dark Theme Trigger**: Add dark/light transitions through one
+  owned ComponentCallbacks registration, ignore unrelated configuration
+  changes and undefined mode, and unregister deterministically.
 
 ### Completed Foundations
 
+- **Dark Theme Condition**: Dark/light checks mask one current configuration
+  snapshot, fail closed for undefined night mode, and require no permission,
+  observer, or polling.
 - **Location Services Trigger**: Enabled/disabled transitions use an owned
   mode-change receiver, reread shared authoritative state, expose only bounded
   state context, and never request or reveal location data.

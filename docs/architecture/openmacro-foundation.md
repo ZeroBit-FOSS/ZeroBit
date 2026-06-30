@@ -844,6 +844,11 @@ It emits only the requested stable transition with bounded
 `location_services.state` context and never exposes providers, coordinates, or
 broadcast payload data.
 
+Dark Theme checks Android's currently resolved dark or light configuration from
+one `uiMode` snapshot. It masks unrelated configuration bits, fails closed when
+night mode is undefined, and does not infer theme from time, wallpaper, battery
+saver, app overrides, an observer, or polling.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

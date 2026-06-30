@@ -42,6 +42,7 @@ class CapabilityRegistryTest {
                 "Battery level",
                 "Battery saver",
                 "Bluetooth state",
+                "Dark theme",
                 "Device lock state",
                 "Location services",
                 "Media volume",
