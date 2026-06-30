@@ -25,6 +25,7 @@ import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
+import android.nfc.NfcManager
 import android.media.AudioManager
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCharacteristics
@@ -471,6 +472,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckBatteryLevel -> evaluateBatteryLevel(condition)
             is RuntimeStep.CheckMediaVolume -> evaluateMediaVolume(condition)
             is RuntimeStep.CheckBluetoothEnabled -> evaluateBluetoothState(condition)
+            is RuntimeStep.CheckNfcEnabled -> evaluateNfcState(condition)
             is RuntimeStep.CheckPowerConnection -> evaluatePowerConnection(condition)
             is RuntimeStep.CheckScreenInteractive -> evaluateScreenInteractive(condition)
             is RuntimeStep.CheckAirplaneMode -> evaluateAirplaneMode(condition)
@@ -601,6 +603,37 @@ class AndroidConditionEvaluator(
             ConditionResult.Blocked("Bluetooth is disabled.")
         } else {
             ConditionResult.Blocked("Bluetooth is enabled.")
+        }
+    }
+
+    private fun evaluateNfcState(
+        condition: RuntimeStep.CheckNfcEnabled,
+    ): ConditionResult {
+        val manager = appContext.getSystemService(NfcManager::class.java)
+            ?: return ConditionResult.Failed("Android NFC service is unavailable.")
+        val adapter = manager.defaultAdapter
+            ?: return ConditionResult.Failed("This device does not have NFC.")
+        val state = try {
+            androidNfcState(adapter.adapterState)
+        } catch (_: SecurityException) {
+            return ConditionResult.Failed("Android did not allow the NFC state check.")
+        } catch (_: RuntimeException) {
+            return ConditionResult.Failed("Android could not read NFC state.")
+        }
+        val enabled = when (state) {
+            AndroidNfcState.ENABLED -> true
+            AndroidNfcState.DISABLED -> false
+            AndroidNfcState.CHANGING ->
+                return ConditionResult.Failed("NFC is currently changing state.")
+            AndroidNfcState.UNKNOWN ->
+                return ConditionResult.Failed("Android reported an unknown NFC state.")
+        }
+        return if (enabled == condition.expectedEnabled) {
+            ConditionResult.Passed
+        } else if (condition.expectedEnabled) {
+            ConditionResult.Blocked("NFC is disabled.")
+        } else {
+            ConditionResult.Blocked("NFC is enabled.")
         }
     }
 

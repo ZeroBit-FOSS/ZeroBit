@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: NFC State Condition**: Add explicit enabled/disabled checks from
-  one NfcAdapter state snapshot, handle missing hardware clearly, and avoid tag
-  reads, foreground dispatch, observers, or polling.
+- **Target 1: NFC State Trigger**: Add explicit enabled/disabled transitions
+  through an owned public adapter-state receiver, suppress transitional states,
+  and expose no tag or payload data.
 
 ### Completed Foundations
 
+- **NFC State Condition**: Enabled/disabled checks read one adapter snapshot,
+  fail closed for missing hardware or unstable state, and never read tags,
+  observe changes, or poll.
 - **Bluetooth State Trigger**: Enabled/disabled transitions use an owned public
   state-change receiver, ignore transitional values, expose only bounded state,
   and collect no device identity or scan data.

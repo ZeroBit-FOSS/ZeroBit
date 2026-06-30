@@ -822,6 +822,11 @@ broadcast, ignores transitional and unknown values, and emits only the requested
 stable transition with a bounded `bluetooth.state` field. Cancellation always
 unregisters the receiver; no device identity or scan data is collected.
 
+NFC State checks explicit enabled or disabled state from one adapter snapshot
+under Android's normal NFC permission. NFC hardware remains optional; missing
+hardware and transitional or unknown states fail closed. The condition never
+reads tags, enables foreground dispatch, observes changes, or polls.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

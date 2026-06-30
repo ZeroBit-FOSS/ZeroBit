@@ -42,6 +42,7 @@ class CapabilityRegistryTest {
                 "Bluetooth state",
                 "Device lock state",
                 "Media volume",
+                "NFC state",
                 "Power connection",
                 "Ringer mode",
                 "Screen state",
