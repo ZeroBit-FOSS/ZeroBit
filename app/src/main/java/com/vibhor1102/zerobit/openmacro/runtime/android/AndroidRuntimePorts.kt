@@ -732,6 +732,9 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenSystemNotificationSettings -> openSystemNotificationSettings()
             is RuntimeStep.OpenDndAccessSettings -> openDndAccessSettings()
             is RuntimeStep.OpenVpnSettings -> openVpnSettings()
+            is RuntimeStep.OpenDefaultAppsSettings -> openDefaultAppsSettings()
+            is RuntimeStep.OpenDeveloperOptions -> openDeveloperOptions()
+            is RuntimeStep.OpenWirelessSettings -> openWirelessSettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1270,6 +1273,40 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android VPN settings are not available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open VPN settings.")
+        }
+    }
+
+    private fun openDefaultAppsSettings(): ActionResult = openSettingsRoute(
+        action = Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS,
+        unavailableMessage = "Android default-apps settings are not available.",
+        failureMessage = "Could not open default-apps settings.",
+    )
+
+    private fun openDeveloperOptions(): ActionResult = openSettingsRoute(
+        action = Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS,
+        unavailableMessage = "Android Developer options are not available.",
+        failureMessage = "Could not open Developer options.",
+    )
+
+    private fun openWirelessSettings(): ActionResult = openSettingsRoute(
+        action = Settings.ACTION_WIRELESS_SETTINGS,
+        unavailableMessage = "Android wireless settings are not available.",
+        failureMessage = "Could not open wireless settings.",
+    )
+
+    private fun openSettingsRoute(
+        action: String,
+        unavailableMessage: String,
+        failureMessage: String,
+    ): ActionResult {
+        val intent = Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed(unavailableMessage)
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: failureMessage)
         }
     }
 

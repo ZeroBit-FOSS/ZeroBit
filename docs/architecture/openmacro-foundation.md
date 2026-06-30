@@ -770,6 +770,12 @@ package, grant access, or change DND policy. Open VPN Settings similarly uses
 only `Settings.ACTION_VPN_SETTINGS` and accepts no profile, package, connection,
 or generic action fields.
 
+Default Apps, Developer Options, and Wireless Settings share one config-free
+capability definition while retaining distinct typed runtime steps. Their
+Android execution uses only `ACTION_MANAGE_DEFAULT_APPS_SETTINGS`,
+`ACTION_APPLICATION_DEVELOPMENT_SETTINGS`, and `ACTION_WIRELESS_SETTINGS`;
+macros cannot select roles, mutate developer flags, or control radios.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

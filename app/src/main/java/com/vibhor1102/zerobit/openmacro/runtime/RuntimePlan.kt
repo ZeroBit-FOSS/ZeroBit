@@ -347,6 +347,18 @@ sealed interface RuntimeStep {
         override val blockId: String,
     ) : RuntimeStep
 
+    data class OpenDefaultAppsSettings(
+        override val blockId: String,
+    ) : RuntimeStep
+
+    data class OpenDeveloperOptions(
+        override val blockId: String,
+    ) : RuntimeStep
+
+    data class OpenWirelessSettings(
+        override val blockId: String,
+    ) : RuntimeStep
+
     data class SetVariable(
         override val blockId: String,
         val name: String,

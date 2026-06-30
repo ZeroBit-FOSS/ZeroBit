@@ -135,9 +135,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Open Default Apps Settings Action**: Add a config-free typed
-  action for Android's exact default-apps settings route; do not select a role,
-  target a package, change defaults, or expose generic intent fields.
+- **Target 1: Open Usage Access Settings Action**: Add a config-free typed
+  action for Android's usage-access settings list; do not request/grant access,
+  target a package, inspect usage history, or expose generic intent fields.
 
 ### Completed Foundations
 
@@ -424,6 +424,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Do Not Disturb Access and VPN Settings Actions**: Config-free typed steps
   open only their exact settings lists without granting policy access, changing
   DND, targeting VPN profiles, or controlling connections.
+- **Default Apps, Developer Options, and Wireless Settings Actions**: Shared
+  config-free metadata compiles to distinct exact routes without role selection,
+  developer-setting mutation, or radio control.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

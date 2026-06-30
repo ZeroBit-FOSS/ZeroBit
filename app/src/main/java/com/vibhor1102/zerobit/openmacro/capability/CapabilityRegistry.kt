@@ -72,6 +72,9 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAirplaneModeSetti
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenSystemNotificationSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenDndAccessSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenVpnSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenDefaultAppsSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenDeveloperOptionsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenWirelessSettingsAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -162,6 +165,9 @@ class CapabilityRegistry private constructor(
                 OpenSystemNotificationSettingsAction,
                 OpenDndAccessSettingsAction,
                 OpenVpnSettingsAction,
+                OpenDefaultAppsSettingsAction,
+                OpenDeveloperOptionsAction,
+                OpenWirelessSettingsAction,
             ),
         )
 
