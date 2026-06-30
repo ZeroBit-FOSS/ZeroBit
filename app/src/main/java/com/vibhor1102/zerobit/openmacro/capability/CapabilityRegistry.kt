@@ -67,6 +67,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenDateTimeSettingsA
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenLanguagesSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenKeyboardSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAppsSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenStorageSettingsAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -152,6 +153,7 @@ class CapabilityRegistry private constructor(
                 OpenLanguagesSettingsAction,
                 OpenKeyboardSettingsAction,
                 OpenAppsSettingsAction,
+                OpenStorageSettingsAction,
             ),
         )
 

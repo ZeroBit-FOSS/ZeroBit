@@ -137,9 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Open Storage Settings Action**: Add a config-free typed action for
-  Android's exact internal-storage settings route; do not inspect files, target
-  a volume, clear data, delete content, or expose generic intent fields.
+- **Target 1: Open Airplane Mode Settings Action**: Add a config-free typed
+  action for Android's exact airplane-mode settings route; do not toggle the
+  mode directly, change radios, or expose generic intent fields.
 
 ### Completed Foundations
 
@@ -415,6 +415,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Open Apps Settings Action**: A config-free typed step opens only the
   top-level applications list without package targeting, installed-app queries,
   or uninstall behavior.
+- **Open Storage Settings Action**: A config-free typed step opens only the
+  internal-storage route without volume/path targeting, file inspection,
+  clearing, or deletion.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

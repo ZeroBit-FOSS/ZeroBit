@@ -752,6 +752,10 @@ Open Apps Settings uses only `Settings.ACTION_APPLICATION_SETTINGS`. It accepts
 no package, inspection, uninstall, or generic action fields and does not query
 the installed-app list.
 
+Open Storage Settings uses only `Settings.ACTION_INTERNAL_STORAGE_SETTINGS`.
+It accepts no volume, path, clear, delete, or generic action fields and neither
+inspects files nor mutates storage content.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

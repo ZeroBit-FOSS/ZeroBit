@@ -76,6 +76,7 @@ class CapabilityRegistryTest {
                 "Open privacy settings",
                 "Open security settings",
                 "Open sound settings",
+                "Open storage settings",
                 "Open web page",
                 "Send SMS",
                 "Set alarm",

@@ -727,6 +727,7 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenLanguagesSettings -> openLanguagesSettings()
             is RuntimeStep.OpenKeyboardSettings -> openKeyboardSettings()
             is RuntimeStep.OpenAppsSettings -> openAppsSettings()
+            is RuntimeStep.OpenStorageSettings -> openStorageSettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1200,6 +1201,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android apps settings are not available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open apps settings.")
+        }
+    }
+
+    private fun openStorageSettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android storage settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open storage settings.")
         }
     }
 
