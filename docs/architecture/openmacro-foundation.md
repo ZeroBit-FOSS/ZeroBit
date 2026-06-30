@@ -781,6 +781,11 @@ same config-free metadata family with distinct typed runtime steps. They open
 only Android's system access lists and cannot target a package, grant access,
 read usage history or files, or inspect notification content.
 
+App Language, Picture-in-Picture, and Overlay Settings share exact-package
+validation and required setup while compiling to distinct runtime steps.
+Android package URIs are assembled with `Uri.fromParts`; macros cannot provide
+an arbitrary URI, mutate locale/PiP/overlay state, or request those accesses.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

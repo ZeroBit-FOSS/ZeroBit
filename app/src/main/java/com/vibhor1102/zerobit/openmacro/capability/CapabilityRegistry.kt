@@ -78,6 +78,9 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenWirelessSettingsA
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenUsageAccessSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAllFilesAccessSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenNotificationListenerSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAppLanguageSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAppOverlaySettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAppPictureInPictureSettingsAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -174,6 +177,9 @@ class CapabilityRegistry private constructor(
                 OpenUsageAccessSettingsAction,
                 OpenAllFilesAccessSettingsAction,
                 OpenNotificationListenerSettingsAction,
+                OpenAppLanguageSettingsAction,
+                OpenAppOverlaySettingsAction,
+                OpenAppPictureInPictureSettingsAction,
             ),
         )
 

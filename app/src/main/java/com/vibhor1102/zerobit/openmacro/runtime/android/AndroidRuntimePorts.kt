@@ -738,6 +738,21 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenUsageAccessSettings -> openUsageAccessSettings()
             is RuntimeStep.OpenAllFilesAccessSettings -> openAllFilesAccessSettings()
             is RuntimeStep.OpenNotificationListenerSettings -> openNotificationListenerSettings()
+            is RuntimeStep.OpenAppLanguageSettings -> openPackageSettingsRoute(
+                Settings.ACTION_APP_LOCALE_SETTINGS,
+                action.packageName,
+                "app language",
+            )
+            is RuntimeStep.OpenAppPictureInPictureSettings -> openPackageSettingsRoute(
+                Settings.ACTION_PICTURE_IN_PICTURE_SETTINGS,
+                action.packageName,
+                "app picture-in-picture",
+            )
+            is RuntimeStep.OpenAppOverlaySettings -> openPackageSettingsRoute(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                action.packageName,
+                "app overlay",
+            )
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1328,6 +1343,25 @@ class AndroidActionExecutor(
             ActionResult.Failed(unavailableMessage)
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: failureMessage)
+        }
+    }
+
+    private fun openPackageSettingsRoute(
+        action: String,
+        packageName: String,
+        routeName: String,
+    ): ActionResult {
+        val intent = Intent(
+            action,
+            android.net.Uri.fromParts("package", packageName, null),
+        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android $routeName settings are not available for '$packageName'.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open $routeName settings.")
         }
     }
 

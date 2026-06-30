@@ -873,7 +873,10 @@ class MacroBlockEditorTest {
             listOf(
                 "android.app.launch",
                 "android.app.details",
+                "android.app.language-settings",
                 "android.app.notification-settings",
+                "android.app.overlay-settings",
+                "android.app.picture-in-picture-settings",
                 "android.alarm.set",
                 "android.calendar.event-draft",
                 "android.contact.draft",

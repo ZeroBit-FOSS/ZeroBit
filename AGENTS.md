@@ -135,9 +135,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Open App Language Settings Action**: Add required exact-package
-  setup and a fixed app-locale settings route; reuse the installed-app picker,
-  expose no locale mutation, and request no package or locale permission.
+- **Target 1: Open App All Files Access Settings Action**: Add required exact-
+  package setup and Android's fixed app-specific all-files access route; reuse
+  the app picker, request no access, and expose no arbitrary package URI.
 
 ### Completed Foundations
 
@@ -430,6 +430,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Usage, All Files, and Notification Listener Access Settings Actions**:
   Config-free typed steps open only system access lists without package
   targeting, access grants, usage/file reads, or notification inspection.
+- **App Language, Picture-in-Picture, and Overlay Settings Actions**: Shared
+  exact-package setup compiles to distinct fixed package routes without direct
+  state mutation, access grants, or arbitrary URIs.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

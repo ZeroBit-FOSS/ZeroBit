@@ -371,6 +371,21 @@ sealed interface RuntimeStep {
         override val blockId: String,
     ) : RuntimeStep
 
+    data class OpenAppLanguageSettings(
+        override val blockId: String,
+        val packageName: String,
+    ) : RuntimeStep
+
+    data class OpenAppPictureInPictureSettings(
+        override val blockId: String,
+        val packageName: String,
+    ) : RuntimeStep
+
+    data class OpenAppOverlaySettings(
+        override val blockId: String,
+        val packageName: String,
+    ) : RuntimeStep
+
     data class SetVariable(
         override val blockId: String,
         val name: String,
