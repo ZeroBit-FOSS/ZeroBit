@@ -20,3 +20,13 @@ internal fun androidNfcState(rawState: Int): AndroidNfcState = when (rawState) {
     NfcAdapter.STATE_TURNING_OFF -> AndroidNfcState.CHANGING
     else -> AndroidNfcState.UNKNOWN
 }
+
+internal fun matchingNfcTriggerState(
+    rawState: Int,
+    expectedEnabled: Boolean,
+): String? = when (androidNfcState(rawState)) {
+    AndroidNfcState.ENABLED -> "enabled".takeIf { expectedEnabled }
+    AndroidNfcState.DISABLED -> "disabled".takeIf { !expectedEnabled }
+    AndroidNfcState.CHANGING,
+    AndroidNfcState.UNKNOWN -> null
+}

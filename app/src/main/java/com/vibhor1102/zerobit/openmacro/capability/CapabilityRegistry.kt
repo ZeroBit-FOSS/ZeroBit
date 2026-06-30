@@ -36,6 +36,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.MediaVolumeCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BluetoothStateCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BluetoothStateTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.NfcStateCondition
+import com.vibhor1102.zerobit.openmacro.capability.builtin.NfcStateTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ClipboardTextAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryChargingCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryLevelCondition
@@ -117,6 +118,7 @@ class CapabilityRegistry private constructor(
                 RingerModeTrigger,
                 BatterySaverTrigger,
                 BluetoothStateTrigger,
+                NfcStateTrigger,
                 PowerDisconnectedTrigger,
                 ScreenOnTrigger,
                 ScreenOffTrigger,

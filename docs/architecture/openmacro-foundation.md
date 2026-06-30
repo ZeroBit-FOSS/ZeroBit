@@ -827,6 +827,11 @@ under Android's normal NFC permission. NFC hardware remains optional; missing
 hardware and transitional or unknown states fail closed. The condition never
 reads tags, enables foreground dispatch, observes changes, or polls.
 
+NFC State Changed uses an owned receiver for Android's public adapter-state
+broadcast. It ignores transitional and unknown values, emits only the requested
+stable transition with bounded `nfc.state` context, and unregisters on
+cancellation. No tag, intent payload, or foreground-dispatch surface is added.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

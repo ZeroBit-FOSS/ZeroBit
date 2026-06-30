@@ -26,6 +26,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import android.nfc.NfcManager
+import android.nfc.NfcAdapter
 import android.media.AudioManager
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCharacteristics
@@ -128,6 +129,7 @@ class AndroidTriggerRegistrar(
             is RuntimeStep.ObserveAirplaneMode -> IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED)
             is RuntimeStep.ObserveRingerMode -> IntentFilter(AudioManager.RINGER_MODE_CHANGED_ACTION)
             is RuntimeStep.ObserveBluetoothState -> IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+            is RuntimeStep.ObserveNfcState -> IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED)
             else -> return TriggerSubscriptionResult.Failure(
                 "Android trigger registrar does not support ${trigger::class.simpleName}.",
             )
@@ -254,6 +256,24 @@ class AndroidTriggerRegistrar(
                                 RuntimeTriggerEvent(
                                     values = mapOf(
                                         "bluetooth.state" to MacroValue.Text(state),
+                                    ),
+                                ),
+                            )
+                        }
+                    } else if (
+                        action == NfcAdapter.ACTION_ADAPTER_STATE_CHANGED &&
+                        trigger is RuntimeStep.ObserveNfcState &&
+                        intent.hasExtra(NfcAdapter.EXTRA_ADAPTER_STATE)
+                    ) {
+                        val state = matchingNfcTriggerState(
+                            intent.getIntExtra(NfcAdapter.EXTRA_ADAPTER_STATE, -1),
+                            trigger.expectedEnabled,
+                        )
+                        if (state != null) {
+                            onTriggered(
+                                RuntimeTriggerEvent(
+                                    values = mapOf(
+                                        "nfc.state" to MacroValue.Text(state),
                                     ),
                                 ),
                             )

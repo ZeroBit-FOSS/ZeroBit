@@ -95,6 +95,11 @@ sealed interface RuntimeStep {
         val expectedEnabled: Boolean,
     ) : RuntimeStep
 
+    data class ObserveNfcState(
+        override val blockId: String,
+        val expectedEnabled: Boolean,
+    ) : RuntimeStep
+
     data class CheckWifiConnected(
         override val blockId: String,
         val ssid: String?,

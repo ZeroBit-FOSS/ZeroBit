@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: NFC State Trigger**: Add explicit enabled/disabled transitions
-  through an owned public adapter-state receiver, suppress transitional states,
-  and expose no tag or payload data.
+- **Target 1: Location Services Condition**: Add explicit enabled/disabled
+  checks from one system state read across supported Android versions, require
+  no location data permission, and avoid providers, coordinates, or polling.
 
 ### Completed Foundations
 
+- **NFC State Trigger**: Enabled/disabled transitions use an owned public
+  adapter-state receiver, ignore transitional values, expose only bounded state,
+  and never read tag or payload data.
 - **NFC State Condition**: Enabled/disabled checks read one adapter snapshot,
   fail closed for missing hardware or unstable state, and never read tags,
   observe changes, or poll.
