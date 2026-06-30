@@ -776,6 +776,11 @@ Android execution uses only `ACTION_MANAGE_DEFAULT_APPS_SETTINGS`,
 `ACTION_APPLICATION_DEVELOPMENT_SETTINGS`, and `ACTION_WIRELESS_SETTINGS`;
 macros cannot select roles, mutate developer flags, or control radios.
 
+Usage Access, All Files Access, and Notification Listener Settings extend the
+same config-free metadata family with distinct typed runtime steps. They open
+only Android's system access lists and cannot target a package, grant access,
+read usage history or files, or inspect notification content.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

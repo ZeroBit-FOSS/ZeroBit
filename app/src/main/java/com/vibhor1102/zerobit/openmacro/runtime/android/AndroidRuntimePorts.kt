@@ -735,6 +735,9 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenDefaultAppsSettings -> openDefaultAppsSettings()
             is RuntimeStep.OpenDeveloperOptions -> openDeveloperOptions()
             is RuntimeStep.OpenWirelessSettings -> openWirelessSettings()
+            is RuntimeStep.OpenUsageAccessSettings -> openUsageAccessSettings()
+            is RuntimeStep.OpenAllFilesAccessSettings -> openAllFilesAccessSettings()
+            is RuntimeStep.OpenNotificationListenerSettings -> openNotificationListenerSettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1292,6 +1295,24 @@ class AndroidActionExecutor(
         action = Settings.ACTION_WIRELESS_SETTINGS,
         unavailableMessage = "Android wireless settings are not available.",
         failureMessage = "Could not open wireless settings.",
+    )
+
+    private fun openUsageAccessSettings(): ActionResult = openSettingsRoute(
+        action = Settings.ACTION_USAGE_ACCESS_SETTINGS,
+        unavailableMessage = "Android usage-access settings are not available.",
+        failureMessage = "Could not open usage-access settings.",
+    )
+
+    private fun openAllFilesAccessSettings(): ActionResult = openSettingsRoute(
+        action = Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION,
+        unavailableMessage = "Android all-files access settings are not available.",
+        failureMessage = "Could not open all-files access settings.",
+    )
+
+    private fun openNotificationListenerSettings(): ActionResult = openSettingsRoute(
+        action = Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS,
+        unavailableMessage = "Android notification-listener settings are not available.",
+        failureMessage = "Could not open notification-listener settings.",
     )
 
     private fun openSettingsRoute(

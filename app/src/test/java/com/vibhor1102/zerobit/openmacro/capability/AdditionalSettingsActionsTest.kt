@@ -24,6 +24,10 @@ class AdditionalSettingsActionsTest {
             "android.settings.default-apps" to RuntimeStep.OpenDefaultAppsSettings("settings"),
             "android.settings.developer-options" to RuntimeStep.OpenDeveloperOptions("settings"),
             "android.settings.wireless" to RuntimeStep.OpenWirelessSettings("settings"),
+            "android.settings.usage-access" to RuntimeStep.OpenUsageAccessSettings("settings"),
+            "android.settings.all-files-access" to RuntimeStep.OpenAllFilesAccessSettings("settings"),
+            "android.settings.notification-listener" to
+                RuntimeStep.OpenNotificationListenerSettings("settings"),
         )
 
         cases.forEachIndexed { index, (type, expected) ->
@@ -44,6 +48,12 @@ class AdditionalSettingsActionsTest {
             "android.settings.wireless" to "radio",
             "android.settings.wireless" to "connected",
             "android.settings.wireless" to "action",
+            "android.settings.usage-access" to "package",
+            "android.settings.usage-access" to "history",
+            "android.settings.all-files-access" to "package",
+            "android.settings.all-files-access" to "path",
+            "android.settings.notification-listener" to "package",
+            "android.settings.notification-listener" to "granted",
         )
 
         cases.forEachIndexed { index, (type, key) ->

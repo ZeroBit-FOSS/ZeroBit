@@ -41,6 +41,33 @@ object OpenWirelessSettingsAction : ConfigFreeSettingsAction(
     compileStep = { RuntimeStep.OpenWirelessSettings(it) },
 )
 
+object OpenUsageAccessSettingsAction : ConfigFreeSettingsAction(
+    type = "android.settings.usage-access",
+    displayName = "Open Usage access settings",
+    description = "Opens Android's usage-access settings list.",
+    idBase = "open-usage-access-settings",
+    explanation = "Open Android's usage-access list without requesting access or reading usage history.",
+    compileStep = { RuntimeStep.OpenUsageAccessSettings(it) },
+)
+
+object OpenAllFilesAccessSettingsAction : ConfigFreeSettingsAction(
+    type = "android.settings.all-files-access",
+    displayName = "Open All files access settings",
+    description = "Opens Android's all-files access settings list.",
+    idBase = "open-all-files-access-settings",
+    explanation = "Open Android's all-files access list without requesting access or inspecting files.",
+    compileStep = { RuntimeStep.OpenAllFilesAccessSettings(it) },
+)
+
+object OpenNotificationListenerSettingsAction : ConfigFreeSettingsAction(
+    type = "android.settings.notification-listener",
+    displayName = "Open Notification listener settings",
+    description = "Opens Android's notification-listener access list.",
+    idBase = "open-notification-listener-settings",
+    explanation = "Open Android's notification-listener access list without granting access.",
+    compileStep = { RuntimeStep.OpenNotificationListenerSettings(it) },
+)
+
 abstract class ConfigFreeSettingsAction(
     final override val type: String,
     final override val displayName: String,
