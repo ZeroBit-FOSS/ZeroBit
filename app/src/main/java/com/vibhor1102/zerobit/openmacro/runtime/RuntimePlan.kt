@@ -335,6 +335,18 @@ sealed interface RuntimeStep {
         override val blockId: String,
     ) : RuntimeStep
 
+    data class OpenSystemNotificationSettings(
+        override val blockId: String,
+    ) : RuntimeStep
+
+    data class OpenDndAccessSettings(
+        override val blockId: String,
+    ) : RuntimeStep
+
+    data class OpenVpnSettings(
+        override val blockId: String,
+    ) : RuntimeStep
+
     data class SetVariable(
         override val blockId: String,
         val name: String,

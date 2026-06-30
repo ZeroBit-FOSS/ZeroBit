@@ -760,6 +760,16 @@ Open Airplane Mode Settings uses only `Settings.ACTION_AIRPLANE_MODE_SETTINGS`.
 It accepts no enabled state, radio, Wi-Fi, Bluetooth, or generic action fields
 and does not toggle Airplane mode or any radio directly.
 
+Open System Notification Settings uses only `Settings.ACTION_NOTIFICATION_SETTINGS`.
+It accepts no package, channel, policy, or generic action fields and does not
+inspect notifications or change notification state directly.
+
+Open Do Not Disturb Access Settings uses only
+`Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS`. It cannot target a
+package, grant access, or change DND policy. Open VPN Settings similarly uses
+only `Settings.ACTION_VPN_SETTINGS` and accepts no profile, package, connection,
+or generic action fields.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

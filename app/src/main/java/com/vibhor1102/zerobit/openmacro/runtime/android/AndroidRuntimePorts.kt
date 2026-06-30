@@ -729,6 +729,9 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenAppsSettings -> openAppsSettings()
             is RuntimeStep.OpenStorageSettings -> openStorageSettings()
             is RuntimeStep.OpenAirplaneModeSettings -> openAirplaneModeSettings()
+            is RuntimeStep.OpenSystemNotificationSettings -> openSystemNotificationSettings()
+            is RuntimeStep.OpenDndAccessSettings -> openDndAccessSettings()
+            is RuntimeStep.OpenVpnSettings -> openVpnSettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1228,6 +1231,45 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android Airplane mode settings are not available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open Airplane mode settings.")
+        }
+    }
+
+    private fun openSystemNotificationSettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_NOTIFICATION_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android notification settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open notification settings.")
+        }
+    }
+
+    private fun openDndAccessSettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android Do Not Disturb access settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open Do Not Disturb access settings.")
+        }
+    }
+
+    private fun openVpnSettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_VPN_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android VPN settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open VPN settings.")
         }
     }
 

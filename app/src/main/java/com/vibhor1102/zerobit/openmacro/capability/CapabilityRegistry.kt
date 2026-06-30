@@ -69,6 +69,9 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenKeyboardSettingsA
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAppsSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenStorageSettingsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAirplaneModeSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenSystemNotificationSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenDndAccessSettingsAction
+import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenVpnSettingsAction
 
 class CapabilityRegistry private constructor(
     definitions: List<CapabilityDefinition>,
@@ -156,6 +159,9 @@ class CapabilityRegistry private constructor(
                 OpenAppsSettingsAction,
                 OpenStorageSettingsAction,
                 OpenAirplaneModeSettingsAction,
+                OpenSystemNotificationSettingsAction,
+                OpenDndAccessSettingsAction,
+                OpenVpnSettingsAction,
             ),
         )
 
