@@ -869,6 +869,12 @@ headset, wired headphones, and USB headset types. It immediately reduces the
 snapshot to connected/disconnected and never reads or retains device names,
 IDs, addresses, Bluetooth outputs, callbacks, or polling state.
 
+Wired Headset Changed owns one `AudioDeviceCallback` and rereads the complete
+output snapshot after additions or removals. A Boolean transition tracker
+suppresses initial, duplicate, and partial-removal callbacks, emits only bounded
+`wired_headset.state` context, and unregisters deterministically without using
+device metadata.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Wired Headset Trigger**: Add connected/disconnected transitions
-  through one owned AudioDeviceCallback, reduce callbacks to bounded wired
-  types, suppress duplicate state, and unregister deterministically.
+- **Target 1: Battery Temperature Condition**: Add bounded above/below/equal
+  checks from one sticky battery snapshot, preserve Android's tenths-of-degree
+  precision, and avoid observers, history, permissions, or polling.
 
 ### Completed Foundations
 
+- **Wired Headset Trigger**: Connected/disconnected transitions use one owned
+  audio-device callback, reread bounded output types, suppress duplicates and
+  partial removals, expose only state, and unregister deterministically.
 - **Wired Headset Condition**: Connected/disconnected checks reduce one audio
   output snapshot to bounded wired device types without reading names, IDs,
   addresses, Bluetooth outputs, callbacks, or polling state.

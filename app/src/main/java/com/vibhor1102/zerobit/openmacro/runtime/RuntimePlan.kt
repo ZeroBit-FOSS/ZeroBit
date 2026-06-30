@@ -115,6 +115,11 @@ sealed interface RuntimeStep {
         val expectedOrientation: ScreenOrientation,
     ) : RuntimeStep
 
+    data class ObserveWiredHeadset(
+        override val blockId: String,
+        val expectedConnected: Boolean,
+    ) : RuntimeStep
+
     data class CheckWifiConnected(
         override val blockId: String,
         val ssid: String?,

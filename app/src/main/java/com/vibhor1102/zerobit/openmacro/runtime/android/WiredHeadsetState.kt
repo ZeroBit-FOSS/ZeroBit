@@ -14,3 +14,17 @@ private val WIRED_HEADSET_DEVICE_TYPES = setOf(
     AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
     AudioDeviceInfo.TYPE_USB_HEADSET,
 )
+
+internal class WiredHeadsetTransitionTracker(
+    initialConnected: Boolean,
+    private val expectedConnected: Boolean,
+) {
+    private var lastConnected = initialConnected
+
+    fun update(connected: Boolean): String? {
+        if (connected == lastConnected) return null
+        lastConnected = connected
+        if (connected != expectedConnected) return null
+        return if (connected) "connected" else "disconnected"
+    }
+}

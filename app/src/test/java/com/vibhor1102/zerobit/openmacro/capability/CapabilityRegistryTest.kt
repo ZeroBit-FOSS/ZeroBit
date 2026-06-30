@@ -34,6 +34,7 @@ class CapabilityRegistryTest {
                 "Time schedule",
                 "Wi-Fi connected",
                 "Wi-Fi disconnected",
+                "Wired headset changed",
             ),
             registry.list(CapabilityLane.TRIGGER).map { it.displayName },
         )

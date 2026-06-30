@@ -31,6 +31,8 @@ import android.location.LocationManager
 import android.nfc.NfcManager
 import android.nfc.NfcAdapter
 import android.media.AudioManager
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
@@ -128,6 +130,9 @@ class AndroidTriggerRegistrar(
         }
         if (trigger is RuntimeStep.ObserveScreenOrientation) {
             return subscribeToScreenOrientation(trigger, onTriggered)
+        }
+        if (trigger is RuntimeStep.ObserveWiredHeadset) {
+            return subscribeToWiredHeadset(trigger, onTriggered)
         }
         val filter = when (trigger) {
             is RuntimeStep.ObservePowerConnected -> IntentFilter(Intent.ACTION_POWER_CONNECTED)
@@ -506,6 +511,59 @@ class AndroidTriggerRegistrar(
             )
         } catch (_: RuntimeException) {
             TriggerSubscriptionResult.Failure("Could not observe screen orientation changes.")
+        }
+    }
+
+    private fun subscribeToWiredHeadset(
+        trigger: RuntimeStep.ObserveWiredHeadset,
+        onTriggered: (RuntimeTriggerEvent) -> Unit,
+    ): TriggerSubscriptionResult {
+        val manager = appContext.getSystemService(AudioManager::class.java)
+            ?: return TriggerSubscriptionResult.Failure("Android audio service is unavailable.")
+        fun currentConnected(): Boolean = hasWiredHeadset(
+            manager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).map { it.type },
+        )
+        val tracker = try {
+            WiredHeadsetTransitionTracker(currentConnected(), trigger.expectedConnected)
+        } catch (_: RuntimeException) {
+            return TriggerSubscriptionResult.Failure("Could not read audio output devices.")
+        }
+        val callback = object : AudioDeviceCallback() {
+            override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>) {
+                dispatchCurrentState()
+            }
+
+            override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
+                dispatchCurrentState()
+            }
+
+            private fun dispatchCurrentState() {
+                val state = try {
+                    tracker.update(currentConnected())
+                } catch (_: RuntimeException) {
+                    null
+                }
+                if (state != null) {
+                    onTriggered(
+                        RuntimeTriggerEvent(
+                            values = mapOf("wired_headset.state" to MacroValue.Text(state)),
+                        ),
+                    )
+                }
+            }
+        }
+        return try {
+            manager.registerAudioDeviceCallback(callback, null)
+            val cancelled = AtomicBoolean(false)
+            TriggerSubscriptionResult.Success(
+                RuntimeCancellation {
+                    if (cancelled.compareAndSet(false, true)) {
+                        manager.unregisterAudioDeviceCallback(callback)
+                    }
+                },
+            )
+        } catch (_: RuntimeException) {
+            TriggerSubscriptionResult.Failure("Could not observe wired headset changes.")
         }
     }
 

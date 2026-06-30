@@ -6,6 +6,8 @@ package com.vibhor1102.zerobit.openmacro.runtime.android
 
 import android.media.AudioDeviceInfo
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -42,5 +44,30 @@ class WiredHeadsetStateTest {
                 ),
             ),
         )
+    }
+
+    @Test
+    fun emitsOnlyRequestedBooleanTransitions() {
+        val tracker = WiredHeadsetTransitionTracker(
+            initialConnected = false,
+            expectedConnected = true,
+        )
+
+        assertNull(tracker.update(false))
+        assertEquals("connected", tracker.update(true))
+        assertNull(tracker.update(true))
+        assertNull(tracker.update(false))
+    }
+
+    @Test
+    fun emitsDisconnectOnlyAfterConnectedStateActuallyEnds() {
+        val tracker = WiredHeadsetTransitionTracker(
+            initialConnected = true,
+            expectedConnected = false,
+        )
+
+        assertNull(tracker.update(true))
+        assertEquals("disconnected", tracker.update(false))
+        assertNull(tracker.update(false))
     }
 }
