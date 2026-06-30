@@ -105,6 +105,11 @@ sealed interface RuntimeStep {
         val expectedEnabled: Boolean,
     ) : RuntimeStep
 
+    data class ObserveDarkTheme(
+        override val blockId: String,
+        val expectedDark: Boolean,
+    ) : RuntimeStep
+
     data class CheckWifiConnected(
         override val blockId: String,
         val ssid: String?,

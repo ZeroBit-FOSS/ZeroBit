@@ -34,4 +34,22 @@ class DarkThemeStateTest {
             ),
         )
     }
+
+    @Test
+    fun emitsOnlyRequestedRealTransitions() {
+        val tracker = DarkThemeTransitionTracker(initialDark = false)
+
+        assertNull(tracker.matchingState(currentDark = false, expectedDark = true))
+        assertEquals("dark", tracker.matchingState(currentDark = true, expectedDark = true))
+        assertNull(tracker.matchingState(currentDark = true, expectedDark = true))
+        assertNull(tracker.matchingState(currentDark = false, expectedDark = true))
+    }
+
+    @Test
+    fun undefinedStateNeitherEmitsNorErasesStableBaseline() {
+        val tracker = DarkThemeTransitionTracker(initialDark = false)
+
+        assertNull(tracker.matchingState(currentDark = null, expectedDark = true))
+        assertEquals("dark", tracker.matchingState(currentDark = true, expectedDark = true))
+    }
 }

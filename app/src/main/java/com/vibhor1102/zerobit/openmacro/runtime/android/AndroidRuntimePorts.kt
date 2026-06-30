@@ -15,6 +15,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.ComponentName
+import android.content.ComponentCallbacks
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -22,6 +23,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.ActivityNotFoundException
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
@@ -120,6 +122,9 @@ class AndroidTriggerRegistrar(
         }
         if (trigger is RuntimeStep.ObserveBatterySaver) {
             return subscribeToBatterySaver(trigger, onTriggered)
+        }
+        if (trigger is RuntimeStep.ObserveDarkTheme) {
+            return subscribeToDarkTheme(trigger, onTriggered)
         }
         val filter = when (trigger) {
             is RuntimeStep.ObservePowerConnected -> IntentFilter(Intent.ACTION_POWER_CONNECTED)
@@ -420,6 +425,45 @@ class AndroidTriggerRegistrar(
             TriggerSubscriptionResult.Failure(
                 problem.message ?: "Could not observe Android Battery Saver state.",
             )
+        }
+    }
+
+    private fun subscribeToDarkTheme(
+        trigger: RuntimeStep.ObserveDarkTheme,
+        onTriggered: (RuntimeTriggerEvent) -> Unit,
+    ): TriggerSubscriptionResult {
+        val tracker = DarkThemeTransitionTracker(
+            darkThemeEnabledOrNull(appContext.resources.configuration.uiMode),
+        )
+        val callbacks = object : ComponentCallbacks {
+            override fun onConfigurationChanged(newConfig: Configuration) {
+                val state = tracker.matchingState(
+                    darkThemeEnabledOrNull(newConfig.uiMode),
+                    trigger.expectedDark,
+                )
+                if (state != null) {
+                    onTriggered(
+                        RuntimeTriggerEvent(
+                            values = mapOf("theme.state" to MacroValue.Text(state)),
+                        ),
+                    )
+                }
+            }
+
+            override fun onLowMemory() = Unit
+        }
+        return try {
+            appContext.registerComponentCallbacks(callbacks)
+            val cancelled = AtomicBoolean(false)
+            TriggerSubscriptionResult.Success(
+                RuntimeCancellation {
+                    if (cancelled.compareAndSet(false, true)) {
+                        appContext.unregisterComponentCallbacks(callbacks)
+                    }
+                },
+            )
+        } catch (_: RuntimeException) {
+            TriggerSubscriptionResult.Failure("Could not observe Android theme changes.")
         }
     }
 

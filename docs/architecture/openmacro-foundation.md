@@ -849,6 +849,11 @@ one `uiMode` snapshot. It masks unrelated configuration bits, fails closed when
 night mode is undefined, and does not infer theme from time, wallpaper, battery
 saver, app overrides, an observer, or polling.
 
+Dark Theme Changed owns one `ComponentCallbacks` registration with a stable
+baseline. It masks unrelated configuration changes, ignores duplicate and
+undefined night modes, emits only real requested transitions with bounded
+`theme.state` context, and unregisters deterministically on cancellation.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

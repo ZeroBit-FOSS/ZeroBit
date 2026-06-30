@@ -21,6 +21,7 @@ class CapabilityRegistryTest {
                 "Battery level",
                 "Battery saver changed",
                 "Bluetooth state changed",
+                "Dark theme changed",
                 "Location services changed",
                 "NFC state changed",
                 "Notification received",

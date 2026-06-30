@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Dark Theme Trigger**: Add dark/light transitions through one
-  owned ComponentCallbacks registration, ignore unrelated configuration
-  changes and undefined mode, and unregister deterministically.
+- **Target 1: Screen Orientation Condition**: Add explicit portrait/landscape
+  checks from one current configuration snapshot, fail closed for undefined
+  orientation, and require no sensor, observer, permission, or polling.
 
 ### Completed Foundations
 
+- **Dark Theme Trigger**: Dark/light transitions use one owned configuration
+  callback, suppress duplicate, unrelated, and undefined changes, expose only
+  bounded state, and unregister deterministically.
 - **Dark Theme Condition**: Dark/light checks mask one current configuration
   snapshot, fail closed for undefined night mode, and require no permission,
   observer, or polling.

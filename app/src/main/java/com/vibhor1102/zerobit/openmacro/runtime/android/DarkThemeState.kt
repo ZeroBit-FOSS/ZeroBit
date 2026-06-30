@@ -12,3 +12,17 @@ internal fun darkThemeEnabledOrNull(uiMode: Int): Boolean? =
         Configuration.UI_MODE_NIGHT_NO -> false
         else -> null
     }
+
+internal class DarkThemeTransitionTracker(initialDark: Boolean?) {
+    private var lastDark = initialDark
+
+    fun matchingState(currentDark: Boolean?, expectedDark: Boolean): String? {
+        if (currentDark == null) return null
+        val previousDark = lastDark
+        lastDark = currentDark
+        if (previousDark == null || previousDark == currentDark || currentDark != expectedDark) {
+            return null
+        }
+        return if (currentDark) "dark" else "light"
+    }
+}
