@@ -70,8 +70,6 @@ files should use the SPDX identifier `GPL-3.0-or-later` where practical.
 - In autonomous continuation mode, act with full developer authority and
   responsibility: make and commit completed code changes without requesting
   explicit permission.
-- Keep commits narrow and understandable. Do not mix formatting, refactors, and
-  behavior changes unless they are inseparable.
 - Do not commit APKs, keystores, signing secrets, local SDK paths, generated
   build outputs, raw device captures, or temporary debug logs.
 - Use the `agents-md-maintainer` skill for changes to this file.
