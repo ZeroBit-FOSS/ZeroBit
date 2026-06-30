@@ -20,6 +20,7 @@ class CapabilityRegistryTest {
                 "Airplane mode changed",
                 "Battery level",
                 "Battery saver changed",
+                "Bluetooth state changed",
                 "Notification received",
                 "Power connected",
                 "Power disconnected",

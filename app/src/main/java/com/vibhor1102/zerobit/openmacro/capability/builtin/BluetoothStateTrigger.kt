@@ -10,29 +10,38 @@ import com.vibhor1102.zerobit.openmacro.capability.CapabilityDefinition
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityField
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityFieldKind
 import com.vibhor1102.zerobit.openmacro.capability.CapabilityLane
+import com.vibhor1102.zerobit.openmacro.capability.TriggerOutput
 import com.vibhor1102.zerobit.openmacro.capability.rejectUnknownConfig
 import com.vibhor1102.zerobit.openmacro.model.MacroBlock
 import com.vibhor1102.zerobit.openmacro.model.MacroValue
+import com.vibhor1102.zerobit.openmacro.model.MacroVariableType
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeStep
 import com.vibhor1102.zerobit.openmacro.validation.ValidationIssue
 
-object BluetoothStateCondition : CapabilityDefinition {
-    override val type = "android.bluetooth.state"
-    override val lane = CapabilityLane.CONDITION
-    override val displayName = "Bluetooth state"
-    override val description = "Checks whether Bluetooth is enabled or disabled."
+object BluetoothStateTrigger : CapabilityDefinition {
+    override val type = "android.bluetooth.state-changed"
+    override val lane = CapabilityLane.TRIGGER
+    override val displayName = "Bluetooth state changed"
+    override val description = "Starts when Bluetooth becomes enabled or disabled."
     override val creation = CapabilityCreation(
-        idBase = "bluetooth-state",
+        idBase = "bluetooth-state-changed",
         defaultConfig = mapOf("state" to MacroValue.Text("enabled")),
     )
     override val fields = listOf(
         CapabilityField(
             key = "state",
-            label = "State",
+            label = "New state",
             kind = CapabilityFieldKind.TEXT,
             required = true,
             help = "Choose enabled or disabled.",
             allowedValues = listOf("enabled", "disabled"),
+        ),
+    )
+    override val triggerOutputs = listOf(
+        TriggerOutput(
+            key = "bluetooth.state",
+            type = MacroVariableType.TEXT,
+            description = "The Bluetooth state that caused this run.",
         ),
     )
 
@@ -43,8 +52,8 @@ object BluetoothStateCondition : CapabilityDefinition {
                 add(
                     ValidationIssue(
                         path = "$path.config.state",
-                        code = "invalid_bluetooth_state",
-                        message = "Bluetooth state must be 'enabled' or 'disabled'.",
+                        code = "invalid_bluetooth_trigger_state",
+                        message = "Bluetooth trigger state must be 'enabled' or 'disabled'.",
                     ),
                 )
             }
@@ -52,25 +61,17 @@ object BluetoothStateCondition : CapabilityDefinition {
 
     override fun explain(block: MacroBlock): String =
         if (block.expectedBluetoothEnabledOrNull() == false) {
-            "Continue only while Bluetooth is disabled."
+            "Start when Bluetooth becomes disabled."
         } else {
-            "Continue only while Bluetooth is enabled."
+            "Start when Bluetooth becomes enabled."
         }
 
     override fun requiredPermissions(block: MacroBlock): Set<AndroidPermission> =
         setOf(AndroidPermission.BLUETOOTH_CONNECT)
 
     override fun compile(block: MacroBlock): RuntimeStep =
-        RuntimeStep.CheckBluetoothEnabled(
+        RuntimeStep.ObserveBluetoothState(
             blockId = block.id,
             expectedEnabled = requireNotNull(block.expectedBluetoothEnabledOrNull()),
         )
-
 }
-
-internal fun MacroBlock.expectedBluetoothEnabledOrNull(): Boolean? =
-    when ((config["state"] as? MacroValue.Text)?.value) {
-        "enabled" -> true
-        "disabled" -> false
-        else -> null
-    }

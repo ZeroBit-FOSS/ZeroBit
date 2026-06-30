@@ -11,6 +11,7 @@ import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -125,6 +126,7 @@ class AndroidTriggerRegistrar(
             is RuntimeStep.ObserveBatteryLevel -> IntentFilter(Intent.ACTION_BATTERY_CHANGED)
             is RuntimeStep.ObserveAirplaneMode -> IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED)
             is RuntimeStep.ObserveRingerMode -> IntentFilter(AudioManager.RINGER_MODE_CHANGED_ACTION)
+            is RuntimeStep.ObserveBluetoothState -> IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
             else -> return TriggerSubscriptionResult.Failure(
                 "Android trigger registrar does not support ${trigger::class.simpleName}.",
             )
@@ -233,6 +235,24 @@ class AndroidTriggerRegistrar(
                                 RuntimeTriggerEvent(
                                     values = mapOf(
                                         "ringer.state" to MacroValue.Text(mode.diagnosticName()),
+                                    ),
+                                ),
+                            )
+                        }
+                    } else if (
+                        action == BluetoothAdapter.ACTION_STATE_CHANGED &&
+                        trigger is RuntimeStep.ObserveBluetoothState &&
+                        intent.hasExtra(BluetoothAdapter.EXTRA_STATE)
+                    ) {
+                        val state = matchingBluetoothTriggerState(
+                            intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR),
+                            trigger.expectedEnabled,
+                        )
+                        if (state != null) {
+                            onTriggered(
+                                RuntimeTriggerEvent(
+                                    values = mapOf(
+                                        "bluetooth.state" to MacroValue.Text(state),
                                     ),
                                 ),
                             )

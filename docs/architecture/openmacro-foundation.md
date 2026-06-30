@@ -816,6 +816,12 @@ supported versions use the legacy normal Bluetooth permission. Missing
 hardware, transitional states, and denied access fail closed, and the condition
 never scans, enumerates devices, observes changes, or polls.
 
+Bluetooth State Changed reuses the same enabled/disabled vocabulary and Nearby
+devices access. An owned receiver accepts only Android's public adapter-state
+broadcast, ignores transitional and unknown values, and emits only the requested
+stable transition with a bounded `bluetooth.state` field. Cancellation always
+unregisters the receiver; no device identity or scan data is collected.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

@@ -6,6 +6,7 @@ package com.vibhor1102.zerobit.openmacro.runtime.android
 
 import android.bluetooth.BluetoothAdapter
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class BluetoothStateTest {
@@ -32,5 +33,20 @@ class BluetoothStateTest {
             androidBluetoothState(BluetoothAdapter.STATE_TURNING_OFF),
         )
         assertEquals(AndroidBluetoothState.UNKNOWN, androidBluetoothState(-1))
+    }
+
+    @Test
+    fun emitsOnlyTheRequestedStableTransition() {
+        assertEquals(
+            "enabled",
+            matchingBluetoothTriggerState(BluetoothAdapter.STATE_ON, true),
+        )
+        assertEquals(
+            "disabled",
+            matchingBluetoothTriggerState(BluetoothAdapter.STATE_OFF, false),
+        )
+        assertNull(matchingBluetoothTriggerState(BluetoothAdapter.STATE_ON, false))
+        assertNull(matchingBluetoothTriggerState(BluetoothAdapter.STATE_TURNING_ON, true))
+        assertNull(matchingBluetoothTriggerState(BluetoothAdapter.ERROR, true))
     }
 }

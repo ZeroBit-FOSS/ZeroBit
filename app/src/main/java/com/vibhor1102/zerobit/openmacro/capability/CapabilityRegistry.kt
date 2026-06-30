@@ -34,6 +34,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.SetTorchAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.SetMediaVolumeAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.MediaVolumeCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BluetoothStateCondition
+import com.vibhor1102.zerobit.openmacro.capability.builtin.BluetoothStateTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ClipboardTextAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryChargingCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryLevelCondition
@@ -114,6 +115,7 @@ class CapabilityRegistry private constructor(
                 AirplaneModeTrigger,
                 RingerModeTrigger,
                 BatterySaverTrigger,
+                BluetoothStateTrigger,
                 PowerDisconnectedTrigger,
                 ScreenOnTrigger,
                 ScreenOffTrigger,

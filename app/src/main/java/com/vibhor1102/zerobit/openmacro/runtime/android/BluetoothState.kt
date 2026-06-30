@@ -20,3 +20,13 @@ internal fun androidBluetoothState(rawState: Int): AndroidBluetoothState = when 
     BluetoothAdapter.STATE_TURNING_OFF -> AndroidBluetoothState.CHANGING
     else -> AndroidBluetoothState.UNKNOWN
 }
+
+internal fun matchingBluetoothTriggerState(
+    rawState: Int,
+    expectedEnabled: Boolean,
+): String? = when (androidBluetoothState(rawState)) {
+    AndroidBluetoothState.ENABLED -> "enabled".takeIf { expectedEnabled }
+    AndroidBluetoothState.DISABLED -> "disabled".takeIf { !expectedEnabled }
+    AndroidBluetoothState.CHANGING,
+    AndroidBluetoothState.UNKNOWN -> null
+}
