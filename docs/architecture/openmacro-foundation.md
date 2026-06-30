@@ -810,6 +810,12 @@ even on coarse volume ranges. Each evaluation reads the current and maximum
 media indices once, installs no observer, and never polls or inspects another
 audio stream.
 
+Bluetooth State checks explicit enabled or disabled state from one adapter
+snapshot. Android 12 and newer use recoverable Nearby devices access; older
+supported versions use the legacy normal Bluetooth permission. Missing
+hardware, transitional states, and denied access fail closed, and the condition
+never scans, enumerates devices, observes changes, or polls.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

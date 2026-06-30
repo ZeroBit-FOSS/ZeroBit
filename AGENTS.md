@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Bluetooth State Condition**: Add explicit enabled/disabled checks
-  from one BluetoothAdapter state snapshot, discover Android 12+ connect access
-  honestly, and avoid scans, device data, observers, or polling.
+- **Target 1: Bluetooth State Trigger**: Add explicit enabled/disabled
+  transitions through an owned Android state-change receiver, reuse Nearby
+  devices access, suppress transitional states, and expose no device data.
 
 ### Completed Foundations
 
+- **Bluetooth State Condition**: Enabled/disabled checks read one adapter
+  snapshot with Android-version-aware Nearby devices access and never scan,
+  enumerate devices, observe changes, or poll.
 - **Media Volume Condition**: Below, above, and equal comparisons share the
   action's device-step mapping, read one bounded media snapshot per evaluation,
   and install no observer or polling work.

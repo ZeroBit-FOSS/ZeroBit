@@ -159,6 +159,11 @@ sealed interface RuntimeStep {
         val comparison: MediaVolumeComparison,
     ) : RuntimeStep
 
+    data class CheckBluetoothEnabled(
+        override val blockId: String,
+        val expectedEnabled: Boolean,
+    ) : RuntimeStep
+
     data class CheckPowerConnection(
         override val blockId: String,
         val expectedPluggedIn: Boolean,

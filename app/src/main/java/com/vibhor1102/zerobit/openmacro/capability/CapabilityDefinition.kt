@@ -128,6 +128,7 @@ enum class CapabilityFieldKind {
 enum class AndroidPermission(
     val manifestName: String,
 ) {
+    BLUETOOTH_CONNECT("android.permission.BLUETOOTH_CONNECT"),
     CAMERA("android.permission.CAMERA"),
     POST_NOTIFICATIONS("android.permission.POST_NOTIFICATIONS"),
     SEND_SMS("android.permission.SEND_SMS"),

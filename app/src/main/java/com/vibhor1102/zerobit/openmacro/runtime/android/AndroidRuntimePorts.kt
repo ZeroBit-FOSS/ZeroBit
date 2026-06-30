@@ -11,6 +11,7 @@ import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.ClipData
@@ -449,6 +450,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckBatteryCharging -> evaluateBatteryCharging(condition)
             is RuntimeStep.CheckBatteryLevel -> evaluateBatteryLevel(condition)
             is RuntimeStep.CheckMediaVolume -> evaluateMediaVolume(condition)
+            is RuntimeStep.CheckBluetoothEnabled -> evaluateBluetoothState(condition)
             is RuntimeStep.CheckPowerConnection -> evaluatePowerConnection(condition)
             is RuntimeStep.CheckScreenInteractive -> evaluateScreenInteractive(condition)
             is RuntimeStep.CheckAirplaneMode -> evaluateAirplaneMode(condition)
@@ -547,6 +549,38 @@ class AndroidConditionEvaluator(
             ConditionResult.Failed("Android did not allow the media volume check.")
         } catch (_: RuntimeException) {
             ConditionResult.Failed("Android could not read media volume.")
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun evaluateBluetoothState(
+        condition: RuntimeStep.CheckBluetoothEnabled,
+    ): ConditionResult {
+        val manager = appContext.getSystemService(BluetoothManager::class.java)
+            ?: return ConditionResult.Failed("Android Bluetooth service is unavailable.")
+        val adapter = manager.adapter
+            ?: return ConditionResult.Failed("This device does not have Bluetooth.")
+        val state = try {
+            androidBluetoothState(adapter.state)
+        } catch (_: SecurityException) {
+            return ConditionResult.Failed("Nearby devices permission is required to check Bluetooth.")
+        } catch (_: RuntimeException) {
+            return ConditionResult.Failed("Android could not read Bluetooth state.")
+        }
+        val enabled = when (state) {
+            AndroidBluetoothState.ENABLED -> true
+            AndroidBluetoothState.DISABLED -> false
+            AndroidBluetoothState.CHANGING ->
+                return ConditionResult.Failed("Bluetooth is currently changing state.")
+            AndroidBluetoothState.UNKNOWN ->
+                return ConditionResult.Failed("Android reported an unknown Bluetooth state.")
+        }
+        return if (enabled == condition.expectedEnabled) {
+            ConditionResult.Passed
+        } else if (condition.expectedEnabled) {
+            ConditionResult.Blocked("Bluetooth is disabled.")
+        } else {
+            ConditionResult.Blocked("Bluetooth is enabled.")
         }
     }
 
@@ -1687,6 +1721,10 @@ class AndroidRuntimePermissionChecker(
         required: Set<AndroidPermission>,
     ): Set<AndroidPermission> = required.filterTo(mutableSetOf()) { permission ->
         when (permission) {
+            AndroidPermission.BLUETOOTH_CONNECT ->
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                    appContext.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) !=
+                    PackageManager.PERMISSION_GRANTED
             AndroidPermission.CAMERA ->
                 appContext.checkSelfPermission(Manifest.permission.CAMERA) !=
                     PackageManager.PERMISSION_GRANTED

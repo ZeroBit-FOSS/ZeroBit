@@ -30,6 +30,11 @@ object AndroidPermissionRecoveryFactory {
         context: Context,
         permission: AndroidPermission,
     ): AndroidPermissionRecovery = when (permission) {
+        AndroidPermission.BLUETOOTH_CONNECT ->
+            AndroidPermissionRecovery.RequestRuntimePermission(
+                Manifest.permission.BLUETOOTH_CONNECT,
+                "Allow ZeroBit to check Bluetooth state for approved macros.",
+            )
         AndroidPermission.CAMERA ->
             AndroidPermissionRecovery.RequestRuntimePermission(
                 Manifest.permission.CAMERA,
