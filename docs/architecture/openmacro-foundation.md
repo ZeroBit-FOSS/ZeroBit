@@ -804,6 +804,12 @@ device's current media-stream maximum and changes only
 `AudioManager.STREAM_MUSIC` without UI, ringtone, alarm, call, DND, or general
 audio-policy flags.
 
+The Media Volume condition uses the same percentage-to-device-step mapping as
+the action, so setting and then checking an equal percentage is deterministic
+even on coarse volume ranges. Each evaluation reads the current and maximum
+media indices once, installs no observer, and never polls or inspects another
+audio stream.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

@@ -722,7 +722,7 @@ class MacroBlockEditorTest {
             MacroBlockEditor.topLevelTemplates(registry, lane, document)
         }.filterNot { it.setupRequired }
 
-        assertEquals(58, templates.size)
+        assertEquals(59, templates.size)
         templates.forEach { template ->
             val result = MacroBlockEditor.addTopLevelBlock(document, template)
             require(result is BlockEditResult.Updated)

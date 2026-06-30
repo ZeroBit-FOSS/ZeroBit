@@ -51,6 +51,7 @@ import com.vibhor1102.zerobit.openmacro.runtime.MAX_CALENDAR_DESCRIPTION_LENGTH
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_CALENDAR_LOCATION_LENGTH
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_CALENDAR_TITLE_LENGTH
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_CONTACT_NAME_LENGTH
+import com.vibhor1102.zerobit.openmacro.runtime.MediaVolumeComparison
 import com.vibhor1102.zerobit.openmacro.runtime.isDialablePhoneNumber
 import com.vibhor1102.zerobit.openmacro.runtime.isValidMapQuery
 import com.vibhor1102.zerobit.openmacro.runtime.RuntimeActionExecutor
@@ -447,6 +448,7 @@ class AndroidConditionEvaluator(
             }
             is RuntimeStep.CheckBatteryCharging -> evaluateBatteryCharging(condition)
             is RuntimeStep.CheckBatteryLevel -> evaluateBatteryLevel(condition)
+            is RuntimeStep.CheckMediaVolume -> evaluateMediaVolume(condition)
             is RuntimeStep.CheckPowerConnection -> evaluatePowerConnection(condition)
             is RuntimeStep.CheckScreenInteractive -> evaluateScreenInteractive(condition)
             is RuntimeStep.CheckAirplaneMode -> evaluateAirplaneMode(condition)
@@ -510,6 +512,41 @@ class AndroidConditionEvaluator(
             ConditionResult.Blocked(
                 "Battery level is $percentage%; expected $comparison ${condition.level}%.",
             )
+        }
+    }
+
+    private fun evaluateMediaVolume(
+        condition: RuntimeStep.CheckMediaVolume,
+    ): ConditionResult {
+        val audioManager = appContext.getSystemService(AudioManager::class.java)
+            ?: return ConditionResult.Failed("Android audio service is unavailable.")
+        return try {
+            val maximum = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            val current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+            val matched = mediaVolumeMatches(
+                current,
+                maximum,
+                condition.percentage,
+                condition.comparison,
+            ) ?: return ConditionResult.Failed("Android media volume range is unavailable.")
+            if (matched) {
+                ConditionResult.Passed
+            } else {
+                val currentPercentage = mediaVolumeApproximatePercentage(current, maximum)
+                    ?: return ConditionResult.Failed("Android media volume range is unavailable.")
+                val comparison = when (condition.comparison) {
+                    MediaVolumeComparison.BELOW -> "below"
+                    MediaVolumeComparison.ABOVE -> "above"
+                    MediaVolumeComparison.EQUALS -> "equal to"
+                }
+                ConditionResult.Blocked(
+                    "Media volume is about $currentPercentage%; expected $comparison ${condition.percentage}% on this device.",
+                )
+            }
+        } catch (_: SecurityException) {
+            ConditionResult.Failed("Android did not allow the media volume check.")
+        } catch (_: RuntimeException) {
+            ConditionResult.Failed("Android could not read media volume.")
         }
     }
 

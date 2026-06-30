@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Media Volume Condition**: Add bounded current media-volume
-  comparison through one AudioManager snapshot, reuse runtime percentage
-  mapping semantics, and avoid observers, polling, or non-media streams.
+- **Target 1: Bluetooth State Condition**: Add explicit enabled/disabled checks
+  from one BluetoothAdapter state snapshot, discover Android 12+ connect access
+  honestly, and avoid scans, device data, observers, or polling.
 
 ### Completed Foundations
 
+- **Media Volume Condition**: Below, above, and equal comparisons share the
+  action's device-step mapping, read one bounded media snapshot per evaluation,
+  and install no observer or polling work.
 - **Bounded Media Volume Action**: Whole percentages map against Android's
   runtime media maximum and change only the media stream under the normal
   manifest permission, without user-granted access or broader audio mutation.

@@ -39,6 +39,7 @@ class CapabilityRegistryTest {
                 "Battery level",
                 "Battery saver",
                 "Device lock state",
+                "Media volume",
                 "Power connection",
                 "Ringer mode",
                 "Screen state",

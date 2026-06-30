@@ -4,6 +4,7 @@
 
 package com.vibhor1102.zerobit.openmacro.runtime.android
 
+import com.vibhor1102.zerobit.openmacro.runtime.MediaVolumeComparison
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -30,5 +31,21 @@ class MediaVolumeMappingTest {
         assertNull(mediaVolumeIndex(101, 15))
         assertNull(mediaVolumeIndex(50, 0))
         assertNull(mediaVolumeIndex(50, -1))
+    }
+
+    @Test
+    fun comparesUsingTheSameDiscreteStepsAsTheSetAction() {
+        assertEquals(true, mediaVolumeMatches(8, 15, 50, MediaVolumeComparison.EQUALS))
+        assertEquals(false, mediaVolumeMatches(8, 15, 50, MediaVolumeComparison.ABOVE))
+        assertEquals(true, mediaVolumeMatches(7, 15, 50, MediaVolumeComparison.BELOW))
+        assertEquals(false, mediaVolumeMatches(9, 15, 50, MediaVolumeComparison.BELOW))
+    }
+
+    @Test
+    fun reportsApproximatePercentageForDiagnostics() {
+        assertEquals(0, mediaVolumeApproximatePercentage(0, 15))
+        assertEquals(53, mediaVolumeApproximatePercentage(8, 15))
+        assertEquals(100, mediaVolumeApproximatePercentage(15, 15))
+        assertNull(mediaVolumeApproximatePercentage(16, 15))
     }
 }

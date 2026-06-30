@@ -153,6 +153,12 @@ sealed interface RuntimeStep {
         val direction: BatteryDirection,
     ) : RuntimeStep
 
+    data class CheckMediaVolume(
+        override val blockId: String,
+        val percentage: Int,
+        val comparison: MediaVolumeComparison,
+    ) : RuntimeStep
+
     data class CheckPowerConnection(
         override val blockId: String,
         val expectedPluggedIn: Boolean,
@@ -492,6 +498,12 @@ enum class BatteryDirection {
     GOES_BELOW,
     GOES_ABOVE,
     EQUALS
+}
+
+enum class MediaVolumeComparison {
+    BELOW,
+    ABOVE,
+    EQUALS,
 }
 
 enum class RingerMode {
