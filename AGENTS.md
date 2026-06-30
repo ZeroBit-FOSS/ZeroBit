@@ -137,9 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Open Keyboard Settings Action**: Add a config-free typed action
-  for Android's exact input-method settings route; do not select, enable, or
-  target a keyboard and do not expose generic intent fields.
+- **Target 1: Open Apps Settings Action**: Add a config-free typed action for
+  Android's exact applications settings list; do not target a package, inspect
+  installed apps, uninstall software, or expose generic intent fields.
 
 ### Completed Foundations
 
@@ -409,6 +409,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Open Languages Settings Action**: A config-free typed step opens only the
   system locale route without locale reads/writes, app-language targeting, or
   generic intent fields.
+- **Open Keyboard Settings Action**: A config-free typed step opens only the
+  input-method settings route without keyboard targeting, enabling, selection,
+  or input-method access.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.

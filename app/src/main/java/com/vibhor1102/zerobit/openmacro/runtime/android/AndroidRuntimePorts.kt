@@ -725,6 +725,7 @@ class AndroidActionExecutor(
             is RuntimeStep.OpenPrivacySettings -> openPrivacySettings()
             is RuntimeStep.OpenDateTimeSettings -> openDateTimeSettings()
             is RuntimeStep.OpenLanguagesSettings -> openLanguagesSettings()
+            is RuntimeStep.OpenKeyboardSettings -> openKeyboardSettings()
             else -> ActionResult.Failed(
                 "Unsupported Android action ${action::class.simpleName}.",
             )
@@ -1172,6 +1173,19 @@ class AndroidActionExecutor(
             ActionResult.Failed("Android language settings are not available.")
         } catch (problem: RuntimeException) {
             ActionResult.Failed(problem.message ?: "Could not open language settings.")
+        }
+    }
+
+    private fun openKeyboardSettings(): ActionResult {
+        val intent = Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return try {
+            appContext.startActivity(intent)
+            ActionResult.Succeeded
+        } catch (_: ActivityNotFoundException) {
+            ActionResult.Failed("Android keyboard settings are not available.")
+        } catch (problem: RuntimeException) {
+            ActionResult.Failed(problem.message ?: "Could not open keyboard settings.")
         }
     }
 

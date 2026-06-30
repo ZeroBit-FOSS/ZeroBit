@@ -68,6 +68,7 @@ class CapabilityRegistryTest {
                 "Open data usage settings",
                 "Open date & time settings",
                 "Open display settings",
+                "Open keyboard settings",
                 "Open languages settings",
                 "Open map location",
                 "Open notification settings",

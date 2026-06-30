@@ -744,6 +744,10 @@ Open Languages Settings uses only `Settings.ACTION_LOCALE_SETTINGS`. It accepts
 no locale, language tag, app package, or generic action fields and does not read
 or mutate locale state.
 
+Open Keyboard Settings uses only `Settings.ACTION_INPUT_METHOD_SETTINGS`. It
+accepts no keyboard ID, package, enabled/selected state, or generic action and
+does not select or enable an input method.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the
