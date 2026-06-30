@@ -740,6 +740,10 @@ Open Date & Time Settings uses only `Settings.ACTION_DATE_SETTINGS`. It accepts
 no date, clock, timezone, automatic-time, or generic action fields and does not
 read or mutate system clock state.
 
+Open Languages Settings uses only `Settings.ACTION_LOCALE_SETTINGS`. It accepts
+no locale, language tag, app package, or generic action fields and does not read
+or mutate locale state.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

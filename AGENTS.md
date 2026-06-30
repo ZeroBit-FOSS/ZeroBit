@@ -137,9 +137,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Open Languages Settings Action**: Add a config-free typed action
-  for Android's exact locale settings route; do not read or write locale state,
-  target an app language, or expose generic intent fields.
+- **Target 1: Open Keyboard Settings Action**: Add a config-free typed action
+  for Android's exact input-method settings route; do not select, enable, or
+  target a keyboard and do not expose generic intent fields.
 
 ### Completed Foundations
 
@@ -406,6 +406,9 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 - **Open Date & Time Settings Action**: A config-free typed step opens only the
   date settings route without reading or changing date, time, timezone, or
   automatic-time state.
+- **Open Languages Settings Action**: A config-free typed step opens only the
+  system locale route without locale reads/writes, app-language targeting, or
+  generic intent fields.
 - **Existing Variable Forms**: The visual editor can update or remove initial
   text, number, and boolean values and can update secret-key identifiers through
   local source patches; secret values themselves never enter macro source.
