@@ -558,6 +558,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckNfcEnabled -> evaluateNfcState(condition)
             is RuntimeStep.CheckLocationServicesEnabled -> evaluateLocationServices(condition)
             is RuntimeStep.CheckDarkTheme -> evaluateDarkTheme(condition)
+            is RuntimeStep.CheckScreenOrientation -> evaluateScreenOrientation(condition)
             is RuntimeStep.CheckPowerConnection -> evaluatePowerConnection(condition)
             is RuntimeStep.CheckScreenInteractive -> evaluateScreenInteractive(condition)
             is RuntimeStep.CheckAirplaneMode -> evaluateAirplaneMode(condition)
@@ -745,6 +746,20 @@ class AndroidConditionEvaluator(
             ConditionResult.Blocked("Android is using light theme.")
         } else {
             ConditionResult.Blocked("Android is using dark theme.")
+        }
+    }
+
+    private fun evaluateScreenOrientation(
+        condition: RuntimeStep.CheckScreenOrientation,
+    ): ConditionResult {
+        val orientation = screenOrientationOrNull(appContext.resources.configuration.orientation)
+            ?: return ConditionResult.Failed("Android screen orientation is undefined.")
+        return if (orientation == condition.expectedOrientation) {
+            ConditionResult.Passed
+        } else {
+            ConditionResult.Blocked(
+                "Screen orientation is ${orientation.name.lowercase()}; expected ${condition.expectedOrientation.name.lowercase()}.",
+            )
         }
     }
 

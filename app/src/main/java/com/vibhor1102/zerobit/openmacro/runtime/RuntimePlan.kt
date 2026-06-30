@@ -199,6 +199,11 @@ sealed interface RuntimeStep {
         val expectedDark: Boolean,
     ) : RuntimeStep
 
+    data class CheckScreenOrientation(
+        override val blockId: String,
+        val expectedOrientation: ScreenOrientation,
+    ) : RuntimeStep
+
     data class CheckPowerConnection(
         override val blockId: String,
         val expectedPluggedIn: Boolean,
@@ -544,6 +549,11 @@ enum class MediaVolumeComparison {
     BELOW,
     ABOVE,
     EQUALS,
+}
+
+enum class ScreenOrientation {
+    PORTRAIT,
+    LANDSCAPE,
 }
 
 enum class RingerMode {

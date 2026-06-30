@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Screen Orientation Condition**: Add explicit portrait/landscape
-  checks from one current configuration snapshot, fail closed for undefined
-  orientation, and require no sensor, observer, permission, or polling.
+- **Target 1: Screen Orientation Trigger**: Add portrait/landscape transitions
+  through one owned configuration callback, suppress duplicate and undefined
+  changes, expose bounded state, and unregister deterministically.
 
 ### Completed Foundations
 
+- **Screen Orientation Condition**: Portrait/landscape checks read one current
+  configuration snapshot, fail closed for undefined layouts, and require no
+  sensor, permission, observer, or polling.
 - **Dark Theme Trigger**: Dark/light transitions use one owned configuration
   callback, suppress duplicate, unrelated, and undefined changes, expose only
   bounded state, and unregister deterministically.

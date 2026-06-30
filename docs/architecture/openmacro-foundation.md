@@ -854,6 +854,11 @@ baseline. It masks unrelated configuration changes, ignores duplicate and
 undefined night modes, emits only real requested transitions with bounded
 `theme.state` context, and unregisters deterministically on cancellation.
 
+Screen Orientation checks portrait or landscape from one current configuration
+snapshot. Undefined and square configurations fail closed. It describes the
+resolved screen layout rather than physical posture and uses no accelerometer,
+sensor listener, permission, observer, or polling.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

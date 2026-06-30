@@ -41,6 +41,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.LocationServicesCondi
 import com.vibhor1102.zerobit.openmacro.capability.builtin.LocationServicesTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.DarkThemeCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.DarkThemeTrigger
+import com.vibhor1102.zerobit.openmacro.capability.builtin.ScreenOrientationCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ClipboardTextAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryChargingCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryLevelCondition
@@ -149,6 +150,7 @@ class CapabilityRegistry private constructor(
                 NfcStateCondition,
                 LocationServicesCondition,
                 DarkThemeCondition,
+                ScreenOrientationCondition,
                 NotificationShowAction,
                 WriteLogAction,
                 SendSmsAction,

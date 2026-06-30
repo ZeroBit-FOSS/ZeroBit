@@ -50,6 +50,7 @@ class CapabilityRegistryTest {
                 "NFC state",
                 "Power connection",
                 "Ringer mode",
+                "Screen orientation",
                 "Screen state",
                 "Time window",
                 "Value comparison",
