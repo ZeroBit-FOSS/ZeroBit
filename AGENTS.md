@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Battery Temperature Trigger**: Add bounded threshold crossings
-  through the sticky battery broadcast, preserve exact tenths precision,
-  suppress the initial sample and duplicates, and expose bounded temperature.
+- **Target 1: Battery Health Condition**: Add explicit healthy, overheating,
+  cold, dead, over-voltage, and failure checks from one sticky battery snapshot,
+  fail closed for unknown values, and retain no battery history.
 
 ### Completed Foundations
 
+- **Battery Temperature Trigger**: Exact-tenths threshold crossings use the
+  sticky battery broadcast, suppress initial and duplicate samples, expose one
+  bounded Celsius value, and retain only the previous sample.
 - **Battery Temperature Condition**: Above/below/equal checks preserve exact
   tenths-of-degree precision from one bounded sticky battery snapshot without
   observers, history, permissions, or polling.

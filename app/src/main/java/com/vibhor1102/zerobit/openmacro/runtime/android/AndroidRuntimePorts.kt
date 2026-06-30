@@ -135,6 +135,9 @@ class AndroidTriggerRegistrar(
         if (trigger is RuntimeStep.ObserveWiredHeadset) {
             return subscribeToWiredHeadset(trigger, onTriggered)
         }
+        if (trigger is RuntimeStep.ObserveBatteryTemperature) {
+            return subscribeToBatteryTemperature(trigger, onTriggered)
+        }
         val filter = when (trigger) {
             is RuntimeStep.ObservePowerConnected -> IntentFilter(Intent.ACTION_POWER_CONNECTED)
             is RuntimeStep.ObservePowerDisconnected -> IntentFilter(Intent.ACTION_POWER_DISCONNECTED)
@@ -434,6 +437,47 @@ class AndroidTriggerRegistrar(
             TriggerSubscriptionResult.Failure(
                 problem.message ?: "Could not observe Android Battery Saver state.",
             )
+        }
+    }
+
+    private fun subscribeToBatteryTemperature(
+        trigger: RuntimeStep.ObserveBatteryTemperature,
+        onTriggered: (RuntimeTriggerEvent) -> Unit,
+    ): TriggerSubscriptionResult {
+        val tracker = BatteryTemperatureTransitionTracker(
+            trigger.thresholdTenthsCelsius,
+            trigger.comparison,
+        )
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != Intent.ACTION_BATTERY_CHANGED) return
+                val current = validBatteryTemperatureTenthsOrNull(
+                    intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, Int.MIN_VALUE),
+                ) ?: return
+                val matched = tracker.update(current) ?: return
+                onTriggered(
+                    RuntimeTriggerEvent(
+                        values = mapOf(
+                            "battery.temperature_celsius" to MacroValue.Number(
+                                java.math.BigDecimal(matched).movePointLeft(1),
+                            ),
+                        ),
+                    ),
+                )
+            }
+        }
+        return try {
+            registerReceiver(receiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val cancelled = AtomicBoolean(false)
+            TriggerSubscriptionResult.Success(
+                RuntimeCancellation {
+                    if (cancelled.compareAndSet(false, true)) {
+                        appContext.unregisterReceiver(receiver)
+                    }
+                },
+            )
+        } catch (_: RuntimeException) {
+            TriggerSubscriptionResult.Failure("Could not observe battery temperature.")
         }
     }
 

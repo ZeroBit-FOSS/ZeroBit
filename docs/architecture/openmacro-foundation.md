@@ -880,6 +880,12 @@ Battery Temperature compares one sticky battery snapshot against a bounded
 tenths-of-a-degree precision as integers for below, above, and equal checks;
 the condition installs no observer and retains no temperature history.
 
+Battery Temperature trigger reuses exact bounded tenths and the sticky battery
+broadcast. Its first valid sample establishes baseline only; later below,
+above, or equal crossings suppress duplicates and emit one bounded
+`battery.temperature_celsius` number. Cancellation unregisters the receiver and
+only one previous sample is retained.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

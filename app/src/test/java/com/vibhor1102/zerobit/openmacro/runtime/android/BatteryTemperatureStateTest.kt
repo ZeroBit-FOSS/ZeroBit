@@ -35,4 +35,32 @@ class BatteryTemperatureStateTest {
         assertEquals("40", formatTenthsCelsius(400))
         assertEquals("-0.5", formatTenthsCelsius(-5))
     }
+
+    @Test
+    fun suppressesInitialAndDuplicateSamplesThenEmitsAboveCrossings() {
+        val tracker = BatteryTemperatureTransitionTracker(
+            thresholdTenths = 400,
+            comparison = BatteryTemperatureComparison.ABOVE,
+        )
+
+        assertNull(tracker.update(390))
+        assertNull(tracker.update(400))
+        assertEquals(401, tracker.update(401))
+        assertNull(tracker.update(401))
+        assertNull(tracker.update(399))
+        assertEquals(410, tracker.update(410))
+    }
+
+    @Test
+    fun emitsBelowAndEqualOnlyWhenEnteringTheirMatchingState() {
+        val below = BatteryTemperatureTransitionTracker(400, BatteryTemperatureComparison.BELOW)
+        assertNull(below.update(410))
+        assertEquals(399, below.update(399))
+        assertNull(below.update(390))
+
+        val equal = BatteryTemperatureTransitionTracker(400, BatteryTemperatureComparison.EQUALS)
+        assertNull(equal.update(390))
+        assertEquals(400, equal.update(400))
+        assertNull(equal.update(400))
+    }
 }

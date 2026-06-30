@@ -22,3 +22,24 @@ internal fun batteryTemperatureMatches(
 
 internal fun formatTenthsCelsius(tenths: Int): String =
     BigDecimal(tenths).movePointLeft(1).stripTrailingZeros().toPlainString()
+
+internal class BatteryTemperatureTransitionTracker(
+    private val thresholdTenths: Int,
+    private val comparison: BatteryTemperatureComparison,
+) {
+    private var lastTenths: Int? = null
+
+    fun update(currentTenths: Int): Int? {
+        val previousTenths = lastTenths
+        lastTenths = currentTenths
+        val matched = when (comparison) {
+            BatteryTemperatureComparison.BELOW ->
+                previousTenths?.let { it >= thresholdTenths && currentTenths < thresholdTenths }
+            BatteryTemperatureComparison.ABOVE ->
+                previousTenths?.let { it <= thresholdTenths && currentTenths > thresholdTenths }
+            BatteryTemperatureComparison.EQUALS ->
+                previousTenths?.let { it != thresholdTenths && currentTenths == thresholdTenths }
+        } ?: false
+        return currentTenths.takeIf { matched }
+    }
+}
