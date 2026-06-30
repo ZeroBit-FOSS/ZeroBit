@@ -56,6 +56,7 @@ class CapabilityRegistryTest {
                 "Time window",
                 "Value comparison",
                 "Wi-Fi connected",
+                "Wired headset",
             ),
             registry.list(CapabilityLane.CONDITION).map { it.displayName },
         )

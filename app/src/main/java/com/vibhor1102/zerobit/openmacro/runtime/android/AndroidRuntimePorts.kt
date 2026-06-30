@@ -601,6 +601,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckLocationServicesEnabled -> evaluateLocationServices(condition)
             is RuntimeStep.CheckDarkTheme -> evaluateDarkTheme(condition)
             is RuntimeStep.CheckScreenOrientation -> evaluateScreenOrientation(condition)
+            is RuntimeStep.CheckWiredHeadsetConnected -> evaluateWiredHeadset(condition)
             is RuntimeStep.CheckPowerConnection -> evaluatePowerConnection(condition)
             is RuntimeStep.CheckScreenInteractive -> evaluateScreenInteractive(condition)
             is RuntimeStep.CheckAirplaneMode -> evaluateAirplaneMode(condition)
@@ -802,6 +803,29 @@ class AndroidConditionEvaluator(
             ConditionResult.Blocked(
                 "Screen orientation is ${orientation.name.lowercase()}; expected ${condition.expectedOrientation.name.lowercase()}.",
             )
+        }
+    }
+
+    private fun evaluateWiredHeadset(
+        condition: RuntimeStep.CheckWiredHeadsetConnected,
+    ): ConditionResult {
+        val manager = appContext.getSystemService(AudioManager::class.java)
+            ?: return ConditionResult.Failed("Android audio service is unavailable.")
+        val connected = try {
+            hasWiredHeadset(
+                manager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).map { it.type },
+            )
+        } catch (_: SecurityException) {
+            return ConditionResult.Failed("Android did not allow the wired headset check.")
+        } catch (_: RuntimeException) {
+            return ConditionResult.Failed("Android could not read audio output devices.")
+        }
+        return if (connected == condition.expectedConnected) {
+            ConditionResult.Passed
+        } else if (condition.expectedConnected) {
+            ConditionResult.Blocked("No wired headset is connected.")
+        } else {
+            ConditionResult.Blocked("A wired headset is connected.")
         }
     }
 

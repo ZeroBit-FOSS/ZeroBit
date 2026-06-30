@@ -43,6 +43,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.DarkThemeCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.DarkThemeTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ScreenOrientationCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ScreenOrientationTrigger
+import com.vibhor1102.zerobit.openmacro.capability.builtin.WiredHeadsetCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ClipboardTextAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryChargingCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryLevelCondition
@@ -153,6 +154,7 @@ class CapabilityRegistry private constructor(
                 LocationServicesCondition,
                 DarkThemeCondition,
                 ScreenOrientationCondition,
+                WiredHeadsetCondition,
                 NotificationShowAction,
                 WriteLogAction,
                 SendSmsAction,

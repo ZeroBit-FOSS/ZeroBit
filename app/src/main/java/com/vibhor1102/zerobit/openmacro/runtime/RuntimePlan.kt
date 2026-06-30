@@ -209,6 +209,11 @@ sealed interface RuntimeStep {
         val expectedOrientation: ScreenOrientation,
     ) : RuntimeStep
 
+    data class CheckWiredHeadsetConnected(
+        override val blockId: String,
+        val expectedConnected: Boolean,
+    ) : RuntimeStep
+
     data class CheckPowerConnection(
         override val blockId: String,
         val expectedPluggedIn: Boolean,

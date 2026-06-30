@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Wired Headset Condition**: Add connected/disconnected checks from
-  one AudioManager output-device snapshot, inspect only bounded device types,
-  and avoid names, addresses, callbacks, permissions, or polling.
+- **Target 1: Wired Headset Trigger**: Add connected/disconnected transitions
+  through one owned AudioDeviceCallback, reduce callbacks to bounded wired
+  types, suppress duplicate state, and unregister deterministically.
 
 ### Completed Foundations
 
+- **Wired Headset Condition**: Connected/disconnected checks reduce one audio
+  output snapshot to bounded wired device types without reading names, IDs,
+  addresses, Bluetooth outputs, callbacks, or polling state.
 - **Screen Orientation Trigger**: Portrait/landscape transitions use one owned
   configuration callback, suppress duplicate and undefined changes, expose only
   bounded state, and unregister deterministically.

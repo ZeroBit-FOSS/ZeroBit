@@ -864,6 +864,11 @@ portrait/landscape baseline. It ignores duplicate, unrelated, undefined, and
 square configurations, emits only real requested transitions with bounded
 `screen.orientation` context, and unregisters deterministically.
 
+Wired Headset checks one current output-device snapshot for only Android's wired
+headset, wired headphones, and USB headset types. It immediately reduces the
+snapshot to connected/disconnected and never reads or retains device names,
+IDs, addresses, Bluetooth outputs, callbacks, or polling state.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the
