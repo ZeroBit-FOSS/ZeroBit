@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Location Services Trigger**: Add explicit enabled/disabled
-  transitions through an owned mode-change receiver, reread authoritative state
-  across supported Android versions, and expose no provider or coordinate data.
+- **Target 1: Dark Theme Condition**: Add explicit dark/light checks from one
+  current configuration snapshot, fail closed for undefined night mode, and
+  require no observer, permission, or polling.
 
 ### Completed Foundations
 
+- **Location Services Trigger**: Enabled/disabled transitions use an owned
+  mode-change receiver, reread shared authoritative state, expose only bounded
+  state context, and never request or reveal location data.
 - **Location Services Condition**: Enabled/disabled checks use one
   version-aware system state read without location permission, providers,
   coordinates, history, observers, or polling.

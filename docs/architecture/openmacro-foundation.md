@@ -838,6 +838,12 @@ Android 8.x uses one strict legacy secure-mode read. Unknown or unavailable
 state fails closed, and the condition never inspects providers, coordinates,
 location history, or polling signals.
 
+Location Services Changed owns a receiver for Android's mode-change broadcast,
+then rereads the same version-aware authoritative state used by the condition.
+It emits only the requested stable transition with bounded
+`location_services.state` context and never exposes providers, coordinates, or
+broadcast payload data.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

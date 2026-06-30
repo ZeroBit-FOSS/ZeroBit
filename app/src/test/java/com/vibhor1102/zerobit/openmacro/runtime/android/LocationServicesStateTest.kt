@@ -30,4 +30,13 @@ class LocationServicesStateTest {
         assertNull(locationServicesEnabledFromLegacyMode(-1))
         assertNull(locationServicesEnabledFromLegacyMode(4))
     }
+
+    @Test
+    fun emitsOnlyTheRequestedAvailableTransition() {
+        assertEquals("enabled", matchingLocationServicesTriggerState(true, true))
+        assertEquals("disabled", matchingLocationServicesTriggerState(false, false))
+        assertNull(matchingLocationServicesTriggerState(true, false))
+        assertNull(matchingLocationServicesTriggerState(false, true))
+        assertNull(matchingLocationServicesTriggerState(null, true))
+    }
 }

@@ -131,6 +131,7 @@ class AndroidTriggerRegistrar(
             is RuntimeStep.ObserveRingerMode -> IntentFilter(AudioManager.RINGER_MODE_CHANGED_ACTION)
             is RuntimeStep.ObserveBluetoothState -> IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
             is RuntimeStep.ObserveNfcState -> IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED)
+            is RuntimeStep.ObserveLocationServices -> IntentFilter(LocationManager.MODE_CHANGED_ACTION)
             else -> return TriggerSubscriptionResult.Failure(
                 "Android trigger registrar does not support ${trigger::class.simpleName}.",
             )
@@ -275,6 +276,23 @@ class AndroidTriggerRegistrar(
                                 RuntimeTriggerEvent(
                                     values = mapOf(
                                         "nfc.state" to MacroValue.Text(state),
+                                    ),
+                                ),
+                            )
+                        }
+                    } else if (
+                        action == LocationManager.MODE_CHANGED_ACTION &&
+                        trigger is RuntimeStep.ObserveLocationServices
+                    ) {
+                        val state = matchingLocationServicesTriggerState(
+                            locationServicesEnabledOrNull(appContext),
+                            trigger.expectedEnabled,
+                        )
+                        if (state != null) {
+                            onTriggered(
+                                RuntimeTriggerEvent(
+                                    values = mapOf(
+                                        "location_services.state" to MacroValue.Text(state),
                                     ),
                                 ),
                             )
@@ -662,27 +680,8 @@ class AndroidConditionEvaluator(
     private fun evaluateLocationServices(
         condition: RuntimeStep.CheckLocationServicesEnabled,
     ): ConditionResult {
-        val enabled = try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                val manager = appContext.getSystemService(LocationManager::class.java)
-                    ?: return ConditionResult.Failed("Android location service is unavailable.")
-                manager.isLocationEnabled
-            } else {
-                @Suppress("DEPRECATION")
-                val mode = Settings.Secure.getInt(
-                    appContext.contentResolver,
-                    Settings.Secure.LOCATION_MODE,
-                )
-                locationServicesEnabledFromLegacyMode(mode)
-                    ?: return ConditionResult.Failed("Android reported an unknown location services state.")
-            }
-        } catch (_: Settings.SettingNotFoundException) {
-            return ConditionResult.Failed("Android location services state is unavailable.")
-        } catch (_: SecurityException) {
-            return ConditionResult.Failed("Android did not allow the location services check.")
-        } catch (_: RuntimeException) {
-            return ConditionResult.Failed("Android could not read location services state.")
-        }
+        val enabled = locationServicesEnabledOrNull(appContext)
+            ?: return ConditionResult.Failed("Android location services state is unavailable.")
         return if (enabled == condition.expectedEnabled) {
             ConditionResult.Passed
         } else if (condition.expectedEnabled) {
