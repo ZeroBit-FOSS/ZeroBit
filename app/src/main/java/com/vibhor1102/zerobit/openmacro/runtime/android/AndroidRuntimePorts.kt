@@ -126,6 +126,9 @@ class AndroidTriggerRegistrar(
         if (trigger is RuntimeStep.ObserveDarkTheme) {
             return subscribeToDarkTheme(trigger, onTriggered)
         }
+        if (trigger is RuntimeStep.ObserveScreenOrientation) {
+            return subscribeToScreenOrientation(trigger, onTriggered)
+        }
         val filter = when (trigger) {
             is RuntimeStep.ObservePowerConnected -> IntentFilter(Intent.ACTION_POWER_CONNECTED)
             is RuntimeStep.ObservePowerDisconnected -> IntentFilter(Intent.ACTION_POWER_DISCONNECTED)
@@ -464,6 +467,45 @@ class AndroidTriggerRegistrar(
             )
         } catch (_: RuntimeException) {
             TriggerSubscriptionResult.Failure("Could not observe Android theme changes.")
+        }
+    }
+
+    private fun subscribeToScreenOrientation(
+        trigger: RuntimeStep.ObserveScreenOrientation,
+        onTriggered: (RuntimeTriggerEvent) -> Unit,
+    ): TriggerSubscriptionResult {
+        val tracker = ScreenOrientationTransitionTracker(
+            screenOrientationOrNull(appContext.resources.configuration.orientation),
+        )
+        val callbacks = object : ComponentCallbacks {
+            override fun onConfigurationChanged(newConfig: Configuration) {
+                val state = tracker.matchingState(
+                    screenOrientationOrNull(newConfig.orientation),
+                    trigger.expectedOrientation,
+                )
+                if (state != null) {
+                    onTriggered(
+                        RuntimeTriggerEvent(
+                            values = mapOf("screen.orientation" to MacroValue.Text(state)),
+                        ),
+                    )
+                }
+            }
+
+            override fun onLowMemory() = Unit
+        }
+        return try {
+            appContext.registerComponentCallbacks(callbacks)
+            val cancelled = AtomicBoolean(false)
+            TriggerSubscriptionResult.Success(
+                RuntimeCancellation {
+                    if (cancelled.compareAndSet(false, true)) {
+                        appContext.unregisterComponentCallbacks(callbacks)
+                    }
+                },
+            )
+        } catch (_: RuntimeException) {
+            TriggerSubscriptionResult.Failure("Could not observe screen orientation changes.")
         }
     }
 

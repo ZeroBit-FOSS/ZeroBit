@@ -110,6 +110,11 @@ sealed interface RuntimeStep {
         val expectedDark: Boolean,
     ) : RuntimeStep
 
+    data class ObserveScreenOrientation(
+        override val blockId: String,
+        val expectedOrientation: ScreenOrientation,
+    ) : RuntimeStep
+
     data class CheckWifiConnected(
         override val blockId: String,
         val ssid: String?,

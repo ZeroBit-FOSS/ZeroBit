@@ -29,4 +29,28 @@ class ScreenOrientationStateTest {
         @Suppress("DEPRECATION")
         assertNull(screenOrientationOrNull(Configuration.ORIENTATION_SQUARE))
     }
+
+    @Test
+    fun emitsOnlyRequestedRealTransitions() {
+        val tracker = ScreenOrientationTransitionTracker(ScreenOrientation.PORTRAIT)
+
+        assertNull(tracker.matchingState(ScreenOrientation.PORTRAIT, ScreenOrientation.LANDSCAPE))
+        assertEquals(
+            "landscape",
+            tracker.matchingState(ScreenOrientation.LANDSCAPE, ScreenOrientation.LANDSCAPE),
+        )
+        assertNull(tracker.matchingState(ScreenOrientation.LANDSCAPE, ScreenOrientation.LANDSCAPE))
+        assertNull(tracker.matchingState(ScreenOrientation.PORTRAIT, ScreenOrientation.LANDSCAPE))
+    }
+
+    @Test
+    fun undefinedStateNeitherEmitsNorErasesStableBaseline() {
+        val tracker = ScreenOrientationTransitionTracker(ScreenOrientation.PORTRAIT)
+
+        assertNull(tracker.matchingState(null, ScreenOrientation.LANDSCAPE))
+        assertEquals(
+            "landscape",
+            tracker.matchingState(ScreenOrientation.LANDSCAPE, ScreenOrientation.LANDSCAPE),
+        )
+    }
 }

@@ -13,3 +13,18 @@ internal fun screenOrientationOrNull(rawOrientation: Int): ScreenOrientation? =
         Configuration.ORIENTATION_LANDSCAPE -> ScreenOrientation.LANDSCAPE
         else -> null
     }
+
+internal class ScreenOrientationTransitionTracker(initial: ScreenOrientation?) {
+    private var last = initial
+
+    fun matchingState(
+        current: ScreenOrientation?,
+        expected: ScreenOrientation,
+    ): String? {
+        if (current == null) return null
+        val previous = last
+        last = current
+        if (previous == null || previous == current || current != expected) return null
+        return current.name.lowercase()
+    }
+}

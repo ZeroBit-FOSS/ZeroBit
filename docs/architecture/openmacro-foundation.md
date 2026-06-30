@@ -859,6 +859,11 @@ snapshot. Undefined and square configurations fail closed. It describes the
 resolved screen layout rather than physical posture and uses no accelerometer,
 sensor listener, permission, observer, or polling.
 
+Screen Orientation Changed owns one configuration callback with a stable
+portrait/landscape baseline. It ignores duplicate, unrelated, undefined, and
+square configurations, emits only real requested transitions with bounded
+`screen.orientation` context, and unregisters deterministically.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

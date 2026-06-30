@@ -28,6 +28,7 @@ class CapabilityRegistryTest {
                 "Power connected",
                 "Power disconnected",
                 "Ringer mode changed",
+                "Screen orientation changed",
                 "Screen turned off",
                 "Screen turned on",
                 "Time schedule",
