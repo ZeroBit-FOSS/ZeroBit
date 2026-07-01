@@ -309,6 +309,11 @@ sealed interface RuntimeStep {
         val expectedEnabled: Boolean,
     ) : RuntimeStep
 
+    data class CheckDeviceIdleMode(
+        override val blockId: String,
+        val expectedIdle: Boolean,
+    ) : RuntimeStep
+
     data class CheckTimeWindow(
         override val blockId: String,
         val window: TimeWindowSpec,

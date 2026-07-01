@@ -938,6 +938,11 @@ one prior canonical state. The sticky initial sample, duplicates, missing and
 unknown values, and non-target transitions stay silent; matching changes emit
 only bounded `dock.state` context before deterministic unregister.
 
+Device Idle Mode checks Android's current deep-idle state through one power
+service snapshot. Idle and not-idle are explicit source states; the condition
+requests no access and installs no receiver, observer, history, timer, or
+polling work. An unavailable power service fails closed.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

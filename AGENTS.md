@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Device Idle Mode Condition**: Add explicit idle and not-idle
-  checks from one PowerManager snapshot, fail closed when unavailable, and
-  retain no observer, history, permission, or polling work.
+- **Target 1: Device Idle Mode Trigger**: Add idle and not-idle transitions
+  through one owned Android change receiver, reread authoritative state,
+  suppress duplicates and non-target changes, and expose bounded state.
 
 ### Completed Foundations
 
+- **Device Idle Mode Condition**: Idle and not-idle checks read one current
+  PowerManager snapshot, fail closed when unavailable, and retain no observer,
+  history, permission, or polling work.
 - **Dock State Trigger**: Bounded dock transitions use one owned sticky
   broadcast receiver, suppress initial, duplicate, missing, unknown, and
   non-target samples, expose canonical state, and retain one previous value.

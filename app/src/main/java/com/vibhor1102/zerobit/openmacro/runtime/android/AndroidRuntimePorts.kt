@@ -908,6 +908,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckAirplaneMode -> evaluateAirplaneMode(condition)
             is RuntimeStep.CheckRingerMode -> evaluateRingerMode(condition)
             is RuntimeStep.CheckBatterySaver -> evaluateBatterySaver(condition)
+            is RuntimeStep.CheckDeviceIdleMode -> evaluateDeviceIdleMode(condition)
             is RuntimeStep.CheckTimeWindow -> evaluateTimeWindow(condition)
             else -> ConditionResult.Failed(
                 "Unsupported Android condition ${condition::class.simpleName}.",
@@ -1369,6 +1370,21 @@ class AndroidConditionEvaluator(
             ConditionResult.Blocked("Battery Saver is disabled.")
         } else {
             ConditionResult.Blocked("Battery Saver is enabled.")
+        }
+    }
+
+    private fun evaluateDeviceIdleMode(
+        condition: RuntimeStep.CheckDeviceIdleMode,
+    ): ConditionResult {
+        val powerManager = appContext.getSystemService(PowerManager::class.java)
+            ?: return ConditionResult.Failed("Android power service is unavailable.")
+        val idle = powerManager.isDeviceIdleMode
+        return if (idle == condition.expectedIdle) {
+            ConditionResult.Passed
+        } else if (condition.expectedIdle) {
+            ConditionResult.Blocked("Android is not in device idle mode.")
+        } else {
+            ConditionResult.Blocked("Android is in device idle mode.")
         }
     }
 
