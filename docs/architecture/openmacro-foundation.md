@@ -901,6 +901,11 @@ against a bounded 0 to 20000 mV threshold. Below, above, and equal checks reject
 missing, fractional, or implausible values and retain no observer, converted
 floating-point value, voltage history, or polling work.
 
+Battery Voltage trigger reuses bounded exact millivolts and the sticky battery
+broadcast. Its first valid sample establishes baseline only; later below,
+above, or equal crossings suppress duplicates and emit one bounded
+`battery.voltage_millivolts` number while retaining only the previous sample.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

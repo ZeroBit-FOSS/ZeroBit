@@ -18,3 +18,24 @@ internal fun batteryVoltageMatches(
     BatteryVoltageComparison.ABOVE -> currentMillivolts > thresholdMillivolts
     BatteryVoltageComparison.EQUALS -> currentMillivolts == thresholdMillivolts
 }
+
+internal class BatteryVoltageTransitionTracker(
+    private val thresholdMillivolts: Int,
+    private val comparison: BatteryVoltageComparison,
+) {
+    private var lastMillivolts: Int? = null
+
+    fun update(currentMillivolts: Int): Int? {
+        val previousMillivolts = lastMillivolts
+        lastMillivolts = currentMillivolts
+        val matched = when (comparison) {
+            BatteryVoltageComparison.BELOW ->
+                previousMillivolts?.let { it >= thresholdMillivolts && currentMillivolts < thresholdMillivolts }
+            BatteryVoltageComparison.ABOVE ->
+                previousMillivolts?.let { it <= thresholdMillivolts && currentMillivolts > thresholdMillivolts }
+            BatteryVoltageComparison.EQUALS ->
+                previousMillivolts?.let { it != thresholdMillivolts && currentMillivolts == thresholdMillivolts }
+        } ?: false
+        return currentMillivolts.takeIf { matched }
+    }
+}

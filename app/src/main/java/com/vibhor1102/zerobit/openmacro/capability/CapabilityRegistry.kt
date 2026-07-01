@@ -50,6 +50,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryTemperatureTri
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryHealthCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryHealthTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryVoltageCondition
+import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryVoltageTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ClipboardTextAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryChargingCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryLevelCondition
@@ -138,6 +139,7 @@ class CapabilityRegistry private constructor(
                 WiredHeadsetTrigger,
                 BatteryTemperatureTrigger,
                 BatteryHealthTrigger,
+                BatteryVoltageTrigger,
                 PowerDisconnectedTrigger,
                 ScreenOnTrigger,
                 ScreenOffTrigger,

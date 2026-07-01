@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Battery Voltage Trigger**: Add bounded exact-millivolt threshold
-  crossings through the sticky battery broadcast, suppress initial and duplicate
-  samples, expose bounded voltage, and retain one previous value.
+- **Target 1: Battery Status Condition**: Add explicit charging, full,
+  discharging, and not-charging checks from one sticky battery snapshot, fail
+  closed for unknown values, and retain no battery history.
 
 ### Completed Foundations
 
+- **Battery Voltage Trigger**: Exact bounded millivolt crossings use the sticky
+  battery broadcast, suppress initial and duplicate samples, expose one bounded
+  voltage value, and retain only the previous sample.
 - **Battery Voltage Condition**: Above/below/equal checks use exact bounded
   millivolts from one sticky battery snapshot without floating-point conversion,
   observers, permissions, history, or polling.

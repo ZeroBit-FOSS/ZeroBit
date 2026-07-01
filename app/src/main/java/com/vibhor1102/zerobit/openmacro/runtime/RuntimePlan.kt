@@ -131,6 +131,12 @@ sealed interface RuntimeStep {
         val expectedHealth: BatteryHealth,
     ) : RuntimeStep
 
+    data class ObserveBatteryVoltage(
+        override val blockId: String,
+        val thresholdMillivolts: Int,
+        val comparison: BatteryVoltageComparison,
+    ) : RuntimeStep
+
     data class CheckWifiConnected(
         override val blockId: String,
         val ssid: String?,
