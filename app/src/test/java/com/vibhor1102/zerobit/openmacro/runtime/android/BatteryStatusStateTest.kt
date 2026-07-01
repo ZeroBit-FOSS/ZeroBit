@@ -37,4 +37,16 @@ class BatteryStatusStateTest {
         assertFalse(BatteryStatus.DISCHARGING.isCharging())
         assertFalse(BatteryStatus.NOT_CHARGING.isCharging())
     }
+
+    @Test
+    fun emitsOnlyRealTransitionsIntoTheRequestedStatus() {
+        val tracker = BatteryStatusTransitionTracker(BatteryStatus.NOT_CHARGING)
+
+        assertNull(tracker.update(BatteryStatus.CHARGING))
+        assertNull(tracker.update(BatteryStatus.CHARGING))
+        assertEquals("not_charging", tracker.update(BatteryStatus.NOT_CHARGING))
+        assertNull(tracker.update(BatteryStatus.NOT_CHARGING))
+        assertNull(tracker.update(BatteryStatus.FULL))
+        assertEquals("not_charging", tracker.update(BatteryStatus.NOT_CHARGING))
+    }
 }

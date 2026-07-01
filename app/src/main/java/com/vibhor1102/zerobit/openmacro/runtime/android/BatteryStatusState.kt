@@ -24,3 +24,21 @@ internal fun BatteryStatus.diagnosticName(): String = when (this) {
     BatteryStatus.DISCHARGING -> "discharging"
     BatteryStatus.NOT_CHARGING -> "not charging"
 }
+
+internal fun BatteryStatus.contextName(): String = when (this) {
+    BatteryStatus.NOT_CHARGING -> "not_charging"
+    else -> diagnosticName()
+}
+
+internal class BatteryStatusTransitionTracker(
+    private val expectedStatus: BatteryStatus,
+) {
+    private var lastStatus: BatteryStatus? = null
+
+    fun update(currentStatus: BatteryStatus): String? {
+        val previousStatus = lastStatus
+        lastStatus = currentStatus
+        if (previousStatus == null || previousStatus == currentStatus) return null
+        return currentStatus.contextName().takeIf { currentStatus == expectedStatus }
+    }
+}

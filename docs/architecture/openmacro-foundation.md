@@ -912,6 +912,11 @@ Charging condition reuses the same mapping while preserving its compatibility:
 charging/full are true and discharging/not-charging are false. Neither condition
 retains history or requests access.
 
+Battery Status Changed uses the sticky battery broadcast and retains one prior
+canonical status. Initial, duplicate, unknown, and non-target samples stay
+silent; real requested transitions emit only bounded `battery.status` context
+and cancellation unregisters the receiver.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

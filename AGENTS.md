@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Battery Status Trigger**: Add explicit bounded status transitions
-  through the sticky battery broadcast, suppress initial, duplicate, and unknown
-  samples, expose canonical status, and retain one previous value.
+- **Target 1: Battery Presence Condition**: Add explicit present/not-present
+  checks from one sticky battery snapshot, require the presence extra, and retain
+  no observer, permission, history, or polling work.
 
 ### Completed Foundations
 
+- **Battery Status Trigger**: Canonical status transitions use the sticky
+  battery broadcast, suppress initial, duplicate, unknown, and non-target
+  samples, expose bounded state, and retain one previous value.
 - **Battery Status Condition**: Charging, full, discharging, and not-charging
   checks share one strict status mapping with the older Boolean charging check,
   fail closed for unknown values, and retain no history.

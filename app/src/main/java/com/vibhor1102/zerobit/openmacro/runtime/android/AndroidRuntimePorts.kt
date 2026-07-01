@@ -145,6 +145,9 @@ class AndroidTriggerRegistrar(
         if (trigger is RuntimeStep.ObserveBatteryVoltage) {
             return subscribeToBatteryVoltage(trigger, onTriggered)
         }
+        if (trigger is RuntimeStep.ObserveBatteryStatus) {
+            return subscribeToBatteryStatus(trigger, onTriggered)
+        }
         val filter = when (trigger) {
             is RuntimeStep.ObservePowerConnected -> IntentFilter(Intent.ACTION_POWER_CONNECTED)
             is RuntimeStep.ObservePowerDisconnected -> IntentFilter(Intent.ACTION_POWER_DISCONNECTED)
@@ -563,6 +566,43 @@ class AndroidTriggerRegistrar(
             )
         } catch (_: RuntimeException) {
             TriggerSubscriptionResult.Failure("Could not observe battery voltage.")
+        }
+    }
+
+    private fun subscribeToBatteryStatus(
+        trigger: RuntimeStep.ObserveBatteryStatus,
+        onTriggered: (RuntimeTriggerEvent) -> Unit,
+    ): TriggerSubscriptionResult {
+        val tracker = BatteryStatusTransitionTracker(trigger.expectedStatus)
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != Intent.ACTION_BATTERY_CHANGED) return
+                val status = androidBatteryStatusOrNull(
+                    intent.getIntExtra(
+                        BatteryManager.EXTRA_STATUS,
+                        BatteryManager.BATTERY_STATUS_UNKNOWN,
+                    ),
+                ) ?: return
+                val matched = tracker.update(status) ?: return
+                onTriggered(
+                    RuntimeTriggerEvent(
+                        values = mapOf("battery.status" to MacroValue.Text(matched)),
+                    ),
+                )
+            }
+        }
+        return try {
+            registerReceiver(receiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val cancelled = AtomicBoolean(false)
+            TriggerSubscriptionResult.Success(
+                RuntimeCancellation {
+                    if (cancelled.compareAndSet(false, true)) {
+                        appContext.unregisterReceiver(receiver)
+                    }
+                },
+            )
+        } catch (_: RuntimeException) {
+            TriggerSubscriptionResult.Failure("Could not observe battery status.")
         }
     }
 

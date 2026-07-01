@@ -21,6 +21,7 @@ class CapabilityRegistryTest {
                 "Battery health changed",
                 "Battery level",
                 "Battery saver changed",
+                "Battery status changed",
                 "Battery temperature",
                 "Battery voltage",
                 "Bluetooth state changed",
