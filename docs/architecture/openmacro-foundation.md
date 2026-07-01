@@ -972,6 +972,10 @@ Microphone Availability performs one exact Android microphone-feature query.
 It does not request microphone access, enumerate devices, inspect recording or
 routing state, capture audio, install an observer, retain history, or poll.
 
+Telephony Availability performs one exact Android general-telephony feature
+query. It does not access telephony services, subscriptions, SIMs, carriers,
+calls, messages, phone state, or device identifiers and requests no permission.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

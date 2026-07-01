@@ -71,6 +71,7 @@ class CapabilityRegistryTest {
                 "Ringer mode",
                 "Screen orientation",
                 "Screen state",
+                "Telephony availability",
                 "Time window",
                 "Torch availability",
                 "Value comparison",

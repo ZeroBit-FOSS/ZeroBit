@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Telephony Availability Condition**: Add available and unavailable
-  checks from one exact Android telephony feature query, without reading SIM,
-  carrier, subscription, call, or device identity data.
+- **Target 1: Bluetooth Hardware Availability Condition**: Add available and
+  unavailable checks from one exact Android feature query, separate from radio
+  enabled state, without adapter access, scans, devices, or Nearby permission.
 
 ### Completed Foundations
 
+- **Telephony Availability Condition**: Available and unavailable checks use
+  one exact Android feature query without telephony service, SIM, carrier,
+  subscription, call, message, phone-state, or identity access.
 - **Microphone Availability Condition**: Available and unavailable checks use
   one exact Android feature query without microphone access, device enumeration,
   audio inspection, capture, observation, history, or polling.
