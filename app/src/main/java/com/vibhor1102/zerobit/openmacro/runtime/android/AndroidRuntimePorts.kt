@@ -54,6 +54,7 @@ import com.vibhor1102.zerobit.openmacro.model.MacroValue
 import com.vibhor1102.zerobit.openmacro.runtime.ActionResult
 import com.vibhor1102.zerobit.openmacro.runtime.BatteryDirection
 import com.vibhor1102.zerobit.openmacro.runtime.BatteryTemperatureComparison
+import com.vibhor1102.zerobit.openmacro.runtime.BatteryVoltageComparison
 import com.vibhor1102.zerobit.openmacro.runtime.ConditionResult
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_EMAIL_BODY_LENGTH
 import com.vibhor1102.zerobit.openmacro.runtime.MAX_EMAIL_SUBJECT_LENGTH
@@ -747,6 +748,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckWiredHeadsetConnected -> evaluateWiredHeadset(condition)
             is RuntimeStep.CheckBatteryTemperature -> evaluateBatteryTemperature(condition)
             is RuntimeStep.CheckBatteryHealth -> evaluateBatteryHealth(condition)
+            is RuntimeStep.CheckBatteryVoltage -> evaluateBatteryVoltage(condition)
             is RuntimeStep.CheckPowerConnection -> evaluatePowerConnection(condition)
             is RuntimeStep.CheckScreenInteractive -> evaluateScreenInteractive(condition)
             is RuntimeStep.CheckAirplaneMode -> evaluateAirplaneMode(condition)
@@ -861,6 +863,36 @@ class AndroidConditionEvaluator(
                 "Battery health is ${health.diagnosticName()}; expected ${condition.expectedHealth.diagnosticName()}.",
             )
         }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun evaluateBatteryVoltage(
+        condition: RuntimeStep.CheckBatteryVoltage,
+    ): ConditionResult {
+        val battery = appContext.registerReceiver(
+            null,
+            IntentFilter(Intent.ACTION_BATTERY_CHANGED),
+        ) ?: return ConditionResult.Failed("Android battery voltage is unavailable.")
+        val millivolts = validBatteryMillivoltsOrNull(
+            battery.getIntExtra(BatteryManager.EXTRA_VOLTAGE, Int.MIN_VALUE),
+        ) ?: return ConditionResult.Failed("Android battery voltage is invalid.")
+        if (
+            batteryVoltageMatches(
+                millivolts,
+                condition.thresholdMillivolts,
+                condition.comparison,
+            )
+        ) {
+            return ConditionResult.Passed
+        }
+        val comparison = when (condition.comparison) {
+            BatteryVoltageComparison.BELOW -> "below"
+            BatteryVoltageComparison.ABOVE -> "above"
+            BatteryVoltageComparison.EQUALS -> "equal to"
+        }
+        return ConditionResult.Blocked(
+            "Battery voltage is $millivolts mV; expected $comparison ${condition.thresholdMillivolts} mV.",
+        )
     }
 
     private fun evaluateMediaVolume(

@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Battery Voltage Condition**: Add bounded above/below/equal checks
-  in millivolts from one sticky battery snapshot, reject implausible values, and
-  retain no observer, permission, history, or polling work.
+- **Target 1: Battery Voltage Trigger**: Add bounded exact-millivolt threshold
+  crossings through the sticky battery broadcast, suppress initial and duplicate
+  samples, expose bounded voltage, and retain one previous value.
 
 ### Completed Foundations
 
+- **Battery Voltage Condition**: Above/below/equal checks use exact bounded
+  millivolts from one sticky battery snapshot without floating-point conversion,
+  observers, permissions, history, or polling.
 - **Battery Health Trigger**: Canonical health transitions use the sticky
   battery broadcast, suppress initial, duplicate, and unknown samples, expose
   only bounded state, and retain one previous value.
