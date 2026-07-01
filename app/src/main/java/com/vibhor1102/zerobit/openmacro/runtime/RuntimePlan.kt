@@ -210,6 +210,11 @@ sealed interface RuntimeStep {
         val expectedStatus: BatteryStatus,
     ) : RuntimeStep
 
+    data class CheckBatteryPresent(
+        override val blockId: String,
+        val expectedPresent: Boolean,
+    ) : RuntimeStep
+
     data class CheckMediaVolume(
         override val blockId: String,
         val percentage: Int,

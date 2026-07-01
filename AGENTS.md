@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Battery Presence Condition**: Add explicit present/not-present
-  checks from one sticky battery snapshot, require the presence extra, and retain
-  no observer, permission, history, or polling work.
+- **Target 1: Battery Presence Trigger**: Add explicit present/not-present
+  transitions through the sticky battery broadcast, suppress initial and
+  duplicate samples, require the presence extra, and retain one previous value.
 
 ### Completed Foundations
 
+- **Battery Presence Condition**: Present/not-present checks require Android's
+  explicit field from one sticky battery snapshot and retain no identity,
+  vendor data, permission, history, observer, or polling work.
 - **Battery Status Trigger**: Canonical status transitions use the sticky
   battery broadcast, suppress initial, duplicate, unknown, and non-target
   samples, expose bounded state, and retain one previous value.

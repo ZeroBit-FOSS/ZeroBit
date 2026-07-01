@@ -823,6 +823,7 @@ class AndroidConditionEvaluator(
             }
             is RuntimeStep.CheckBatteryCharging -> evaluateBatteryCharging(condition)
             is RuntimeStep.CheckBatteryStatus -> evaluateBatteryStatus(condition)
+            is RuntimeStep.CheckBatteryPresent -> evaluateBatteryPresence(condition)
             is RuntimeStep.CheckBatteryLevel -> evaluateBatteryLevel(condition)
             is RuntimeStep.CheckMediaVolume -> evaluateMediaVolume(condition)
             is RuntimeStep.CheckBluetoothEnabled -> evaluateBluetoothState(condition)
@@ -916,6 +917,27 @@ class AndroidConditionEvaluator(
             ConditionResult.Blocked(
                 "Battery status is ${status.diagnosticName()}; expected ${condition.expectedStatus.diagnosticName()}.",
             )
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun evaluateBatteryPresence(
+        condition: RuntimeStep.CheckBatteryPresent,
+    ): ConditionResult {
+        val battery = appContext.registerReceiver(
+            null,
+            IntentFilter(Intent.ACTION_BATTERY_CHANGED),
+        ) ?: return ConditionResult.Failed("Android battery presence is unavailable.")
+        val present = batteryPresentOrNull(
+            battery.hasExtra(BatteryManager.EXTRA_PRESENT),
+            battery.getBooleanExtra(BatteryManager.EXTRA_PRESENT, false),
+        ) ?: return ConditionResult.Failed("Android battery presence field is missing.")
+        return if (present == condition.expectedPresent) {
+            ConditionResult.Passed
+        } else if (condition.expectedPresent) {
+            ConditionResult.Blocked("Android reports no physical battery.")
+        } else {
+            ConditionResult.Blocked("Android reports a physical battery present.")
         }
     }
 

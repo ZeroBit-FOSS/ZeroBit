@@ -917,6 +917,11 @@ canonical status. Initial, duplicate, unknown, and non-target samples stay
 silent; real requested transitions emit only bounded `battery.status` context
 and cancellation unregisters the receiver.
 
+Battery Presence checks one sticky snapshot for Android's explicit physical
+battery presence field. Missing extras fail closed instead of inheriting a
+Boolean default, while explicit present and not-present remain distinct. The
+condition requests no access and retains no identity, vendor data, or history.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

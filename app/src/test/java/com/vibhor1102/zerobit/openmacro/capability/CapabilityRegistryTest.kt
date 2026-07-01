@@ -48,6 +48,7 @@ class CapabilityRegistryTest {
                 "Battery charging",
                 "Battery health",
                 "Battery level",
+                "Battery presence",
                 "Battery saver",
                 "Battery status",
                 "Battery temperature",
