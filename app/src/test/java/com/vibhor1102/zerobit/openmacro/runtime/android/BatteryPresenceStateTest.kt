@@ -20,4 +20,16 @@ class BatteryPresenceStateTest {
         assertNull(batteryPresentOrNull(hasPresentExtra = false, present = true))
         assertNull(batteryPresentOrNull(hasPresentExtra = false, present = false))
     }
+
+    @Test
+    fun emitsOnlyRealTransitionsIntoRequestedPresence() {
+        val tracker = BatteryPresenceTransitionTracker(expectedPresent = false)
+
+        assertNull(tracker.update(true))
+        assertNull(tracker.update(true))
+        assertEquals("not_present", tracker.update(false))
+        assertNull(tracker.update(false))
+        assertNull(tracker.update(true))
+        assertEquals("not_present", tracker.update(false))
+    }
 }

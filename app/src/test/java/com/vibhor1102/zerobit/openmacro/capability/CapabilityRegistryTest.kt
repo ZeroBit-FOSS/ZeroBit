@@ -20,6 +20,7 @@ class CapabilityRegistryTest {
                 "Airplane mode changed",
                 "Battery health changed",
                 "Battery level",
+                "Battery presence changed",
                 "Battery saver changed",
                 "Battery status changed",
                 "Battery temperature",

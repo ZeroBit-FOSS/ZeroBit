@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Battery Presence Trigger**: Add explicit present/not-present
-  transitions through the sticky battery broadcast, suppress initial and
-  duplicate samples, require the presence extra, and retain one previous value.
+- **Target 1: Dock State Condition**: Add explicit undocked, desk, car,
+  low-end desk, and high-end desk checks from one sticky dock snapshot, fail
+  closed for missing or unknown values, and retain no history or polling.
 
 ### Completed Foundations
 
+- **Battery Presence Trigger**: Present/not-present transitions require the
+  explicit sticky field, suppress initial, duplicate, missing, and non-target
+  samples, expose bounded state, and retain one previous value.
 - **Battery Presence Condition**: Present/not-present checks require Android's
   explicit field from one sticky battery snapshot and retain no identity,
   vendor data, permission, history, observer, or polling work.

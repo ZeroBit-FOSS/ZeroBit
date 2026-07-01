@@ -922,6 +922,11 @@ battery presence field. Missing extras fail closed instead of inheriting a
 Boolean default, while explicit present and not-present remain distinct. The
 condition requests no access and retains no identity, vendor data, or history.
 
+Battery Presence Changed uses the sticky battery broadcast and ignores samples
+without the explicit presence extra. Initial, duplicate, and non-target values
+stay silent; real requested transitions emit only canonical `battery.presence`
+context while retaining one prior Boolean until deterministic unregister.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the
