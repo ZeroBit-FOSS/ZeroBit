@@ -927,6 +927,12 @@ without the explicit presence extra. Initial, duplicate, and non-target values
 stay silent; real requested transitions emit only canonical `battery.presence`
 context while retaining one prior Boolean until deterministic unregister.
 
+Dock State checks one sticky `ACTION_DOCK_EVENT` snapshot and requires its
+explicit state field. Only Android's undocked, desk, car, low-end desk, and
+high-end desk values are accepted; missing and vendor-only values fail closed.
+The condition reads no dock identity, requests no access, and retains no
+history, observer, or polling work.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

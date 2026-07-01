@@ -57,6 +57,7 @@ class CapabilityRegistryTest {
                 "Bluetooth state",
                 "Dark theme",
                 "Device lock state",
+                "Dock state",
                 "Location services",
                 "Media volume",
                 "NFC state",

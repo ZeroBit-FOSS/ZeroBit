@@ -862,6 +862,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckBatteryCharging -> evaluateBatteryCharging(condition)
             is RuntimeStep.CheckBatteryStatus -> evaluateBatteryStatus(condition)
             is RuntimeStep.CheckBatteryPresent -> evaluateBatteryPresence(condition)
+            is RuntimeStep.CheckDockState -> evaluateDockState(condition)
             is RuntimeStep.CheckBatteryLevel -> evaluateBatteryLevel(condition)
             is RuntimeStep.CheckMediaVolume -> evaluateMediaVolume(condition)
             is RuntimeStep.CheckBluetoothEnabled -> evaluateBluetoothState(condition)
@@ -976,6 +977,27 @@ class AndroidConditionEvaluator(
             ConditionResult.Blocked("Android reports no physical battery.")
         } else {
             ConditionResult.Blocked("Android reports a physical battery present.")
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun evaluateDockState(condition: RuntimeStep.CheckDockState): ConditionResult {
+        val dock = appContext.registerReceiver(
+            null,
+            IntentFilter(Intent.ACTION_DOCK_EVENT),
+        ) ?: return ConditionResult.Failed("Android dock state is unavailable.")
+        if (!dock.hasExtra(Intent.EXTRA_DOCK_STATE)) {
+            return ConditionResult.Failed("Android dock state field is missing.")
+        }
+        val state = androidDockStateOrNull(
+            dock.getIntExtra(Intent.EXTRA_DOCK_STATE, -1),
+        ) ?: return ConditionResult.Failed("Android reported an unknown dock state.")
+        return if (state == condition.expectedState) {
+            ConditionResult.Passed
+        } else {
+            ConditionResult.Blocked(
+                "Dock state is ${state.diagnosticName()}; expected ${condition.expectedState.diagnosticName()}.",
+            )
         }
     }
 

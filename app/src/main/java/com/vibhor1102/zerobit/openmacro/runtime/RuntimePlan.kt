@@ -220,6 +220,11 @@ sealed interface RuntimeStep {
         val expectedPresent: Boolean,
     ) : RuntimeStep
 
+    data class CheckDockState(
+        override val blockId: String,
+        val expectedState: DockState,
+    ) : RuntimeStep
+
     data class CheckMediaVolume(
         override val blockId: String,
         val percentage: Int,
@@ -651,6 +656,14 @@ enum class BatteryStatus {
     FULL,
     DISCHARGING,
     NOT_CHARGING,
+}
+
+enum class DockState {
+    UNDOCKED,
+    DESK,
+    CAR,
+    LOW_END_DESK,
+    HIGH_END_DESK,
 }
 
 enum class RingerMode {
