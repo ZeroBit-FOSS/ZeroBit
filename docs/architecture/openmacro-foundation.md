@@ -943,6 +943,11 @@ service snapshot. Idle and not-idle are explicit source states; the condition
 requests no access and installs no receiver, observer, history, timer, or
 polling work. An unavailable power service fails closed.
 
+Device Idle Mode Changed owns Android's idle-mode change receiver and rereads
+the power service instead of trusting broadcast payload. It starts from the
+current state, suppresses duplicate and non-target signals, emits only bounded
+`device_idle.state` context, and unregisters deterministically.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

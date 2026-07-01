@@ -127,6 +127,9 @@ class AndroidTriggerRegistrar(
         if (trigger is RuntimeStep.ObserveBatterySaver) {
             return subscribeToBatterySaver(trigger, onTriggered)
         }
+        if (trigger is RuntimeStep.ObserveDeviceIdleMode) {
+            return subscribeToDeviceIdleMode(trigger, onTriggered)
+        }
         if (trigger is RuntimeStep.ObserveDarkTheme) {
             return subscribeToDarkTheme(trigger, onTriggered)
         }
@@ -452,6 +455,42 @@ class AndroidTriggerRegistrar(
         } catch (problem: RuntimeException) {
             TriggerSubscriptionResult.Failure(
                 problem.message ?: "Could not observe Android Battery Saver state.",
+            )
+        }
+    }
+
+    private fun subscribeToDeviceIdleMode(
+        trigger: RuntimeStep.ObserveDeviceIdleMode,
+        onTriggered: (RuntimeTriggerEvent) -> Unit,
+    ): TriggerSubscriptionResult {
+        val powerManager = appContext.getSystemService(PowerManager::class.java)
+            ?: return TriggerSubscriptionResult.Failure("Android power service is unavailable.")
+        val tracker = DeviceIdleModeTransitionTracker(
+            initialIdle = powerManager.isDeviceIdleMode,
+            expectedIdle = trigger.expectedIdle,
+        )
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED) return
+                val matched = tracker.update(powerManager.isDeviceIdleMode) ?: return
+                onTriggered(
+                    RuntimeTriggerEvent(
+                        values = mapOf("device_idle.state" to MacroValue.Text(matched)),
+                    ),
+                )
+            }
+        }
+        return try {
+            registerReceiver(receiver, IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED))
+            val cancelled = AtomicBoolean(false)
+            TriggerSubscriptionResult.Success(
+                RuntimeCancellation {
+                    if (cancelled.compareAndSet(false, true)) appContext.unregisterReceiver(receiver)
+                },
+            )
+        } catch (problem: RuntimeException) {
+            TriggerSubscriptionResult.Failure(
+                problem.message ?: "Could not observe Android device idle mode.",
             )
         }
     }

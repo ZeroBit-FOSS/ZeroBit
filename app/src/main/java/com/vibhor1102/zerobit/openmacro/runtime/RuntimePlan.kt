@@ -90,6 +90,11 @@ sealed interface RuntimeStep {
         val expectedEnabled: Boolean,
     ) : RuntimeStep
 
+    data class ObserveDeviceIdleMode(
+        override val blockId: String,
+        val expectedIdle: Boolean,
+    ) : RuntimeStep
+
     data class ObserveBluetoothState(
         override val blockId: String,
         val expectedEnabled: Boolean,

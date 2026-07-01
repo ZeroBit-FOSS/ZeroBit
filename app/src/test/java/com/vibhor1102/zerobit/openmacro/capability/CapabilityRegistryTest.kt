@@ -27,6 +27,7 @@ class CapabilityRegistryTest {
                 "Battery voltage",
                 "Bluetooth state changed",
                 "Dark theme changed",
+                "Device idle mode changed",
                 "Dock state changed",
                 "Location services changed",
                 "NFC state changed",

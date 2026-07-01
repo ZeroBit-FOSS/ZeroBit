@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Device Idle Mode Trigger**: Add idle and not-idle transitions
-  through one owned Android change receiver, reread authoritative state,
-  suppress duplicates and non-target changes, and expose bounded state.
+- **Target 1: Battery Optimization Exemption Condition**: Add explicit exempt
+  and not-exempt checks for ZeroBit itself from one PowerManager snapshot,
+  without inspecting other packages, observing changes, or polling.
 
 ### Completed Foundations
 
+- **Device Idle Mode Trigger**: Idle and not-idle transitions use one owned
+  Android change receiver, reread authoritative state, suppress duplicates and
+  non-target changes, expose bounded state, and unregister deterministically.
 - **Device Idle Mode Condition**: Idle and not-idle checks read one current
   PowerManager snapshot, fail closed when unavailable, and retain no observer,
   history, permission, or polling work.
