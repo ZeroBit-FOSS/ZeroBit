@@ -948,6 +948,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckRingerMode -> evaluateRingerMode(condition)
             is RuntimeStep.CheckBatterySaver -> evaluateBatterySaver(condition)
             is RuntimeStep.CheckDeviceIdleMode -> evaluateDeviceIdleMode(condition)
+            is RuntimeStep.CheckBatteryOptimizationExemption -> evaluateBatteryOptimizationExemption(condition)
             is RuntimeStep.CheckTimeWindow -> evaluateTimeWindow(condition)
             else -> ConditionResult.Failed(
                 "Unsupported Android condition ${condition::class.simpleName}.",
@@ -1424,6 +1425,21 @@ class AndroidConditionEvaluator(
             ConditionResult.Blocked("Android is not in device idle mode.")
         } else {
             ConditionResult.Blocked("Android is in device idle mode.")
+        }
+    }
+
+    private fun evaluateBatteryOptimizationExemption(
+        condition: RuntimeStep.CheckBatteryOptimizationExemption,
+    ): ConditionResult {
+        val powerManager = appContext.getSystemService(PowerManager::class.java)
+            ?: return ConditionResult.Failed("Android power service is unavailable.")
+        val exempt = powerManager.isIgnoringBatteryOptimizations(appContext.packageName)
+        return if (exempt == condition.expectedExempt) {
+            ConditionResult.Passed
+        } else if (condition.expectedExempt) {
+            ConditionResult.Blocked("ZeroBit is not exempt from Android battery optimization.")
+        } else {
+            ConditionResult.Blocked("ZeroBit is exempt from Android battery optimization.")
         }
     }
 

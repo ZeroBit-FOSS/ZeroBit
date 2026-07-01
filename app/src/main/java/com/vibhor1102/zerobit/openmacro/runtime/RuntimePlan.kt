@@ -319,6 +319,11 @@ sealed interface RuntimeStep {
         val expectedIdle: Boolean,
     ) : RuntimeStep
 
+    data class CheckBatteryOptimizationExemption(
+        override val blockId: String,
+        val expectedExempt: Boolean,
+    ) : RuntimeStep
+
     data class CheckTimeWindow(
         override val blockId: String,
         val window: TimeWindowSpec,

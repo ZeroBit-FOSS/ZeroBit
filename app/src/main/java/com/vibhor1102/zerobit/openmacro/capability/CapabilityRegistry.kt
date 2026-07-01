@@ -55,6 +55,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryStatusConditio
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryStatusTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryPresenceCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryPresenceTrigger
+import com.vibhor1102.zerobit.openmacro.capability.builtin.BatteryOptimizationExemptionCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.DockStateCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.DockStateTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.DeviceIdleModeCondition
@@ -183,6 +184,7 @@ class CapabilityRegistry private constructor(
                 BatteryVoltageCondition,
                 BatteryStatusCondition,
                 BatteryPresenceCondition,
+                BatteryOptimizationExemptionCondition,
                 DockStateCondition,
                 DeviceIdleModeCondition,
                 NotificationShowAction,

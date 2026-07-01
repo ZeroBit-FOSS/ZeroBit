@@ -948,6 +948,11 @@ the power service instead of trusting broadcast payload. It starts from the
 current state, suppresses duplicate and non-target signals, emits only bounded
 `device_idle.state` context, and unregisters deterministically.
 
+Battery Optimization Exemption checks whether Android currently exempts
+ZeroBit's own package through one power-service snapshot. OpenMacro cannot name
+or inspect another package, and the condition requests no access, installs no
+observer, retains no history, and performs no polling.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Battery Optimization Exemption Condition**: Add explicit exempt
-  and not-exempt checks for ZeroBit itself from one PowerManager snapshot,
-  without inspecting other packages, observing changes, or polling.
+- **Target 1: Low-RAM Device Condition**: Add explicit low-RAM and regular
+  device checks from one ActivityManager snapshot, fail closed when the service
+  is unavailable, and retain no memory details, history, observer, or polling.
 
 ### Completed Foundations
 
+- **Battery Optimization Exemption Condition**: Exempt and not-exempt checks
+  inspect only ZeroBit's package through one PowerManager snapshot, without
+  broader package access, observation, retained history, or polling.
 - **Device Idle Mode Trigger**: Idle and not-idle transitions use one owned
   Android change receiver, reread authoritative state, suppress duplicates and
   non-target changes, expose bounded state, and unregister deterministically.
