@@ -43,6 +43,7 @@ class CapabilityRegistryTest {
             listOf(
                 "Airplane mode",
                 "Battery charging",
+                "Battery health",
                 "Battery level",
                 "Battery saver",
                 "Battery temperature",

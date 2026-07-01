@@ -886,6 +886,11 @@ above, or equal crossings suppress duplicates and emit one bounded
 `battery.temperature_celsius` number. Cancellation unregisters the receiver and
 only one previous sample is retained.
 
+Battery Health maps one sticky battery snapshot to healthy, overheating, cold,
+dead, over-voltage, or unspecified failure. Android's unknown and unrecognized
+values fail closed rather than matching failure. The condition requests no
+permission and retains no raw code or battery history.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

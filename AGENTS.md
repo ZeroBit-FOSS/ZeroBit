@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Battery Health Condition**: Add explicit healthy, overheating,
-  cold, dead, over-voltage, and failure checks from one sticky battery snapshot,
-  fail closed for unknown values, and retain no battery history.
+- **Target 1: Battery Health Trigger**: Add explicit bounded health transitions
+  through the sticky battery broadcast, suppress initial and duplicate samples,
+  expose only canonical health state, and retain one previous value.
 
 ### Completed Foundations
 
+- **Battery Health Condition**: Healthy, overheating, cold, dead, over-voltage,
+  and failure checks use one sticky battery snapshot, fail closed for unknown
+  values, and retain no raw code or history.
 - **Battery Temperature Trigger**: Exact-tenths threshold crossings use the
   sticky battery broadcast, suppress initial and duplicate samples, expose one
   bounded Celsius value, and retain only the previous sample.

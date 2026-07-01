@@ -706,6 +706,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckScreenOrientation -> evaluateScreenOrientation(condition)
             is RuntimeStep.CheckWiredHeadsetConnected -> evaluateWiredHeadset(condition)
             is RuntimeStep.CheckBatteryTemperature -> evaluateBatteryTemperature(condition)
+            is RuntimeStep.CheckBatteryHealth -> evaluateBatteryHealth(condition)
             is RuntimeStep.CheckPowerConnection -> evaluatePowerConnection(condition)
             is RuntimeStep.CheckScreenInteractive -> evaluateScreenInteractive(condition)
             is RuntimeStep.CheckAirplaneMode -> evaluateAirplaneMode(condition)
@@ -797,6 +798,29 @@ class AndroidConditionEvaluator(
         return ConditionResult.Blocked(
             "Battery temperature is ${formatTenthsCelsius(currentTenths)} C; expected $comparison ${formatTenthsCelsius(condition.thresholdTenthsCelsius)} C.",
         )
+    }
+
+    @Suppress("DEPRECATION")
+    private fun evaluateBatteryHealth(
+        condition: RuntimeStep.CheckBatteryHealth,
+    ): ConditionResult {
+        val battery = appContext.registerReceiver(
+            null,
+            IntentFilter(Intent.ACTION_BATTERY_CHANGED),
+        ) ?: return ConditionResult.Failed("Android battery health is unavailable.")
+        val health = androidBatteryHealthOrNull(
+            battery.getIntExtra(
+                BatteryManager.EXTRA_HEALTH,
+                BatteryManager.BATTERY_HEALTH_UNKNOWN,
+            ),
+        ) ?: return ConditionResult.Failed("Android reported unknown battery health.")
+        return if (health == condition.expectedHealth) {
+            ConditionResult.Passed
+        } else {
+            ConditionResult.Blocked(
+                "Battery health is ${health.diagnosticName()}; expected ${condition.expectedHealth.diagnosticName()}.",
+            )
+        }
     }
 
     private fun evaluateMediaVolume(

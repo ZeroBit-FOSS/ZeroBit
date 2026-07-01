@@ -231,6 +231,11 @@ sealed interface RuntimeStep {
         val comparison: BatteryTemperatureComparison,
     ) : RuntimeStep
 
+    data class CheckBatteryHealth(
+        override val blockId: String,
+        val expectedHealth: BatteryHealth,
+    ) : RuntimeStep
+
     data class CheckPowerConnection(
         override val blockId: String,
         val expectedPluggedIn: Boolean,
@@ -587,6 +592,15 @@ enum class BatteryTemperatureComparison {
     BELOW,
     ABOVE,
     EQUALS,
+}
+
+enum class BatteryHealth {
+    HEALTHY,
+    OVERHEATING,
+    COLD,
+    DEAD,
+    OVER_VOLTAGE,
+    FAILURE,
 }
 
 enum class RingerMode {
