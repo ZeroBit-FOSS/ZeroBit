@@ -18,6 +18,7 @@ class CapabilityRegistryTest {
         assertEquals(
             listOf(
                 "Airplane mode changed",
+                "Battery health changed",
                 "Battery level",
                 "Battery saver changed",
                 "Battery temperature",

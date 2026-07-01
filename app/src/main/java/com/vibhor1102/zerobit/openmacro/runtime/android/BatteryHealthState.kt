@@ -25,3 +25,21 @@ internal fun BatteryHealth.diagnosticName(): String = when (this) {
     BatteryHealth.OVER_VOLTAGE -> "over-voltage"
     BatteryHealth.FAILURE -> "failure"
 }
+
+internal fun BatteryHealth.contextName(): String = when (this) {
+    BatteryHealth.OVER_VOLTAGE -> "over_voltage"
+    else -> diagnosticName()
+}
+
+internal class BatteryHealthTransitionTracker(
+    private val expectedHealth: BatteryHealth,
+) {
+    private var lastHealth: BatteryHealth? = null
+
+    fun update(currentHealth: BatteryHealth): String? {
+        val previousHealth = lastHealth
+        lastHealth = currentHealth
+        if (previousHealth == null || previousHealth == currentHealth) return null
+        return currentHealth.contextName().takeIf { currentHealth == expectedHealth }
+    }
+}

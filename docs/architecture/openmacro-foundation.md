@@ -891,6 +891,11 @@ dead, over-voltage, or unspecified failure. Android's unknown and unrecognized
 values fail closed rather than matching failure. The condition requests no
 permission and retains no raw code or battery history.
 
+Battery Health Changed uses the sticky battery broadcast and retains one prior
+canonical health value. The initial and duplicate samples are suppressed,
+unknown raw values never alter the baseline, and real requested transitions
+emit only bounded `battery.health` context before deterministic unregister.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

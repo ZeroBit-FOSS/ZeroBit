@@ -37,4 +37,16 @@ class BatteryHealthStateTest {
         assertEquals("over-voltage", BatteryHealth.OVER_VOLTAGE.diagnosticName())
         assertEquals("failure", BatteryHealth.FAILURE.diagnosticName())
     }
+
+    @Test
+    fun emitsOnlyRealTransitionsIntoTheRequestedHealth() {
+        val tracker = BatteryHealthTransitionTracker(BatteryHealth.OVER_VOLTAGE)
+
+        assertNull(tracker.update(BatteryHealth.HEALTHY))
+        assertNull(tracker.update(BatteryHealth.HEALTHY))
+        assertEquals("over_voltage", tracker.update(BatteryHealth.OVER_VOLTAGE))
+        assertNull(tracker.update(BatteryHealth.OVER_VOLTAGE))
+        assertNull(tracker.update(BatteryHealth.COLD))
+        assertEquals("over_voltage", tracker.update(BatteryHealth.OVER_VOLTAGE))
+    }
 }

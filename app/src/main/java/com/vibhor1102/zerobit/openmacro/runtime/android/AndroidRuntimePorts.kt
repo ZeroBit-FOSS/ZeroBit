@@ -138,6 +138,9 @@ class AndroidTriggerRegistrar(
         if (trigger is RuntimeStep.ObserveBatteryTemperature) {
             return subscribeToBatteryTemperature(trigger, onTriggered)
         }
+        if (trigger is RuntimeStep.ObserveBatteryHealth) {
+            return subscribeToBatteryHealth(trigger, onTriggered)
+        }
         val filter = when (trigger) {
             is RuntimeStep.ObservePowerConnected -> IntentFilter(Intent.ACTION_POWER_CONNECTED)
             is RuntimeStep.ObservePowerDisconnected -> IntentFilter(Intent.ACTION_POWER_DISCONNECTED)
@@ -478,6 +481,43 @@ class AndroidTriggerRegistrar(
             )
         } catch (_: RuntimeException) {
             TriggerSubscriptionResult.Failure("Could not observe battery temperature.")
+        }
+    }
+
+    private fun subscribeToBatteryHealth(
+        trigger: RuntimeStep.ObserveBatteryHealth,
+        onTriggered: (RuntimeTriggerEvent) -> Unit,
+    ): TriggerSubscriptionResult {
+        val tracker = BatteryHealthTransitionTracker(trigger.expectedHealth)
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != Intent.ACTION_BATTERY_CHANGED) return
+                val health = androidBatteryHealthOrNull(
+                    intent.getIntExtra(
+                        BatteryManager.EXTRA_HEALTH,
+                        BatteryManager.BATTERY_HEALTH_UNKNOWN,
+                    ),
+                ) ?: return
+                val matched = tracker.update(health) ?: return
+                onTriggered(
+                    RuntimeTriggerEvent(
+                        values = mapOf("battery.health" to MacroValue.Text(matched)),
+                    ),
+                )
+            }
+        }
+        return try {
+            registerReceiver(receiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val cancelled = AtomicBoolean(false)
+            TriggerSubscriptionResult.Success(
+                RuntimeCancellation {
+                    if (cancelled.compareAndSet(false, true)) {
+                        appContext.unregisterReceiver(receiver)
+                    }
+                },
+            )
+        } catch (_: RuntimeException) {
+            TriggerSubscriptionResult.Failure("Could not observe battery health.")
         }
     }
 
