@@ -339,6 +339,11 @@ sealed interface RuntimeStep {
         val expectedAvailable: Boolean,
     ) : RuntimeStep
 
+    data class CheckMicrophoneAvailability(
+        override val blockId: String,
+        val expectedAvailable: Boolean,
+    ) : RuntimeStep
+
     data class CheckTimeWindow(
         override val blockId: String,
         val window: TimeWindowSpec,

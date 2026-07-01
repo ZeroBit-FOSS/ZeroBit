@@ -953,6 +953,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckLowRamDevice -> evaluateLowRamDevice(condition)
             is RuntimeStep.CheckTorchAvailability -> evaluateTorchAvailability(condition)
             is RuntimeStep.CheckVibrationAvailability -> evaluateVibrationAvailability(condition)
+            is RuntimeStep.CheckMicrophoneAvailability -> evaluateMicrophoneAvailability(condition)
             is RuntimeStep.CheckTimeWindow -> evaluateTimeWindow(condition)
             else -> ConditionResult.Failed(
                 "Unsupported Android condition ${condition::class.simpleName}.",
@@ -1511,6 +1512,25 @@ class AndroidConditionEvaluator(
             ConditionResult.Blocked("Vibration hardware is unavailable.")
         } else {
             ConditionResult.Blocked("Vibration hardware is available.")
+        }
+    }
+
+    private fun evaluateMicrophoneAvailability(
+        condition: RuntimeStep.CheckMicrophoneAvailability,
+    ): ConditionResult {
+        val available = try {
+            appContext.packageManager.hasSystemFeature(PackageManager.FEATURE_MICROPHONE)
+        } catch (problem: RuntimeException) {
+            return ConditionResult.Failed(
+                problem.message ?: "Could not inspect Android microphone availability.",
+            )
+        }
+        return if (available == condition.expectedAvailable) {
+            ConditionResult.Passed
+        } else if (condition.expectedAvailable) {
+            ConditionResult.Blocked("Microphone hardware is unavailable.")
+        } else {
+            ConditionResult.Blocked("Microphone hardware is available.")
         }
     }
 

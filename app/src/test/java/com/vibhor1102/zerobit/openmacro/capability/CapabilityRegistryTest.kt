@@ -65,6 +65,7 @@ class CapabilityRegistryTest {
                 "Location services",
                 "Low-RAM device",
                 "Media volume",
+                "Microphone availability",
                 "NFC state",
                 "Power connection",
                 "Ringer mode",

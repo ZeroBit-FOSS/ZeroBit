@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Microphone Availability Condition**: Add available and unavailable
-  checks from one exact Android feature query, without recording audio,
-  requesting microphone access, observing changes, or polling.
+- **Target 1: Telephony Availability Condition**: Add available and unavailable
+  checks from one exact Android telephony feature query, without reading SIM,
+  carrier, subscription, call, or device identity data.
 
 ### Completed Foundations
 
+- **Microphone Availability Condition**: Available and unavailable checks use
+  one exact Android feature query without microphone access, device enumeration,
+  audio inspection, capture, observation, history, or polling.
 - **Vibration Availability Condition**: Available and unavailable checks share
   the action's version-aware vibrator resolver, read one hardware Boolean, and
   retain no hardware details, observer, history, permission, or polling work.

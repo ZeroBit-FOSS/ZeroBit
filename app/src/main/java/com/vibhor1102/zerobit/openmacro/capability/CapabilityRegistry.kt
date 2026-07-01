@@ -35,6 +35,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.VibrationAvailability
 import com.vibhor1102.zerobit.openmacro.capability.builtin.SetTorchAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.SetMediaVolumeAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.MediaVolumeCondition
+import com.vibhor1102.zerobit.openmacro.capability.builtin.MicrophoneAvailabilityCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BluetoothStateCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.BluetoothStateTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.NfcStateCondition
@@ -178,6 +179,7 @@ class CapabilityRegistry private constructor(
                 PowerConnectionCondition,
                 ScreenInteractiveCondition,
                 MediaVolumeCondition,
+                MicrophoneAvailabilityCondition,
                 BluetoothStateCondition,
                 NfcStateCondition,
                 LocationServicesCondition,
