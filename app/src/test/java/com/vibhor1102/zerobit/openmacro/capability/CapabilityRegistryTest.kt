@@ -73,6 +73,7 @@ class CapabilityRegistryTest {
                 "Time window",
                 "Torch availability",
                 "Value comparison",
+                "Vibration availability",
                 "Wi-Fi connected",
                 "Wired headset",
             ),

@@ -952,6 +952,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckBatteryOptimizationExemption -> evaluateBatteryOptimizationExemption(condition)
             is RuntimeStep.CheckLowRamDevice -> evaluateLowRamDevice(condition)
             is RuntimeStep.CheckTorchAvailability -> evaluateTorchAvailability(condition)
+            is RuntimeStep.CheckVibrationAvailability -> evaluateVibrationAvailability(condition)
             is RuntimeStep.CheckTimeWindow -> evaluateTimeWindow(condition)
             else -> ConditionResult.Failed(
                 "Unsupported Android condition ${condition::class.simpleName}.",
@@ -1492,6 +1493,27 @@ class AndroidConditionEvaluator(
         }
     }
 
+    private fun evaluateVibrationAvailability(
+        condition: RuntimeStep.CheckVibrationAvailability,
+    ): ConditionResult {
+        val vibrator = appContext.deviceVibratorOrNull()
+            ?: return ConditionResult.Failed("Android vibration service is unavailable.")
+        val available = try {
+            vibrator.hasVibrator()
+        } catch (problem: RuntimeException) {
+            return ConditionResult.Failed(
+                problem.message ?: "Could not inspect Android vibration availability.",
+            )
+        }
+        return if (available == condition.expectedAvailable) {
+            ConditionResult.Passed
+        } else if (condition.expectedAvailable) {
+            ConditionResult.Blocked("Vibration hardware is unavailable.")
+        } else {
+            ConditionResult.Blocked("Vibration hardware is available.")
+        }
+    }
+
     private fun evaluateTimeWindow(
         condition: RuntimeStep.CheckTimeWindow,
     ): ConditionResult {
@@ -1558,18 +1580,21 @@ private fun Intent.batteryPercentageOrNull(): Int? {
         .takeIf { it in 0..100 }
 }
 
+private fun Context.deviceVibratorOrNull(): Vibrator? =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        getSystemService(VibratorManager::class.java)?.defaultVibrator
+    } else {
+        @Suppress("DEPRECATION")
+        getSystemService(Vibrator::class.java)
+    }
+
 class AndroidActionExecutor(
     context: Context,
 ) : RuntimeActionExecutor {
     private val appContext = context.applicationContext
     private val notificationManager =
         appContext.getSystemService(NotificationManager::class.java)
-    private val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        appContext.getSystemService(VibratorManager::class.java)?.defaultVibrator
-    } else {
-        @Suppress("DEPRECATION")
-        appContext.getSystemService(Vibrator::class.java)
-    }
+    private val vibrator = appContext.deviceVibratorOrNull()
     private val clipboardManager = appContext.getSystemService(ClipboardManager::class.java)
     private val cameraManager = appContext.getSystemService(CameraManager::class.java)
     private val audioManager = appContext.getSystemService(AudioManager::class.java)

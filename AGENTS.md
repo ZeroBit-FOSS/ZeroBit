@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Vibration Availability Condition**: Add available and unavailable
-  checks from one version-aware vibrator snapshot, fail closed when the service
-  is unavailable, and retain no hardware details, observer, history, or polling.
+- **Target 1: Microphone Availability Condition**: Add available and unavailable
+  checks from one exact Android feature query, without recording audio,
+  requesting microphone access, observing changes, or polling.
 
 ### Completed Foundations
 
+- **Vibration Availability Condition**: Available and unavailable checks share
+  the action's version-aware vibrator resolver, read one hardware Boolean, and
+  retain no hardware details, observer, history, permission, or polling work.
 - **Torch Availability Condition**: Available and unavailable checks reuse the
   torch action's deterministic flash-camera selection from one bounded snapshot
   and retain no camera IDs, observer, history, permission, or polling work.

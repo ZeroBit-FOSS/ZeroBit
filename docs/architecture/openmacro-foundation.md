@@ -963,6 +963,11 @@ selection over one bounded camera-service snapshot. Camera IDs exist only for
 that evaluation and never enter source or diagnostics; temporary service or
 access failures fail closed instead of masquerading as absent hardware.
 
+Vibration Availability and the Vibrate action share one version-aware device
+vibrator resolver. The condition reads only Android's hardware-present Boolean,
+fails closed on service errors, and retains no vibrator IDs, capabilities,
+effects, observer, history, permission, or polling work.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the
