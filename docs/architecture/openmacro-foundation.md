@@ -933,6 +933,11 @@ high-end desk values are accepted; missing and vendor-only values fail closed.
 The condition reads no dock identity, requests no access, and retains no
 history, observer, or polling work.
 
+Dock State Changed owns the same sticky broadcast while enabled and retains
+one prior canonical state. The sticky initial sample, duplicates, missing and
+unknown values, and non-target transitions stay silent; matching changes emit
+only bounded `dock.state` context before deterministic unregister.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

@@ -23,3 +23,20 @@ internal fun DockState.diagnosticName(): String = when (this) {
     DockState.LOW_END_DESK -> "low-end desk"
     DockState.HIGH_END_DESK -> "high-end desk"
 }
+
+internal class DockStateTransitionTracker(private val expectedState: DockState) {
+    private var lastState: DockState? = null
+
+    fun update(state: DockState): String? {
+        val previousState = lastState
+        lastState = state
+        if (previousState == null || previousState == state || state != expectedState) return null
+        return when (state) {
+            DockState.UNDOCKED -> "undocked"
+            DockState.DESK -> "desk"
+            DockState.CAR -> "car"
+            DockState.LOW_END_DESK -> "low_end_desk"
+            DockState.HIGH_END_DESK -> "high_end_desk"
+        }
+    }
+}

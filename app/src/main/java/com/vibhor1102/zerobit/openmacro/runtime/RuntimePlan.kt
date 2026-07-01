@@ -147,6 +147,11 @@ sealed interface RuntimeStep {
         val expectedPresent: Boolean,
     ) : RuntimeStep
 
+    data class ObserveDockState(
+        override val blockId: String,
+        val expectedState: DockState,
+    ) : RuntimeStep
+
     data class CheckWifiConnected(
         override val blockId: String,
         val ssid: String?,

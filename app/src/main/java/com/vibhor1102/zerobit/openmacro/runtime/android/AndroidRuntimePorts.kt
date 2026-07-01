@@ -151,6 +151,9 @@ class AndroidTriggerRegistrar(
         if (trigger is RuntimeStep.ObserveBatteryPresence) {
             return subscribeToBatteryPresence(trigger, onTriggered)
         }
+        if (trigger is RuntimeStep.ObserveDockState) {
+            return subscribeToDockState(trigger, onTriggered)
+        }
         val filter = when (trigger) {
             is RuntimeStep.ObservePowerConnected -> IntentFilter(Intent.ACTION_POWER_CONNECTED)
             is RuntimeStep.ObservePowerDisconnected -> IntentFilter(Intent.ACTION_POWER_DISCONNECTED)
@@ -641,6 +644,32 @@ class AndroidTriggerRegistrar(
             )
         } catch (_: RuntimeException) {
             TriggerSubscriptionResult.Failure("Could not observe battery presence.")
+        }
+    }
+
+    private fun subscribeToDockState(
+        trigger: RuntimeStep.ObserveDockState,
+        onTriggered: (RuntimeTriggerEvent) -> Unit,
+    ): TriggerSubscriptionResult {
+        val tracker = DockStateTransitionTracker(trigger.expectedState)
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action != Intent.ACTION_DOCK_EVENT || !intent.hasExtra(Intent.EXTRA_DOCK_STATE)) return
+                val state = androidDockStateOrNull(intent.getIntExtra(Intent.EXTRA_DOCK_STATE, -1)) ?: return
+                val matched = tracker.update(state) ?: return
+                onTriggered(RuntimeTriggerEvent(values = mapOf("dock.state" to MacroValue.Text(matched))))
+            }
+        }
+        return try {
+            registerReceiver(receiver, IntentFilter(Intent.ACTION_DOCK_EVENT))
+            val cancelled = AtomicBoolean(false)
+            TriggerSubscriptionResult.Success(
+                RuntimeCancellation {
+                    if (cancelled.compareAndSet(false, true)) appContext.unregisterReceiver(receiver)
+                },
+            )
+        } catch (_: RuntimeException) {
+            TriggerSubscriptionResult.Failure("Could not observe dock state.")
         }
     }
 

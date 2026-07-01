@@ -35,4 +35,16 @@ class DockStateTest {
         assertEquals("low-end desk", DockState.LOW_END_DESK.diagnosticName())
         assertEquals("high-end desk", DockState.HIGH_END_DESK.diagnosticName())
     }
+
+    @Test
+    fun emitsOnlyRealTransitionsIntoRequestedState() {
+        val tracker = DockStateTransitionTracker(DockState.CAR)
+
+        assertNull(tracker.update(DockState.UNDOCKED))
+        assertNull(tracker.update(DockState.UNDOCKED))
+        assertEquals("car", tracker.update(DockState.CAR))
+        assertNull(tracker.update(DockState.CAR))
+        assertNull(tracker.update(DockState.DESK))
+        assertEquals("car", tracker.update(DockState.CAR))
+    }
 }
