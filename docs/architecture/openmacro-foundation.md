@@ -906,6 +906,12 @@ broadcast. Its first valid sample establishes baseline only; later below,
 above, or equal crossings suppress duplicates and emit one bounded
 `battery.voltage_millivolts` number while retaining only the previous sample.
 
+Battery Status maps one sticky snapshot to charging, full, discharging, or not
+charging and fails closed for unknown raw values. The older Boolean Battery
+Charging condition reuses the same mapping while preserving its compatibility:
+charging/full are true and discharging/not-charging are false. Neither condition
+retains history or requests access.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

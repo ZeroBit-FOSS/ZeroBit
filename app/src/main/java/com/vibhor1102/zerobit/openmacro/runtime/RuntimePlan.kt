@@ -200,6 +200,11 @@ sealed interface RuntimeStep {
         val direction: BatteryDirection,
     ) : RuntimeStep
 
+    data class CheckBatteryStatus(
+        override val blockId: String,
+        val expectedStatus: BatteryStatus,
+    ) : RuntimeStep
+
     data class CheckMediaVolume(
         override val blockId: String,
         val percentage: Int,
@@ -624,6 +629,13 @@ enum class BatteryVoltageComparison {
     BELOW,
     ABOVE,
     EQUALS,
+}
+
+enum class BatteryStatus {
+    CHARGING,
+    FULL,
+    DISCHARGING,
+    NOT_CHARGING,
 }
 
 enum class RingerMode {

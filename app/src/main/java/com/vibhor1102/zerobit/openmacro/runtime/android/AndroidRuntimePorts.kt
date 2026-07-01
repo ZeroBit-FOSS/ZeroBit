@@ -782,6 +782,7 @@ class AndroidConditionEvaluator(
                 }
             }
             is RuntimeStep.CheckBatteryCharging -> evaluateBatteryCharging(condition)
+            is RuntimeStep.CheckBatteryStatus -> evaluateBatteryStatus(condition)
             is RuntimeStep.CheckBatteryLevel -> evaluateBatteryLevel(condition)
             is RuntimeStep.CheckMediaVolume -> evaluateMediaVolume(condition)
             is RuntimeStep.CheckBluetoothEnabled -> evaluateBluetoothState(condition)
@@ -812,17 +813,13 @@ class AndroidConditionEvaluator(
             null,
             IntentFilter(Intent.ACTION_BATTERY_CHANGED),
         ) ?: return ConditionResult.Failed("Android battery status is unavailable.")
-        val status = battery.getIntExtra(
-            BatteryManager.EXTRA_STATUS,
-            BatteryManager.BATTERY_STATUS_UNKNOWN,
-        )
-        val charging = when (status) {
-            BatteryManager.BATTERY_STATUS_CHARGING,
-            BatteryManager.BATTERY_STATUS_FULL -> true
-            BatteryManager.BATTERY_STATUS_DISCHARGING,
-            BatteryManager.BATTERY_STATUS_NOT_CHARGING -> false
-            else -> return ConditionResult.Failed("Android battery charging state is unknown.")
-        }
+        val status = androidBatteryStatusOrNull(
+            battery.getIntExtra(
+                BatteryManager.EXTRA_STATUS,
+                BatteryManager.BATTERY_STATUS_UNKNOWN,
+            ),
+        ) ?: return ConditionResult.Failed("Android battery charging state is unknown.")
+        val charging = status.isCharging()
         return if (charging == condition.expectedCharging) {
             ConditionResult.Passed
         } else if (condition.expectedCharging) {
@@ -855,6 +852,29 @@ class AndroidConditionEvaluator(
             }
             ConditionResult.Blocked(
                 "Battery level is $percentage%; expected $comparison ${condition.level}%.",
+            )
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun evaluateBatteryStatus(
+        condition: RuntimeStep.CheckBatteryStatus,
+    ): ConditionResult {
+        val battery = appContext.registerReceiver(
+            null,
+            IntentFilter(Intent.ACTION_BATTERY_CHANGED),
+        ) ?: return ConditionResult.Failed("Android battery status is unavailable.")
+        val status = androidBatteryStatusOrNull(
+            battery.getIntExtra(
+                BatteryManager.EXTRA_STATUS,
+                BatteryManager.BATTERY_STATUS_UNKNOWN,
+            ),
+        ) ?: return ConditionResult.Failed("Android reported unknown battery status.")
+        return if (status == condition.expectedStatus) {
+            ConditionResult.Passed
+        } else {
+            ConditionResult.Blocked(
+                "Battery status is ${status.diagnosticName()}; expected ${condition.expectedStatus.diagnosticName()}.",
             )
         }
     }
