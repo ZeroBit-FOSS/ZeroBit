@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Low-RAM Device Condition**: Add explicit low-RAM and regular
-  device checks from one ActivityManager snapshot, fail closed when the service
-  is unavailable, and retain no memory details, history, observer, or polling.
+- **Target 1: Torch Availability Condition**: Add available and unavailable
+  checks from one bounded CameraManager snapshot, reuse deterministic flash
+  camera selection, and retain no camera IDs, observer, history, or polling.
 
 ### Completed Foundations
 
+- **Low-RAM Device Condition**: Low-RAM and regular-device checks read only
+  Android's classification from one ActivityManager snapshot and retain no
+  memory details, history, observer, permission, or polling work.
 - **Battery Optimization Exemption Condition**: Exempt and not-exempt checks
   inspect only ZeroBit's package through one PowerManager snapshot, without
   broader package access, observation, retained history, or polling.

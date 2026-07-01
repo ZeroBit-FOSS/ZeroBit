@@ -39,6 +39,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.NfcStateCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.NfcStateTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.LocationServicesCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.LocationServicesTrigger
+import com.vibhor1102.zerobit.openmacro.capability.builtin.LowRamDeviceCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.DarkThemeCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.DarkThemeTrigger
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ScreenOrientationCondition
@@ -176,6 +177,7 @@ class CapabilityRegistry private constructor(
                 BluetoothStateCondition,
                 NfcStateCondition,
                 LocationServicesCondition,
+                LowRamDeviceCondition,
                 DarkThemeCondition,
                 ScreenOrientationCondition,
                 WiredHeadsetCondition,

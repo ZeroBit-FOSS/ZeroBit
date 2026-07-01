@@ -7,6 +7,7 @@ package com.vibhor1102.zerobit.openmacro.runtime.android
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlarmManager
+import android.app.ActivityManager
 import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationChannel
@@ -949,6 +950,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckBatterySaver -> evaluateBatterySaver(condition)
             is RuntimeStep.CheckDeviceIdleMode -> evaluateDeviceIdleMode(condition)
             is RuntimeStep.CheckBatteryOptimizationExemption -> evaluateBatteryOptimizationExemption(condition)
+            is RuntimeStep.CheckLowRamDevice -> evaluateLowRamDevice(condition)
             is RuntimeStep.CheckTimeWindow -> evaluateTimeWindow(condition)
             else -> ConditionResult.Failed(
                 "Unsupported Android condition ${condition::class.simpleName}.",
@@ -1440,6 +1442,21 @@ class AndroidConditionEvaluator(
             ConditionResult.Blocked("ZeroBit is not exempt from Android battery optimization.")
         } else {
             ConditionResult.Blocked("ZeroBit is exempt from Android battery optimization.")
+        }
+    }
+
+    private fun evaluateLowRamDevice(
+        condition: RuntimeStep.CheckLowRamDevice,
+    ): ConditionResult {
+        val activityManager = appContext.getSystemService(ActivityManager::class.java)
+            ?: return ConditionResult.Failed("Android activity service is unavailable.")
+        val lowRam = activityManager.isLowRamDevice
+        return if (lowRam == condition.expectedLowRam) {
+            ConditionResult.Passed
+        } else if (condition.expectedLowRam) {
+            ConditionResult.Blocked("Android classifies this as a regular device.")
+        } else {
+            ConditionResult.Blocked("Android classifies this as a low-RAM device.")
         }
     }
 

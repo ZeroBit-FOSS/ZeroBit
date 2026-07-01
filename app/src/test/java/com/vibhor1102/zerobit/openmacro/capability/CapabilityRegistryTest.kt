@@ -63,6 +63,7 @@ class CapabilityRegistryTest {
                 "Device lock state",
                 "Dock state",
                 "Location services",
+                "Low-RAM device",
                 "Media volume",
                 "NFC state",
                 "Power connection",

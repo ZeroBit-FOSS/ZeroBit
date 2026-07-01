@@ -324,6 +324,11 @@ sealed interface RuntimeStep {
         val expectedExempt: Boolean,
     ) : RuntimeStep
 
+    data class CheckLowRamDevice(
+        override val blockId: String,
+        val expectedLowRam: Boolean,
+    ) : RuntimeStep
+
     data class CheckTimeWindow(
         override val blockId: String,
         val window: TimeWindowSpec,

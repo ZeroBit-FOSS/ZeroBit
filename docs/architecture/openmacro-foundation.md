@@ -953,6 +953,11 @@ ZeroBit's own package through one power-service snapshot. OpenMacro cannot name
 or inspect another package, and the condition requests no access, installs no
 observer, retains no history, and performs no polling.
 
+Low-RAM Device checks only Android's stable low-RAM device classification from
+one activity-service snapshot. It does not read memory totals, current free
+memory, pressure, or process data and retains no measurement, observer,
+history, permission, or polling work.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the
