@@ -951,6 +951,7 @@ class AndroidConditionEvaluator(
             is RuntimeStep.CheckDeviceIdleMode -> evaluateDeviceIdleMode(condition)
             is RuntimeStep.CheckBatteryOptimizationExemption -> evaluateBatteryOptimizationExemption(condition)
             is RuntimeStep.CheckLowRamDevice -> evaluateLowRamDevice(condition)
+            is RuntimeStep.CheckTorchAvailability -> evaluateTorchAvailability(condition)
             is RuntimeStep.CheckTimeWindow -> evaluateTimeWindow(condition)
             else -> ConditionResult.Failed(
                 "Unsupported Android condition ${condition::class.simpleName}.",
@@ -1457,6 +1458,37 @@ class AndroidConditionEvaluator(
             ConditionResult.Blocked("Android classifies this as a regular device.")
         } else {
             ConditionResult.Blocked("Android classifies this as a low-RAM device.")
+        }
+    }
+
+    private fun evaluateTorchAvailability(
+        condition: RuntimeStep.CheckTorchAvailability,
+    ): ConditionResult {
+        val manager = appContext.getSystemService(CameraManager::class.java)
+            ?: return ConditionResult.Failed("Android camera service is unavailable.")
+        val available = try {
+            val candidates = manager.cameraIdList.map { cameraId ->
+                val characteristics = manager.getCameraCharacteristics(cameraId)
+                TorchCameraCandidate(
+                    id = cameraId,
+                    hasFlash = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true,
+                    lensFacing = characteristics.get(CameraCharacteristics.LENS_FACING),
+                )
+            }
+            selectTorchCameraId(candidates) != null
+        } catch (problem: CameraAccessException) {
+            return ConditionResult.Failed(
+                problem.message ?: "Could not inspect Android torch availability.",
+            )
+        } catch (_: SecurityException) {
+            return ConditionResult.Failed("Android denied torch availability inspection.")
+        }
+        return if (available == condition.expectedAvailable) {
+            ConditionResult.Passed
+        } else if (condition.expectedAvailable) {
+            ConditionResult.Blocked("No usable torch camera is available.")
+        } else {
+            ConditionResult.Blocked("A usable torch camera is available.")
         }
     }
 

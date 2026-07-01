@@ -958,6 +958,11 @@ one activity-service snapshot. It does not read memory totals, current free
 memory, pressure, or process data and retains no measurement, observer,
 history, permission, or polling work.
 
+Torch Availability uses the torch action's deterministic flash-camera
+selection over one bounded camera-service snapshot. Camera IDs exist only for
+that evaluation and never enter source or diagnostics; temporary service or
+access failures fail closed instead of masquerading as absent hardware.
+
 Existing variable declarations now have focused visual controls for optional
 text, number, and boolean initial values and for secret-key identifiers. These
 controls patch only the declaration field in source and immediately run the

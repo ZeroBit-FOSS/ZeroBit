@@ -329,6 +329,11 @@ sealed interface RuntimeStep {
         val expectedLowRam: Boolean,
     ) : RuntimeStep
 
+    data class CheckTorchAvailability(
+        override val blockId: String,
+        val expectedAvailable: Boolean,
+    ) : RuntimeStep
+
     data class CheckTimeWindow(
         override val blockId: String,
         val window: TimeWindowSpec,

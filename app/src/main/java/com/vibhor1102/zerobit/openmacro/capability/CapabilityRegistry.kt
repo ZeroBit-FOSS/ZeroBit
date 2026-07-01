@@ -24,6 +24,7 @@ import com.vibhor1102.zerobit.openmacro.capability.builtin.StopActionsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.StopIfAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.ActionGroupAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.TimeScheduleTrigger
+import com.vibhor1102.zerobit.openmacro.capability.builtin.TorchAvailabilityCondition
 import com.vibhor1102.zerobit.openmacro.capability.builtin.LaunchAppAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAppDetailsAction
 import com.vibhor1102.zerobit.openmacro.capability.builtin.OpenAppNotificationSettingsAction
@@ -167,6 +168,7 @@ class CapabilityRegistry private constructor(
                 RingerModeCondition,
                 BatterySaverCondition,
                 TimeWindowCondition,
+                TorchAvailabilityCondition,
                 WifiConnectedCondition,
                 ValueCompareCondition,
                 BatteryChargingCondition,

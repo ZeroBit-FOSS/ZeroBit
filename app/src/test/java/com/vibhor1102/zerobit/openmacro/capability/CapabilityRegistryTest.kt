@@ -71,6 +71,7 @@ class CapabilityRegistryTest {
                 "Screen orientation",
                 "Screen state",
                 "Time window",
+                "Torch availability",
                 "Value comparison",
                 "Wi-Fi connected",
                 "Wired headset",

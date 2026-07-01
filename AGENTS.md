@@ -135,12 +135,15 @@ To reach MacroDroid-level power while keeping a user-transparent design, future 
 
 ### Active Targets
 
-- **Target 1: Torch Availability Condition**: Add available and unavailable
-  checks from one bounded CameraManager snapshot, reuse deterministic flash
-  camera selection, and retain no camera IDs, observer, history, or polling.
+- **Target 1: Vibration Availability Condition**: Add available and unavailable
+  checks from one version-aware vibrator snapshot, fail closed when the service
+  is unavailable, and retain no hardware details, observer, history, or polling.
 
 ### Completed Foundations
 
+- **Torch Availability Condition**: Available and unavailable checks reuse the
+  torch action's deterministic flash-camera selection from one bounded snapshot
+  and retain no camera IDs, observer, history, permission, or polling work.
 - **Low-RAM Device Condition**: Low-RAM and regular-device checks read only
   Android's classification from one ActivityManager snapshot and retain no
   memory details, history, observer, permission, or polling work.
